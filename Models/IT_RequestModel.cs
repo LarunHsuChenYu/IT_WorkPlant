@@ -44,7 +44,7 @@ namespace IT_WorkPlant.Models
         }
 
         // 根據條件篩選請求資料
-        public DataTable GetFilteredRequests(string deptName, string requestUser, string issueType, string status, string issueMonth)
+        public DataTable GetFilteredRequests(string deptName, string requestUser, string issueType, string status, string issueMonth, string issueDate)
         {
             string query = @"
         SELECT 
@@ -73,11 +73,18 @@ namespace IT_WorkPlant.Models
 
             var parameters = new List<SqlParameter>();
 
-            // เพิ่มเงื่อนไขกรองเดือน
+            // ✅ เพิ่มเงื่อนไขกรอง `IssueMonth`
             if (!string.IsNullOrEmpty(issueMonth))
             {
                 query += " AND FORMAT(r.IssueDate, 'yyyy-MM') = @IssueMonth";
                 parameters.Add(new SqlParameter("@IssueMonth", issueMonth));
+            }
+
+            // ✅ เพิ่มเงื่อนไขกรอง `IssueDate`
+            if (!string.IsNullOrEmpty(issueDate))
+            {
+                query += " AND CONVERT(DATE, r.IssueDate) = @IssueDate";
+                parameters.Add(new SqlParameter("@IssueDate", issueDate));
             }
 
             if (!string.IsNullOrEmpty(deptName))
@@ -103,10 +110,13 @@ namespace IT_WorkPlant.Models
                 query += " AND r.Status = @Status";
                 parameters.Add(new SqlParameter("@Status", status == "Done" ? 1 : 0));
             }
+
             // ✅ เพิ่มคำสั่ง ORDER BY ให้เรียง ReportID จากน้อยไปมาก
             query += " ORDER BY r.ReportID ASC";
+
             return _dbHelper.ExecuteQuery(query, parameters.ToArray());
         }
+
 
 
         // 獲取篩選條件選項

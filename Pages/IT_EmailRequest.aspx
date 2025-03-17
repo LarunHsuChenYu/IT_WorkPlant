@@ -73,7 +73,7 @@
 
         <asp:Button ID="btnRequestEmailAddRow" runat="server" Text="Add Row" CssClass="btn btn-primary" OnClick="AddRow_Click" />
         <asp:Button ID="btnRequestEmailSubmit" runat="server" Text="Submit" CssClass="btn btn-success" OnClick="btnRequestEmailSubmit_Click" />
-        <asp:Button ID="btnGenerateWord" runat="server" Text="Download Word" OnClick="btnGenerateWord_Click" CssClass="btn btn-info" />
+        <asp:Button ID="btnGenerateWord" runat="server" Text="create MEMO" OnClick="btnGenerateWord_Click" CssClass="btn btn-info" />
     </div>
     
 </asp:Content>

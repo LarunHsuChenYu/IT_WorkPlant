@@ -4,7 +4,7 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
     <style>
         .form-container {
-            max-width: 1000px; /* 統一容器的寬度 */
+            max-width: 1000px;
             margin: auto;
             padding: 20px;
             border: 1px solid #ddd;
@@ -36,7 +36,7 @@
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            box-sizing: border-box; /* 將 padding 和 border 包含在寬度中 */
+            box-sizing: border-box;
         }
 
         .form-group textarea {
@@ -46,7 +46,7 @@
         .form-row {
             display: flex;
             gap: 20px;
-            width: 100%; /* 與 .form-group 保持一致 */
+            width: 100%;
         }
 
         .form-row .form-group {
@@ -55,7 +55,7 @@
 
         .full-width-textarea {
             width: 100%;
-            box-sizing: border-box; 
+            box-sizing: border-box;
         }
 
         .btn-container {
@@ -105,7 +105,7 @@
             </div>
             <div class="form-group">
                 <label for="txtDate">Issue Date:</label>
-                <asp:TextBox ID="txtDate" runat="server" CssClass="form-control" ReadOnly="true"></asp:TextBox>
+                <asp:TextBox ID="txtDate" runat="server" CssClass="form-control" placeholder="Select a date"></asp:TextBox>
             </div>
         </div>
 
@@ -124,11 +124,22 @@
                 TextMode="MultiLine" placeholder="Enter details about the issue"></asp:TextBox>
         </div>
 
-        <!-- File Upload -->
-        <div class="form-group">
-            <label for="fileUploadImage">Upload Attachment:</label>
-            <asp:FileUpload ID="fileUploadImage" runat="server" CssClass="form-control" />
-        </div>
+          <!-- File Upload บังคับแค่รูปภาพ-->
+          <div class="form-group">
+          <label for="fileUploadImage">Upload Attachment:</label>
+          <asp:FileUpload ID="fileUploadImage" runat="server" CssClass="form-control" />
+          </div>
+
+          <script>
+           document.addEventListener("DOMContentLoaded", function () {
+           var fileUpload = document.getElementById('<%= fileUploadImage.ClientID %>');
+           if (fileUpload) {
+            fileUpload.setAttribute("accept", "image/*");
+             }
+              });
+         </script>
+
+
 
         <!-- Buttons -->
         <div class="btn-container">
@@ -138,5 +149,21 @@
                 OnClick="CancelForm" />
         </div>
     </div>
-    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var fileUpload = document.getElementById('<%= fileUploadImage.ClientID %>');
+
+            if (fileUpload) {
+                fileUpload.addEventListener("change", function () {
+                    var allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif|\.bmp|\.webp)$/i;
+                    if (!allowedExtensions.exec(fileUpload.value)) {
+                        alert("Only image files (.jpg, .jpeg, .png, .gif, .bmp, .webp) are allowed.");
+                        fileUpload.value = "";
+                    }
+                });
+            }
+        });
+    </script>
+
 </asp:Content>

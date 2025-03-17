@@ -19,7 +19,6 @@ namespace IT_WorkPlant.Models
     {
         public MemoryStream GenerateWordDocumentFromSubmission(string templatePath, EmailRequestSubmissionModel submission)
         {
-            // 讀取模板檔案到 MemoryStream
             MemoryStream memStream = new MemoryStream();
             using (FileStream fs = new FileStream(templatePath, FileMode.Open, FileAccess.Read))
             {

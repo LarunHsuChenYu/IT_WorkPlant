@@ -35,17 +35,22 @@ namespace IT_WorkPlant.Pages
 
         private void BindRequestData()
         {
-            string issueMonth = ViewState["IssueMonth"]?.ToString(); // ค่าที่เลือกใน DropDown เดือน
+            string issueMonth = ViewState["IssueMonth"]?.ToString();
+            string issueDate = ViewState["IssueDate"]?.ToString();  // ✅ เพิ่มตัวแปรนี้
             string deptName = ViewState["Department"]?.ToString();
             string requestUser = ViewState["RequestUser"]?.ToString();
             string issueType = ViewState["IssueType"]?.ToString();
             string status = ViewState["Status"]?.ToString();
 
-            DataTable dt = _model.GetFilteredRequests(deptName, requestUser, issueType, status, issueMonth);
 
-            if (dt.Columns.Contains("ReportID"))
+
+            // ✅ ส่ง issueDate เข้าไปในฟังก์ชัน GetFilteredRequests()
+            DataTable dt = _model.GetFilteredRequests(deptName, requestUser, issueType, status, issueMonth, issueDate);
+
+            // ✅ Debug เพื่อตรวจสอบค่าของ IssueDate
+            foreach (DataRow row in dt.Rows)
             {
-                gvRequests.DataKeyNames = new[] { "ReportID" };
+                System.Diagnostics.Debug.WriteLine("ReportID: " + row["ReportID"] + " | IssueDate: " + row["IssueDate"]);
             }
 
             gvRequests.DataSource = dt;
@@ -53,11 +58,11 @@ namespace IT_WorkPlant.Pages
         }
 
 
+
         private void BindFilters()
         {
             BindIssueMonthFilter(); // เรียกใช้ตัวกรองเดือน
-            BindFilterDropdown(ddlIssueDate, "IssueDate", "All Issue Dates");
-            BindFilterDropdown(ddlDeptName, "Department", "All Departments");
+           
             BindFilterDropdown(ddlRequestUser, "RequestUser", "All Request Users");
             BindFilterDropdown(ddlIssueType, "IssueType", "All Issue Types");
             BindFilterDropdown(ddlStatus, "Status", "All Statuses");
@@ -85,8 +90,7 @@ namespace IT_WorkPlant.Pages
             BindRequestData();
         }
 
-
-        protected void gvRequests_RowEditing(object sender, GridViewEditEventArgs e)
+protected void gvRequests_RowEditing(object sender, GridViewEditEventArgs e)
         {
             gvRequests.EditIndex = e.NewEditIndex;
             BindRequestData();
@@ -111,41 +115,47 @@ namespace IT_WorkPlant.Pages
             gvRequests.EditIndex = -1;
             BindRequestData();
         }
-
-        protected void gvRequests_RowUpdating(object sender, GridViewUpdateEventArgs e)
+       protected void gvRequests_RowUpdating(object sender, GridViewUpdateEventArgs e)
         {
             int reportID = Convert.ToInt32(gvRequests.DataKeys[e.RowIndex].Value);
 
-            // 提取下拉選單的選中值
             DropDownList ddlDRIUser = gvRequests.Rows[e.RowIndex].FindControl("ddlDRIUser") as DropDownList;
             int? driUserIndex = ddlDRIUser != null ? (int?)Convert.ToInt32(ddlDRIUser.SelectedValue) : null;
 
-            DropDownList ddlStatus = gvRequests.Rows[e.RowIndex].FindControl("ddlStatus") as DropDownList;
-            bool status = ddlStatus != null && ddlStatus.SelectedValue == "1"; // 1 為 Done，0 為 WIP
+            DropDownList ddlStatus = gvRequests.Rows[e.RowIndex].FindControl("DropDownList1") as DropDownList;
+            bool isDone = ddlStatus != null && ddlStatus.SelectedValue == "1"; // 1 = Done
 
             string solution = ((TextBox)gvRequests.Rows[e.RowIndex].Cells[7].Controls[0]).Text;
-            string finishedDate = ((TextBox)gvRequests.Rows[e.RowIndex].Cells[10].Controls[0]).Text;
             string remark = ((TextBox)gvRequests.Rows[e.RowIndex].Cells[11].Controls[0]).Text;
 
+            // ✅ ใช้ DateTime โดยตรง และ Debug Log เพื่อตรวจสอบค่า
+            object finishedDate = isDone ? (object)DateTime.Now : DBNull.Value;
+
+            System.Diagnostics.Debug.WriteLine("======= DEBUG LOG =======");
+            System.Diagnostics.Debug.WriteLine("ReportID: " + reportID);
+            System.Diagnostics.Debug.WriteLine("isDone: " + isDone);
+            System.Diagnostics.Debug.WriteLine("FinishedDate ก่อนอัปเดต: " + finishedDate);
+            System.Diagnostics.Debug.WriteLine("=========================");
+
             string query = @"
-                UPDATE IT_RequestList
-                SET DRI_UserID = @DRIUserID,
-                    Solution = @Solution, 
-                    Status = @Status, 
-                    FinishedDate = @FinishedDate, 
-                    Remark = @Remark, 
-                    LastUpdateDate = GETDATE()
-                WHERE ReportID = @ReportID";
+UPDATE IT_RequestList
+SET DRI_UserID = @DRIUserID,
+    Solution = @Solution, 
+    Status = @Status, 
+    FinishedDate = @FinishedDate, 
+    Remark = @Remark, 
+    LastUpdateDate = GETDATE()
+WHERE ReportID = @ReportID";
 
             SqlParameter[] parameters =
             {
-                new SqlParameter("@DRIUserID", driUserIndex ?? (object)DBNull.Value),
-                new SqlParameter("@Solution", solution),
-                new SqlParameter("@Status", status),
-                new SqlParameter("@FinishedDate", string.IsNullOrEmpty(finishedDate) ? (object)DBNull.Value : finishedDate),
-                new SqlParameter("@Remark", remark),
-                new SqlParameter("@ReportID", reportID)
-            };
+        new SqlParameter("@DRIUserID", driUserIndex ?? (object)DBNull.Value),
+        new SqlParameter("@Solution", solution),
+        new SqlParameter("@Status", isDone ? 1 : 0),
+        new SqlParameter("@FinishedDate", finishedDate),  // ✅ เปลี่ยนเป็น object ที่รองรับ DBNull.Value
+        new SqlParameter("@Remark", remark),
+        new SqlParameter("@ReportID", reportID)
+    };
 
             _model.UpdateRequest(query, parameters);
 
