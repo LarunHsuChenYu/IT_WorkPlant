@@ -35,6 +35,38 @@ namespace IT_WorkPlant.Pages
                 department.Text = Session["DeptName"]?.ToString();
                 ViewState["RequestEmailTable_RowCount"] = 1;
                 AddRow(1, "RequestEmailTable");
+
+                // 處理下載邏輯
+                if (Request.QueryString["download"] == "true")
+                {
+                    if (Session["SubmitModel"] != null)
+                    {
+                        MemoryStream ms = GenerateWordDocument(Session["SubmitModel"] as EmailRequestSubmissionModel);
+                        Session.Remove("SubmitModel");  // 清除Session
+                        if (ms != null)
+                        {
+                            Response.Clear();
+                            Response.ContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
+                            string sDateSuffix = DateTime.Now.ToString("yyyyMMdd");
+                            string fileName = $"MEMO-Request_Email_Account_{sDateSuffix}.docx";
+
+                            Response.AddHeader("Content-Disposition", $"attachment; filename={fileName}");
+                            Response.BinaryWrite(ms.ToArray());
+                            Response.Flush();
+                            Response.End();
+
+                        }
+                        else
+                        {
+                            ShowAlert("Document generation failed!");
+                        }
+                    }
+                    else
+                    {
+                        ShowAlert("No submitted data found; unable to generate the document.");
+                    }
+                }
             }
             else
             {
@@ -168,9 +200,11 @@ namespace IT_WorkPlant.Pages
             var submissionModel = BuildSubmissionModel();
             if (submissionModel == null)
             {
-                // 資料驗證失敗，BuildSubmissionModel 已顯示錯誤訊息
+                ShowAlert("Data validation failed; please check the entered information.");
                 return;
             }
+
+            Session["SubmitModel"] = submissionModel; // 存入 Session 備用
 
             string userName = Session["UserName"]?.ToString();
             string userEmpID = Session["UserEmpID"]?.ToString();
@@ -219,8 +253,14 @@ namespace IT_WorkPlant.Pages
                 var notifier = new LineNotificationModel();
                 await notifier.SendLineNotifyAsync(lineNotifyMessageBuilder.ToString());
 
-                ShowAlert("EMail Account Request submitted successfully!");
-                Response.Redirect("~/Default.aspx");
+                //完成後詢問是否下載Word
+                string script = @"
+                    if (confirm('EMail Account Request submitted successfully! Do you want to download the Word document now?')) {
+                        window.location = 'IT_EmailRequest.aspx?download=true';
+                    } else {
+                        window.location = 'Default.aspx';
+                    }";
+                ClientScript.RegisterStartupScript(this.GetType(), "DownloadConfirmation", script, true);
             }
             catch (Exception ex)
             {
@@ -228,32 +268,19 @@ namespace IT_WorkPlant.Pages
             }
         }
 
-        protected void btnGenerateWord_Click(object sender, EventArgs e)
+        private MemoryStream GenerateWordDocument(EmailRequestSubmissionModel submissionModel = null)
         {
-            var submission = BuildSubmissionModel();
-            if (submission == null)
-            {
-                return;
-            }
+            submissionModel = submissionModel ?? BuildSubmissionModel();
+
+            if (submissionModel == null)
+                return null;
 
             WordHelper exportModel = new WordHelper();
             string templatePath = Server.MapPath("~/App_Data/MEMO-Rquest_EMail.docx");
-            MemoryStream generatedDoc = exportModel.GenerateWordDocumentFromSubmission(templatePath, submission);
+            MemoryStream generatedDoc = exportModel.GenerateMemoFromSubmit(templatePath, submissionModel, Session["DeptName"]?.ToString());
 
-            if (generatedDoc != null)
-            {
-                Response.Clear();
-                Response.ContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-                Response.AddHeader("Content-Disposition", "attachment; filename=MEMO-Request_Email_Output.docx");
-                Response.BinaryWrite(generatedDoc.ToArray());
-                Response.End();
-            }
-            else
-            {
-                ShowAlert("Document generation failed.");
-            }
+            return generatedDoc;
         }
 
-        
     }
 }

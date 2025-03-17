@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Web.UI.WebControls;
 using IT_WorkPlant.Models;
 
@@ -12,7 +13,6 @@ namespace IT_WorkPlant.Pages
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // 初始化模型
             if (_model == null)
             {
                 _model = new IT_RequestModel();
@@ -28,9 +28,45 @@ namespace IT_WorkPlant.Pages
                 string userDept = Session["DeptName"]?.ToString();
                 gvRequests.Columns[gvRequests.Columns.Count - 1].Visible = userDept == "IT";
 
+                BindDepartmentsDropdown(userDept); //✅ เพิ่มเรียกฟังก์ชันที่นี่
+
                 BindRequestData();
                 BindFilters();
             }
+        }
+
+private void BindDepartmentsDropdown(string userDept)
+        {
+            DataTable dtDepartments = _model.GetDepartments();
+            ddlDeptName.DataSource = dtDepartments;
+            ddlDeptName.DataTextField = "DeptName_en";
+            ddlDeptName.DataValueField = "DeptNameID";
+            ddlDeptName.DataBind();
+
+            if (userDept == "IT") //✅ ถ้าคนเข้าใช้งานคือฝ่ายไอที ให้เลือกได้
+            {
+                ddlDeptName.Items.Insert(0, new ListItem("-- Select Department --", ""));
+                ddlDeptName.Enabled = true;
+            }
+            else //✅ ถ้าไม่ใช่ฝ่ายไอทีให้ล็อก Dropdown
+            {
+                DataRow deptRow = dtDepartments.AsEnumerable()
+                    .FirstOrDefault(r => r["DeptName_en"].ToString() == userDept);
+
+                if (deptRow != null)
+                {
+                    ddlDeptName.SelectedValue = deptRow["DeptNameID"].ToString();
+                }
+                ddlDeptName.Enabled = false;
+            }
+            
+            System.Diagnostics.Debug.WriteLine("===== Dropdown Departments =====");
+            foreach (ListItem item in ddlDeptName.Items)
+            {
+                System.Diagnostics.Debug.WriteLine($"{item.Value} - {item.Text}");
+            }
+            System.Diagnostics.Debug.WriteLine("==================================");
+            
         }
 
         private void BindRequestData()
@@ -59,14 +95,19 @@ namespace IT_WorkPlant.Pages
 
 
 
-        private void BindFilters()
-        {
-            BindIssueMonthFilter(); // เรียกใช้ตัวกรองเดือน
-           
-            BindFilterDropdown(ddlRequestUser, "RequestUser", "All Request Users");
-            BindFilterDropdown(ddlIssueType, "IssueType", "All Issue Types");
-            BindFilterDropdown(ddlStatus, "Status", "All Statuses");
-        }
+      private void BindFilters()
+{
+    BindIssueMonthFilter(); // เรียกใช้ตัวกรองเดือน
+
+    //✅ เพิ่มส่วนนี้เข้ามาเพื่อให้ Dropdown แผนกมีแค่ All Department
+    ddlDeptName.Items.Clear();
+    ddlDeptName.Items.Insert(0, new ListItem("All Department", ""));
+
+    //✅ ส่วนของเดิมที่คุณมีอยู่แล้ว
+    BindFilterDropdown(ddlRequestUser, "RequestUser", "All Request Users");
+    BindFilterDropdown(ddlIssueType, "IssueType", "All Issue Types");
+    BindFilterDropdown(ddlStatus, "Status", "All Statuses");
+}
 
 
         private void BindFilterDropdown(DropDownList dropdown, string columnName, string defaultText)
@@ -90,7 +131,7 @@ namespace IT_WorkPlant.Pages
             BindRequestData();
         }
 
-protected void gvRequests_RowEditing(object sender, GridViewEditEventArgs e)
+        protected void gvRequests_RowEditing(object sender, GridViewEditEventArgs e)
         {
             gvRequests.EditIndex = e.NewEditIndex;
             BindRequestData();
@@ -107,15 +148,56 @@ protected void gvRequests_RowEditing(object sender, GridViewEditEventArgs e)
                 ddlDRIUser.DataBind();
             }
 
+            // ✅ ดึงข้อมูลแผนกทั้งหมดและ Bind ลง DropDownList
+            DropDownList ddlDepartment = gvRequests.Rows[e.NewEditIndex].FindControl("ddlDepartment") as DropDownList;
+            if (ddlDepartment != null)
+            {
+                // ✅ สร้างอ็อบเจ็กต์ของ Model
+                IT_RequestModel model = new IT_RequestModel();
+                DataTable dtDepartments = model.GetDepartments();
 
+                // ✅ ผูกข้อมูลจากฐานข้อมูลเข้ากับ DropDownList
+                ddlDepartment.DataSource = dtDepartments;
+                ddlDepartment.DataTextField = "DeptName_en"; // ใช้ชื่อเต็มของแผนก
+                ddlDepartment.DataValueField = "DeptNameID"; // ใช้ ID ของแผนก
+                ddlDepartment.DataBind();
+
+                // ✅ ดึงค่าของแผนกปัจจุบันจาก DataKeys และแก้ปัญหา NULL
+                object deptObj = gvRequests.DataKeys[e.NewEditIndex].Values["Department"];
+                string currentDept = deptObj != null ? deptObj.ToString().Trim() : "";
+
+                // ✅ Debug Log เพื่อตรวจสอบค่าแผนกปัจจุบันจาก DataKeys
+                System.Diagnostics.Debug.WriteLine($"===== Current Department: {currentDept} =====");
+
+                // ✅ Debug Log เพื่อตรวจสอบข้อมูลที่ถูกเพิ่มใน DropDownList
+                System.Diagnostics.Debug.WriteLine("===== Department List in DropDownList =====");
+                foreach (ListItem item in ddlDepartment.Items)
+                {
+                    System.Diagnostics.Debug.WriteLine($"{item.Value} - {item.Text}");
+                }
+                System.Diagnostics.Debug.WriteLine("==========================================");
+
+                // ✅ ตั้งค่าให้ DropDownList แสดงค่าของแผนกปัจจุบัน
+                ListItem selectedItem = ddlDepartment.Items.FindByText(currentDept);
+                if (selectedItem != null)
+                {
+                    ddlDepartment.SelectedValue = selectedItem.Value;
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("⚠️ ไม่พบค่าใน DropDownList: " + currentDept);
+                }
+            }
         }
+
+
 
         protected void gvRequests_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
         {
             gvRequests.EditIndex = -1;
             BindRequestData();
         }
-       protected void gvRequests_RowUpdating(object sender, GridViewUpdateEventArgs e)
+        protected void gvRequests_RowUpdating(object sender, GridViewUpdateEventArgs e)
         {
             int reportID = Convert.ToInt32(gvRequests.DataKeys[e.RowIndex].Value);
 
@@ -131,28 +213,37 @@ protected void gvRequests_RowEditing(object sender, GridViewEditEventArgs e)
             // ✅ ใช้ DateTime โดยตรง และ Debug Log เพื่อตรวจสอบค่า
             object finishedDate = isDone ? (object)DateTime.Now : DBNull.Value;
 
+            // ✅ เพิ่มตรงนี้: ดึงค่าแผนกที่เลือกจาก Dropdown ใน GridView
+            DropDownList ddlDepartment = gvRequests.Rows[e.RowIndex].FindControl("ddlDepartment") as DropDownList;
+            string selectedDeptID = ddlDepartment != null ? ddlDepartment.SelectedValue : null;
+
             System.Diagnostics.Debug.WriteLine("======= DEBUG LOG =======");
             System.Diagnostics.Debug.WriteLine("ReportID: " + reportID);
             System.Diagnostics.Debug.WriteLine("isDone: " + isDone);
             System.Diagnostics.Debug.WriteLine("FinishedDate ก่อนอัปเดต: " + finishedDate);
+            System.Diagnostics.Debug.WriteLine("SelectedDeptID ก่อนอัปเดต: " + selectedDeptID);
             System.Diagnostics.Debug.WriteLine("=========================");
 
+            // ✅ เพิ่ม DeptNameID เข้าไปในคำสั่ง SQL เพื่ออัปเดตแผนกด้วย
             string query = @"
-UPDATE IT_RequestList
-SET DRI_UserID = @DRIUserID,
-    Solution = @Solution, 
-    Status = @Status, 
-    FinishedDate = @FinishedDate, 
-    Remark = @Remark, 
-    LastUpdateDate = GETDATE()
-WHERE ReportID = @ReportID";
+    UPDATE IT_RequestList
+    SET DRI_UserID = @DRIUserID,
+        DeptNameID = @DeptNameID, -- ✅ แก้เฉพาะตรงนี้
+        Solution = @Solution, 
+        Status = @Status, 
+        FinishedDate = @FinishedDate, 
+        Remark = @Remark, 
+        LastUpdateDate = GETDATE()
+    WHERE ReportID = @ReportID";
 
+            // ✅ เพิ่ม Parameter ใหม่ "DeptNameID" อย่างเดียว
             SqlParameter[] parameters =
             {
         new SqlParameter("@DRIUserID", driUserIndex ?? (object)DBNull.Value),
+        new SqlParameter("@DeptNameID", selectedDeptID ?? (object)DBNull.Value), //✅ใหม่
         new SqlParameter("@Solution", solution),
         new SqlParameter("@Status", isDone ? 1 : 0),
-        new SqlParameter("@FinishedDate", finishedDate),  // ✅ เปลี่ยนเป็น object ที่รองรับ DBNull.Value
+        new SqlParameter("@FinishedDate", finishedDate),
         new SqlParameter("@Remark", remark),
         new SqlParameter("@ReportID", reportID)
     };
@@ -162,6 +253,7 @@ WHERE ReportID = @ReportID";
             gvRequests.EditIndex = -1;
             BindRequestData();
         }
+
         private void BindIssueMonthFilter()
         {
             DataTable dt = _model.GetFilterOptions("FORMAT(IssueDate, 'yyyy-MM')"); // ดึงค่าปี-เดือน
@@ -179,6 +271,34 @@ WHERE ReportID = @ReportID";
             gvRequests.PageIndex = e.NewPageIndex;
             BindRequestData();
         }
+        protected void gvRequests_RowDataBound(object sender, GridViewRowEventArgs e)
+        {
+            if (e.Row.RowType == DataControlRowType.DataRow)
+            {
+                Label lblFinishedDate = (Label)e.Row.FindControl("lblFinishedDate");
+                HiddenField hfStatus = (HiddenField)e.Row.FindControl("hfStatus");
+
+                if (lblFinishedDate != null && hfStatus != null)
+                {
+                    string status = hfStatus.Value;
+
+                    if (status == "WIP")
+                    {
+                        lblFinishedDate.Text = "⏳ Done = Date!";
+                        lblFinishedDate.Attributes["style"] = "color: red; font-weight: bold;";
+                    }
+                    else if (status == "Done")
+                    {
+                        DataRowView drv = (DataRowView)e.Row.DataItem;
+                        lblFinishedDate.Text = drv["FinishedDate"] != DBNull.Value
+                            ? Convert.ToDateTime(drv["FinishedDate"]).ToString("yyyy-MM-dd HH:mm:ss")
+                            : "-";
+                        lblFinishedDate.Attributes["style"] = "color: black;";
+                    }
+                }
+            }
+        }
+
     }
 }
 

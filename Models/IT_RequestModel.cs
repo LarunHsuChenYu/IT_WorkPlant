@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Configuration; // ✅ เพิ่มเพื่อดึง Connection String จาก Web.config
 
 namespace IT_WorkPlant.Models
 {
@@ -12,6 +14,59 @@ namespace IT_WorkPlant.Models
         {
             _dbHelper = new MssqlDatabaseHelper();
         }
+
+        // ✅ เพิ่มฟังก์ชันดึงข้อมูลแผนกทั้งหมดจากฐานข้อมูล
+        public DataTable GetDepartments()
+        {
+            // ✅ ดึง Connection String จาก Web.config
+            string connectionString = ConfigurationManager.ConnectionStrings["EnrichDB"].ConnectionString;
+
+            // ✅ SQL Query ดึงข้อมูลแผนกทั้งหมด
+            string query = "SELECT DISTINCT DeptNameID, DeptName_en FROM Departments ORDER BY DeptName_en";
+
+            // ✅ สร้าง DataTable สำหรับเก็บผลลัพธ์
+            DataTable dt = new DataTable();
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        conn.Open();
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                        {
+                            da.Fill(dt);
+                        }
+                    }
+                }
+
+                // ✅ Debug Log เพื่อตรวจสอบว่ามีแผนกอะไรบ้าง
+                System.Diagnostics.Debug.WriteLine("===== Department List from DB =====");
+                if (dt.Rows.Count == 0)
+                {
+                    System.Diagnostics.Debug.WriteLine("⚠ ไม่มีข้อมูลแผนกในฐานข้อมูล!");
+                }
+                else
+                {
+                    foreach (DataRow row in dt.Rows)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"{row["DeptNameID"]} - {row["DeptName_en"]}");
+                    }
+                }
+                System.Diagnostics.Debug.WriteLine("==================================");
+            }
+            catch (Exception ex)
+            {
+                // ✅ Log Error ถ้ามีปัญหา
+                System.Diagnostics.Debug.WriteLine($"❌ Error ในการดึงข้อมูลแผนก: {ex.Message}");
+            }
+
+            return dt;
+        }
+
+
+
 
         // 獲取所有請求資料
         public DataTable GetAllRequests()
@@ -117,8 +172,6 @@ namespace IT_WorkPlant.Models
             return _dbHelper.ExecuteQuery(query, parameters.ToArray());
         }
 
-
-
         // 獲取篩選條件選項
         public DataTable GetFilterOptions(string columnName)
         {
@@ -160,7 +213,5 @@ namespace IT_WorkPlant.Models
             SqlParameter[] parameters = { new SqlParameter("@DeptName", deptName) };
             return _dbHelper.ExecuteQuery(query, parameters);
         }
-
     }
 }
-
