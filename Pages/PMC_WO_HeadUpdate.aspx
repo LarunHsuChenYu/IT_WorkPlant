@@ -1,41 +1,71 @@
 ﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" 
     CodeBehind="PMC_WO_HeadUpdate.aspx.cs" Inherits="IT_WorkPlant.Pages.PMC_WO_HeadUpdate" %>
 
-<asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
-    <h2>PMC - WO Head Update(單頭刷新)</h2>
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+    <style>
+        .progress-container {
+            width: 300px;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.3s ease-in-out;
+        }
     
-    <!-- 引入 ScriptManagerProxy -->
-    <asp:ScriptManagerProxy ID="ScriptManagerProxy1" runat="server" />
-    
-    <!-- 進度條 -->
-    <div class="progress" style="width: 50%;">
-        <div id="progressBar" class="progress-bar progress-bar-striped" role="progressbar" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
-            <span id="progressLabel">0%</span>
-        </div>
-    </div>
-    <br />
+        .table-style {
+            border-collapse: collapse;
+            width: 100%;
+            font-family: 'Segoe UI', sans-serif;
+        }
 
-    <!-- 文件上傳 -->
-    <asp:FileUpload ID="FileUpload1" runat="server" />
-    <asp:Button ID="btnUpload" runat="server" Text="Upload" OnClick="btnUpload_Click" CssClass="btn btn-primary" />
-            
-    <!-- 狀態標籤 -->
-    <asp:Label ID="lblStatus" runat="server" Text="" CssClass="text-info"></asp:Label>
+        .table-style th {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px;
+            text-align: left;
+        }
 
-    <!-- 資料顯示 -->
-    <asp:GridView ID="GridView1" runat="server" AutoGenerateColumns="true" CssClass="table table-striped" />
-       
+        .table-style td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .table-style tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .table-style tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+
 </asp:Content>
 
-<asp:Content ID="Content2" ContentPlaceHolderID="HeadContent" runat="server">
-    <!-- 引入 jQuery & Bootstrap -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
+    <asp:FileUpload ID="FileUpload1" runat="server" />
+    <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>
+            <asp:Button ID="btnUpload" runat="server" Text="Upload" OnClick="btnUpload_Click" />
+            <br /><br />
+            <asp:Label ID="lblStatus" runat="server" Text="" /><br />
+            <asp:Label ID="lblProgress" runat="server" Text="" /><br />
+            <div class="progress-container">
+                <div id="progressBar" class="progress-bar" runat="server"></div>
+            </div>
+            <br />
+            
+            <asp:GridView ID="GridView1" runat="server" AutoGenerateColumns="true" CssClass="table-style" />
 
-    <script type="text/javascript">
-        function updateProgressBar(percentage) {
-            $('#progressBar').css('width', percentage + '%');
-            $('#progressLabel').text(percentage + '%');
-        }
-    </script>
+            <asp:Timer ID="Timer1" runat="server" Interval="500" OnTick="Timer1_Tick" Enabled="false" />
+        </ContentTemplate>
+
+        <Triggers>
+            <asp:PostBackTrigger ControlID="btnUpload" />
+        </Triggers>
+    </asp:UpdatePanel>
 </asp:Content>

@@ -99,7 +99,8 @@ namespace IT_WorkPlant.Models
                     }
                 }
 
-                ReplaceTextInSubject(doc, "IT", "【"+sDeptName+"】");
+                ReplaceTextInParagraph(doc, "主旨Subject", "IT", "【"+sDeptName+"】");
+                ReplaceTextInParagraph(doc, "日期Date", "2025/02/05", DateTime.Now.ToString("yyyy/MM/dd"));
 
                 doc.Save();
             }
@@ -123,19 +124,26 @@ namespace IT_WorkPlant.Models
             firstParagraph.Append(run);
         }
 
-        private void ReplaceTextInSubject(Document doc, string placeholder, string replacementText)
+        // 精確替換指定段落內的文字
+        private void ReplaceTextInParagraph(Document doc, string paragraphKeyword, string placeholder, string replacementText)
         {
-            // 找到包含 "主旨Subject" 的段落
-            var subjectParagraph = doc.Descendants<Paragraph>()
-                                      .FirstOrDefault(p => p.InnerText.Contains("主旨Subject"));
+            // 找到包含特定關鍵字的段落
+            var targetParagraph = doc.Descendants<Paragraph>()
+                                     .FirstOrDefault(p => p.InnerText.Contains(paragraphKeyword));
 
-            if (subjectParagraph == null)
-                throw new Exception("Can not Find 【主旨Subject】");
-
-            foreach (var text in subjectParagraph.Descendants<Text>().Where(t => t.Text.Contains(placeholder)))
+            if (targetParagraph == null)
             {
+                throw new Exception($"找不到包含 '{paragraphKeyword}' 的段落！");
+            }
+
+            // 在該段落內替換文字
+            foreach (var text in targetParagraph.Descendants<Text>().Where(t => t.Text.Contains(placeholder)))
+            {
+                System.Diagnostics.Debug.WriteLine($"原始內容: {text.Text}");
                 text.Text = text.Text.Replace(placeholder, replacementText);
+                System.Diagnostics.Debug.WriteLine($"替換後內容: {text.Text}");
             }
         }
+
     }
 }

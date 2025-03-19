@@ -2,14 +2,20 @@
 using System.Data;
 using System.Configuration;
 using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.HtmlControls;
 using IT_WorkPlant.Models;
 using System.IO;
 using System.Web;
+using MathNet.Numerics;
 
 namespace IT_WorkPlant.Pages
 {
     public partial class PMC_WO_HeadUpdate : System.Web.UI.Page
     {
+        private static DataTable PendingRows;
+        private static int CurrentRowIndex;
+
         private readonly ExcelHelper _excelHelper = new ExcelHelper();
         private readonly WO_UpdateService _updateService;
 
@@ -19,8 +25,16 @@ namespace IT_WorkPlant.Pages
             _updateService = new WO_UpdateService(connString);
         }
 
+        // Access other controls using underscore-prefixed properties
+        private Label _lblStatus => (Label)Master.FindControl("MainContent").FindControl("lblStatus");
+        private Label _lblProgress => (Label)Master.FindControl("MainContent").FindControl("lblProgress");
+        private HtmlGenericControl _progressBar => (HtmlGenericControl)Master.FindControl("MainContent").FindControl("progressBar");
+        private GridView _GridView1 => (GridView)Master.FindControl("MainContent").FindControl("GridView1");
+        private Timer _Timer1 => (Timer)Master.FindControl("MainContent").FindControl("Timer1");
+
         protected void Page_Load(object sender, EventArgs e)
         {
+#if !DEBUG
             if (Session["UserEmpID"] == null)
             {
                 Response.Redirect("../Login.aspx");
@@ -30,10 +44,11 @@ namespace IT_WorkPlant.Pages
             if (deptName != "PC" && deptName != "IT")
             {
                 ShowAlertAndRedirect(
-                    "You Didn't Allow to Visit this Function. \r\n Please check your access by IT!!",
+                    "You Didn't Allow to Visit this Function. \n Please check your access by IT!!",
                     "../Default.aspx"
                 );
             }
+#endif
         }
 
         protected void btnUpload_Click(object sender, EventArgs e)
@@ -41,48 +56,74 @@ namespace IT_WorkPlant.Pages
             if (FileUpload1.HasFile)
             {
                 string fileExtension = Path.GetExtension(FileUpload1.FileName).ToLower();
-
                 if (fileExtension == ".xls" || fileExtension == ".xlsx")
                 {
                     try
                     {
-                        // 使用 ExcelHelper 儲存文件
                         string filePath = _excelHelper.SaveUploadedFile(FileUpload1.PostedFile, Server);
-
-                        // 使用 ExcelHelper 解析文件
                         DataTable dtExcel = _excelHelper.ReadExcelData(filePath);
-
-                        // 執行頁面特定邏輯
                         AddStatusColumn(dtExcel);
 
-                        // 更新資料庫
-                        foreach (DataRow row in dtExcel.Rows)
-                        {
-                            _updateService.UpdateDatabase(row);
-                        }
-                        
-                        // 綁定數據到 GridView
-                        GridView1.DataSource = dtExcel;
-                        GridView1.DataBind();
+                        PendingRows = dtExcel;
+                        CurrentRowIndex = 0;
 
-                        lblStatus.Text = "File uploaded and processed successfully."+ dtExcel.Rows.Count.ToString();
-                        ShowAlert(lblStatus.Text);
+                        _GridView1.DataSource = PendingRows.Clone();
+                        _GridView1.DataBind();
 
+                        _lblStatus.Text = "Start processing...";
+                        _Timer1.Enabled = true;
                     }
                     catch (Exception ex)
                     {
-                        lblStatus.Text = "Error: " + ex.Message;
+                        _lblStatus.Text = "Error: " + ex.Message;
                     }
                 }
                 else
                 {
-                    lblStatus.Text = "Only Excel files (.xls, .xlsx) are allowed.";
+                    _lblStatus.Text = "Only Excel files (.xls, .xlsx) are allowed.";
                 }
             }
             else
             {
-                lblStatus.Text = "Please select a file to upload.";
+                _lblStatus.Text = "Please select a file to upload.";
             }
+        }
+
+        protected void Timer1_Tick(object sender, EventArgs e)
+        {
+            if (PendingRows == null || CurrentRowIndex >= PendingRows.Rows.Count)
+            {
+                _Timer1.Enabled = false;
+                _lblStatus.Text = "Processing completed.";
+                return;
+            }
+
+            DataRow row = PendingRows.Rows[CurrentRowIndex];
+
+            try
+            {
+                _updateService.UpdateDatabase(row);
+                row["Status"] = "Success";
+            }
+            catch (Exception ex)
+            {
+                row["Status"] = "Error: " + ex.Message;
+            }
+
+            DataTable currentData = PendingRows.Clone();
+            for (int i = 0; i <= CurrentRowIndex; i++)
+            {
+                currentData.ImportRow(PendingRows.Rows[i]);
+            }
+
+            _GridView1.DataSource = currentData;
+            _GridView1.DataBind();
+
+            int percent = (int)(((double)(CurrentRowIndex + 1) / PendingRows.Rows.Count) * 100);
+            _lblProgress.Text = $"Progress: {CurrentRowIndex + 1} / {PendingRows.Rows.Count} ({percent}%)";
+            _progressBar.Style["width"] = percent + "%";
+
+            CurrentRowIndex++;
         }
 
         private void AddStatusColumn(DataTable dt)
@@ -94,29 +135,10 @@ namespace IT_WorkPlant.Pages
 
             foreach (DataRow row in dt.Rows)
             {
-                row["Status"] = "Pending"; // 默認值
+                row["Status"] = "Pending";
             }
         }
 
-        private void ShowAlertAndRedirect(string message, string redirectUrl = null)
-        {
-            string script = string.IsNullOrEmpty(redirectUrl)
-                ? $"alert('{message.Replace("\r\n", "\\n").Replace("'", "\\'")}');"
-                : $@"alert('{message.Replace("\r\n", "\\n").Replace("'", "\\'")}'); window.location = '{redirectUrl}';";
-
-            ScriptManager.RegisterStartupScript(this, this.GetType(), "alertRedirect", script, true);
-        }
-
-        private void ShowAlert(string message)
-        {
-            string safeMessage = HttpUtility.JavaScriptStringEncode(message);
-            string script = $"alert('{safeMessage}');";
-
-            if (!ClientScript.IsStartupScriptRegistered("alert"))
-            {
-                ClientScript.RegisterStartupScript(this.GetType(), "alert", script, true);
-            }
-        }
 
     }
 }
