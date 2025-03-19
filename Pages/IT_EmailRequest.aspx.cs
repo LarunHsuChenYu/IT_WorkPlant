@@ -6,14 +6,19 @@ using System.Linq;
 using System.Text;
 using System.Web;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using System.Web.UI.HtmlControls;
+using ListItem = System.Web.UI.WebControls.ListItem;
+using DataTable = System.Data.DataTable;
 
+using System.Data;
 // 加入 Open XML SDK 命名空間
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using DocumentFormat.OpenXml;
 using Table = DocumentFormat.OpenXml.Wordprocessing.Table;
+
+
 
 namespace IT_WorkPlant.Pages
 {
@@ -122,11 +127,38 @@ namespace IT_WorkPlant.Pages
                 newRow.Cells.Add(CreateInputCell("RequestEmailTable", "FirstName", rowNumber));
                 newRow.Cells.Add(CreateInputCell("RequestEmailTable", "LastName", rowNumber));
                 newRow.Cells.Add(CreateInputCell("RequestEmailTable", "EmployeeID", rowNumber));
-                newRow.Cells.Add(CreateInputCell("RequestEmailTable", "Department", rowNumber));
+
+                newRow.Cells.Add(CreateDepartmentDropdownCell("RequestEmailTable", "Department", rowNumber));
+
                 RequestEmailTable.Rows.Add(newRow);
             }
             ViewState[$"{tableType}_RowCount"] = rowNumber;
         }
+
+        private HtmlTableCell CreateDepartmentDropdownCell(string tableType, string columnName, int rowNumber)
+        {
+            HtmlTableCell cell = new HtmlTableCell();
+
+            DropDownList ddl = new DropDownList
+            {
+                ID = $"{tableType}_{columnName}_{rowNumber}",
+                CssClass = "form-control"
+            };
+
+            // 呼叫取得部門資料
+            DataTable dtDepartments = GetDepartments();
+            ddl.DataSource = dtDepartments;
+            ddl.DataTextField = "DeptName_en";
+            ddl.DataValueField = "DeptNameID";
+            ddl.DataBind();
+
+            // 插入一個預設選項
+            ddl.Items.Insert(0, new ListItem("-- Select --", ""));
+
+            cell.Controls.Add(ddl);
+            return cell;
+        }
+
 
         private void RebuildTableRows(string tableType)
         {
@@ -160,6 +192,12 @@ namespace IT_WorkPlant.Pages
             return textBox != null ? textBox.Text.Trim() : string.Empty;
         }
 
+        private string GetDropDownListValue(HtmlTableRow row, string controlId)
+        {
+            var ddl = row.FindControl(controlId) as DropDownList;
+            return ddl?.SelectedValue;
+        }
+
         private EmailRequestSubmissionModel BuildSubmissionModel()
         {
             var submission = new EmailRequestSubmissionModel
@@ -176,7 +214,7 @@ namespace IT_WorkPlant.Pages
                 string firstName = GetTextBoxValueFromHtmlCell(row.Cells[1]);
                 string lastName = GetTextBoxValueFromHtmlCell(row.Cells[2]);
                 string employeeID = GetTextBoxValueFromHtmlCell(row.Cells[3]);
-                string rowDept = GetTextBoxValueFromHtmlCell(row.Cells[4]);
+                string rowDept = GetDropDownListValue(row, $"RequestEmailTable_Department_{i}");
 
                 if (string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName) || string.IsNullOrEmpty(employeeID))
                 {
@@ -194,6 +232,7 @@ namespace IT_WorkPlant.Pages
             }
             return submission;
         }
+
 
         protected async void btnRequestEmailSubmit_Click(object sender, EventArgs e)
         {
@@ -241,18 +280,18 @@ namespace IT_WorkPlant.Pages
                         { "FinishedDate", DBNull.Value },
                         { "Remark", DBNull.Value }
                     };
-
+#if !DEBUG
                     _dbHelper.InsertData("IT_RequestList", columnValues);
-
+#endif
                     lineNotifyMessageBuilder.AppendLine($"- Row {rowIndex}:");
                     lineNotifyMessageBuilder.AppendLine($"  Department: {req.Department}");
                     lineNotifyMessageBuilder.AppendLine($"  Full Name: {req.FirstName} {req.LastName}");
                     rowIndex++;
                 }
-
+#if !DEBUG
                 var notifier = new LineNotificationModel();
                 await notifier.SendLineNotifyAsync(lineNotifyMessageBuilder.ToString());
-
+#endif
                 //完成後詢問是否下載Word
                 string script = @"
                     if (confirm('EMail Account Request submitted successfully! Do you want to download the Word document now?')) {
@@ -281,6 +320,13 @@ namespace IT_WorkPlant.Pages
 
             return generatedDoc;
         }
+
+        private DataTable GetDepartments()
+        {
+            string query = "SELECT DeptNameID, DeptName_en FROM Departments";
+            return _dbHelper.ExecuteQuery(query, null);
+        }
+
 
     }
 }
