@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration; // ✅ Connection String form Web.config
 using System.Data;
 using System.Data.SqlClient;
-using System.Configuration; // ✅ เพิ่มเพื่อดึง Connection String จาก Web.config
 
 namespace IT_WorkPlant.Models
 {
@@ -15,38 +15,35 @@ namespace IT_WorkPlant.Models
             _dbHelper = new MssqlDatabaseHelper();
         }
 
-        // ✅ เพิ่มฟังก์ชันดึงข้อมูลแผนกทั้งหมดจากฐานข้อมูล
-
+        // ✅ Add a function to retrieve all department data from the database // เพิ่มฟังก์ชันดึงข้อมูลแผนกทั้งหมดจากฐานข้อมูล
         public DataTable GetDepartments()
         {
-            // ✅ ดึง Connection String จาก Web.config
+            // ✅ Get the connection string from Web.config // ดึง Connection String จาก Web.config
             string connectionString = ConfigurationManager.ConnectionStrings["EnrichDB"].ConnectionString;
 
-            // ✅ SQL Query ดึงข้อมูลแผนกทั้งหมด
+            // ✅ SQL query to retrieve all department data // SQL Query ดึงข้อมูลแผนกทั้งหมด 
             string query = "SELECT DISTINCT DeptNameID, DeptName_en FROM Departments ORDER BY DeptName_en";
 
-            // ✅ สร้าง DataTable สำหรับเก็บผลลัพธ์
+            // ✅ Create a DataTable to store the results // สร้าง DataTable สำหรับเก็บผลลัพธ์ 
             DataTable dt = new DataTable();
 
             try
             {
                 using (SqlConnection conn = new SqlConnection(connectionString))
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    conn.Open();
+                    using (SqlDataAdapter da = new SqlDataAdapter(cmd))
                     {
-                        conn.Open();
-                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
-                        {
-                            da.Fill(dt);
-                        }
+                        da.Fill(dt);
                     }
                 }
 
-                // ✅ Debug Log เพื่อตรวจสอบว่ามีแผนกอะไรบ้าง
+                // ✅ Debug log to check which departments are available // Debug Log เพื่อตรวจสอบว่ามีแผนกอะไรบ้าง =
                 System.Diagnostics.Debug.WriteLine("===== Department List from DB =====");
                 if (dt.Rows.Count == 0)
                 {
-                    System.Diagnostics.Debug.WriteLine("⚠ ไม่มีข้อมูลแผนกในฐานข้อมูล!");
+                    System.Diagnostics.Debug.WriteLine("⚠ No department data found in the database!");
                 }
                 else
                 {
@@ -59,15 +56,12 @@ namespace IT_WorkPlant.Models
             }
             catch (Exception ex)
             {
-                // ✅ Log Error ถ้ามีปัญหา
+                // ✅ Log an error if there is a problem // Log Error ถ้ามีปัญหา
                 System.Diagnostics.Debug.WriteLine($"❌ Error ในการดึงข้อมูลแผนก: {ex.Message}");
             }
 
             return dt;
         }
-
-
-
 
         // 獲取所有請求資料
         public DataTable GetAllRequests()
@@ -81,14 +75,14 @@ namespace IT_WorkPlant.Models
                     r.IssueDetails, 
                     it.IssueTypeCode AS IssueType, 
                     r.DRI_UserID, 
-r.IssueTypeID,
+                    r.IssueTypeID,
                     (SELECT UserName FROM Users WHERE UserIndex = r.DRI_UserID) AS DRI_UserName,
                     r.Solution, 
                     r.Status AS StatusValue,  
-                        CASE 
-                            WHEN r.Status = 1 THEN 'Done'
-                            ELSE 'WIP'
-                        END AS Status, 
+                    CASE 
+                        WHEN r.Status = 1 THEN 'Done'
+                        ELSE 'WIP'
+                    END AS Status, 
                     r.LastUpdateDate, 
                     r.FinishedDate, 
                     r.Remark
@@ -104,41 +98,42 @@ r.IssueTypeID,
         public DataTable GetFilteredRequests(string deptName, string requestUser, string issueType, string status, string issueMonth, string issueDate)
         {
             string query = @"
-        SELECT 
-            r.ReportID, 
-            r.IssueDate, 
-            d.DeptName_en AS Department, 
-            u.UserName AS RequestUser, 
-            r.IssueDetails, 
-            it.IssueTypeCode AS IssueType, 
-r.IssueTypeID,
-            r.DRI_UserID, 
-            (SELECT UserName FROM Users WHERE UserIndex = r.DRI_UserID) AS DRI_UserName,
-            r.Solution, 
-            r.Status AS StatusValue,  
-                CASE 
-                    WHEN r.Status = 1 THEN 'Done'
-                    ELSE 'WIP'
-                END AS Status, 
-            r.LastUpdateDate, 
-            r.FinishedDate, 
-            r.Remark
-        FROM IT_RequestList r
-        LEFT JOIN Departments d ON r.DeptNameID = d.DeptNameID
-        LEFT JOIN Users u ON r.RequestUserID = u.UserIndex
-        LEFT JOIN IssueType it ON r.IssueTypeID = it.IssueTypeID
-        WHERE 1 = 1";
+                SELECT 
+                    r.ReportID, 
+                    r.IssueDate, 
+                    d.DeptName_en AS Department, 
+                    u.UserName AS RequestUser, 
+                    r.IssueDetails, 
+                    it.IssueTypeCode AS IssueType, 
+                    r.IssueTypeID,
+                    r.DRI_UserID, 
+                    (SELECT UserName FROM Users WHERE UserIndex = r.DRI_UserID) AS DRI_UserName,
+                    r.Solution, 
+                    r.Status AS StatusValue,  
+                    CASE 
+                        WHEN r.Status = 1 THEN 'Done'
+                        ELSE 'WIP'
+                    END AS Status, 
+                    r.LastUpdateDate, 
+                    r.FinishedDate, 
+                    r.Remark,
+                    r.ImagePath
+                FROM IT_RequestList r
+                LEFT JOIN Departments d ON r.DeptNameID = d.DeptNameID
+                LEFT JOIN Users u ON r.RequestUserID = u.UserIndex
+                LEFT JOIN IssueType it ON r.IssueTypeID = it.IssueTypeID
+                WHERE 1 = 1";
 
             var parameters = new List<SqlParameter>();
 
-            // ✅ เพิ่มเงื่อนไขกรอง `IssueMonth`
+            // ✅ Apply a filter condition `IssueMonth`
             if (!string.IsNullOrEmpty(issueMonth))
             {
                 query += " AND FORMAT(r.IssueDate, 'yyyy-MM') = @IssueMonth";
                 parameters.Add(new SqlParameter("@IssueMonth", issueMonth));
             }
 
-            // ✅ เพิ่มเงื่อนไขกรอง `IssueDate`
+            // ✅ Apply a filter condition `IssueDate`
             if (!string.IsNullOrEmpty(issueDate))
             {
                 query += " AND CONVERT(DATE, r.IssueDate) = @IssueDate";
@@ -169,7 +164,7 @@ r.IssueTypeID,
                 parameters.Add(new SqlParameter("@Status", status == "Done" ? 1 : 0));
             }
 
-            // ✅ เพิ่มคำสั่ง ORDER BY ให้เรียง ReportID จากน้อยไปมาก
+            // ✅ Add an ORDER BY clause to sort ReportID in ascending order // เพิ่มคำสั่ง ORDER BY ให้เรียง ReportID จากน้อยไปมาก 
             query += " ORDER BY r.ReportID ASC";
 
             return _dbHelper.ExecuteQuery(query, parameters.ToArray());
@@ -216,11 +211,11 @@ r.IssueTypeID,
             SqlParameter[] parameters = { new SqlParameter("@DeptName", deptName) };
             return _dbHelper.ExecuteQuery(query, parameters);
         }
+
         public DataTable GetAllIssueTypes()
         {
             string query = "SELECT IssueTypeID, IssueTypeCode FROM IssueType ORDER BY IssueTypeID";
             return _dbHelper.ExecuteQuery(query, null);
         }
-
     }
 }

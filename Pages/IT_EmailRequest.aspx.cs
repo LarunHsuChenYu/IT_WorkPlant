@@ -1,24 +1,13 @@
 ﻿using IT_WorkPlant.Models;
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
-using ListItem = System.Web.UI.WebControls.ListItem;
-using DataTable = System.Data.DataTable;
-
-using System.Data;
-// 加入 Open XML SDK 命名空間
-using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Wordprocessing;
-using DocumentFormat.OpenXml;
-using Table = DocumentFormat.OpenXml.Wordprocessing.Table;
-
-
+using System.Web.UI.WebControls;
 
 namespace IT_WorkPlant.Pages
 {
@@ -35,43 +24,13 @@ namespace IT_WorkPlant.Pages
                 {
                     Response.Redirect("../Login.aspx");
                 }
+
                 requestDate.Text = DateTime.Now.ToString("yyyy/MM/dd");
                 requesterName.Text = Session["UserName"]?.ToString();
                 department.Text = Session["DeptName"]?.ToString();
+
                 ViewState["RequestEmailTable_RowCount"] = 1;
                 AddRow(1, "RequestEmailTable");
-
-                // 處理下載邏輯
-                if (Request.QueryString["download"] == "true")
-                {
-                    if (Session["SubmitModel"] != null)
-                    {
-                        MemoryStream ms = GenerateWordDocument(Session["SubmitModel"] as EmailRequestSubmissionModel);
-                        Session.Remove("SubmitModel");  // 清除Session
-                        if (ms != null)
-                        {
-                            Response.Clear();
-                            Response.ContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-
-                            string sDateSuffix = DateTime.Now.ToString("yyyyMMdd");
-                            string fileName = $"MEMO-Request_Email_Account_{sDateSuffix}.docx";
-
-                            Response.AddHeader("Content-Disposition", $"attachment; filename={fileName}");
-                            Response.BinaryWrite(ms.ToArray());
-                            Response.Flush();
-                            Response.End();
-
-                        }
-                        else
-                        {
-                            ShowAlert("Document generation failed!");
-                        }
-                    }
-                    else
-                    {
-                        ShowAlert("No submitted data found; unable to generate the document.");
-                    }
-                }
             }
             else
             {
@@ -92,24 +51,29 @@ namespace IT_WorkPlant.Pages
         protected void AddRow_Click(object sender, EventArgs e)
         {
             int currentRowCount = (int)ViewState["RequestEmailTable_RowCount"];
+
             if (currentRowCount >= 5)
             {
                 ShowAlert("You can add a maximum of 5 rows.");
                 return;
             }
-            // 驗證現有行的必填欄位
+
+            // 验证是否已填写
             for (int i = 1; i < RequestEmailTable.Rows.Count; i++)
             {
                 HtmlTableRow row = RequestEmailTable.Rows[i] as HtmlTableRow;
                 string firstName = GetTextBoxValueFromHtmlCell(row.Cells[1]);
                 string lastName = GetTextBoxValueFromHtmlCell(row.Cells[2]);
                 string employeeID = GetTextBoxValueFromHtmlCell(row.Cells[3]);
+                string department = GetTextBoxValueFromHtmlCell(row.Cells[4]);
+
                 if (string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName) || string.IsNullOrEmpty(employeeID))
                 {
                     ShowAlert($"Row {i}: First Name, Last Name, and Employee ID are required!");
                     return;
                 }
             }
+
             AddRow(currentRowCount + 1, "RequestEmailTable");
         }
 
@@ -120,45 +84,21 @@ namespace IT_WorkPlant.Pages
                 ShowAlert("You can add a maximum of 5 rows.");
                 return;
             }
+
             HtmlTableRow newRow = new HtmlTableRow();
+
             if (tableType == "RequestEmailTable")
             {
                 newRow.Cells.Add(CreateStaticCell(rowNumber.ToString()));
                 newRow.Cells.Add(CreateInputCell("RequestEmailTable", "FirstName", rowNumber));
                 newRow.Cells.Add(CreateInputCell("RequestEmailTable", "LastName", rowNumber));
                 newRow.Cells.Add(CreateInputCell("RequestEmailTable", "EmployeeID", rowNumber));
-
-                newRow.Cells.Add(CreateDepartmentDropdownCell("RequestEmailTable", "Department", rowNumber));
-
+                newRow.Cells.Add(CreateInputCell("RequestEmailTable", "Department", rowNumber));
                 RequestEmailTable.Rows.Add(newRow);
             }
+
             ViewState[$"{tableType}_RowCount"] = rowNumber;
         }
-
-        private HtmlTableCell CreateDepartmentDropdownCell(string tableType, string columnName, int rowNumber)
-        {
-            HtmlTableCell cell = new HtmlTableCell();
-
-            DropDownList ddl = new DropDownList
-            {
-                ID = $"{tableType}_{columnName}_{rowNumber}",
-                CssClass = "form-control"
-            };
-
-            // 呼叫取得部門資料
-            DataTable dtDepartments = GetDepartments();
-            ddl.DataSource = dtDepartments;
-            ddl.DataTextField = "DeptName_en";
-            ddl.DataValueField = "DeptNameID";
-            ddl.DataBind();
-
-            // 插入一個預設選項
-            ddl.Items.Insert(0, new ListItem("-- Select --", ""));
-
-            cell.Controls.Add(ddl);
-            return cell;
-        }
-
 
         private void RebuildTableRows(string tableType)
         {
@@ -183,7 +123,8 @@ namespace IT_WorkPlant.Pages
 
         private HtmlTableCell CreateStaticCell(string sRowNumber)
         {
-            return new HtmlTableCell { InnerText = sRowNumber };
+            var cell = new HtmlTableCell { InnerText = sRowNumber };
+            return cell;
         }
 
         private string GetTextBoxValueFromHtmlCell(HtmlTableCell cell)
@@ -192,62 +133,13 @@ namespace IT_WorkPlant.Pages
             return textBox != null ? textBox.Text.Trim() : string.Empty;
         }
 
-        private string GetDropDownListValue(HtmlTableRow row, string controlId)
-        {
-            var ddl = row.FindControl(controlId) as DropDownList;
-            return ddl?.SelectedValue;
-        }
-
-        private EmailRequestSubmissionModel BuildSubmissionModel()
-        {
-            var submission = new EmailRequestSubmissionModel
-            {
-                RequestDate = DateTime.Now,
-                RequesterName = Session["UserName"]?.ToString(),
-                DeptName = Session["DeptName"]?.ToString()
-            };
-
-            int totalRows = (int)ViewState["RequestEmailTable_RowCount"];
-            for (int i = 1; i <= totalRows; i++)
-            {
-                HtmlTableRow row = RequestEmailTable.Rows[i] as HtmlTableRow;
-                string firstName = GetTextBoxValueFromHtmlCell(row.Cells[1]);
-                string lastName = GetTextBoxValueFromHtmlCell(row.Cells[2]);
-                string employeeID = GetTextBoxValueFromHtmlCell(row.Cells[3]);
-                string rowDept = GetDropDownListValue(row, $"RequestEmailTable_Department_{i}");
-
-                if (string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName) || string.IsNullOrEmpty(employeeID))
-                {
-                    ShowAlert($"Row {i}: First Name, Last Name, and Employee ID are required!");
-                    return null;
-                }
-
-                submission.Requests.Add(new EmailRequestModel
-                {
-                    FirstName = firstName,
-                    LastName = lastName,
-                    EmployeeID = employeeID,
-                    Department = rowDept
-                });
-            }
-            return submission;
-        }
-
-
         protected async void btnRequestEmailSubmit_Click(object sender, EventArgs e)
         {
-            var submissionModel = BuildSubmissionModel();
-            if (submissionModel == null)
-            {
-                ShowAlert("Data validation failed; please check the entered information.");
-                return;
-            }
-
-            Session["SubmitModel"] = submissionModel; // 存入 Session 備用
-
             string userName = Session["UserName"]?.ToString();
             string userEmpID = Session["UserEmpID"]?.ToString();
+
             int? requestUserID = _ui.GetRequestUserID(userName, userEmpID);
+
             if (requestUserID == null)
             {
                 ShowAlert("RequestUserID could not be determined.");
@@ -256,77 +148,64 @@ namespace IT_WorkPlant.Pages
 
             try
             {
+                // สร้างข้อความแจ้งเตือน
                 StringBuilder lineNotifyMessageBuilder = new StringBuilder();
-                lineNotifyMessageBuilder.AppendLine($"Requester: {submissionModel.RequesterName}");
-                lineNotifyMessageBuilder.AppendLine($"Department: {submissionModel.DeptName}");
-                lineNotifyMessageBuilder.AppendLine($"Request Date: {submissionModel.RequestDate:yyyy/MM/dd}");
+                lineNotifyMessageBuilder.AppendLine($"Requester: {userName}");
+                lineNotifyMessageBuilder.AppendLine($"Department: {Session["DeptName"]}");
+                lineNotifyMessageBuilder.AppendLine($"Request Date: {DateTime.Now:yyyy/MM/dd}");
                 lineNotifyMessageBuilder.AppendLine("Email Account Requests:");
 
-                int rowIndex = 1;
-                foreach (var req in submissionModel.Requests)
+                for (int i = 1; i <= (int)ViewState["RequestEmailTable_RowCount"]; i++)
                 {
-                    var columnValues = new Dictionary<string, object>
+                    HtmlTableRow row = RequestEmailTable.Rows[i] as HtmlTableRow;
+
+                    string firstName = GetTextBoxValueFromHtmlCell(row.Cells[1]);
+                    string lastName = GetTextBoxValueFromHtmlCell(row.Cells[2]);
+                    string employeeID = GetTextBoxValueFromHtmlCell(row.Cells[3]);
+                    string sDepartment = GetTextBoxValueFromHtmlCell(row.Cells[4]);
+
+                    if (string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName) || string.IsNullOrEmpty(employeeID))
                     {
-                        { "IssueDate", DateTime.Now },
-                        { "DeptNameID", submissionModel.DeptName },
-                        { "CompanyID", "ENR" },
-                        { "RequestUserID", requestUserID },
-                        { "IssueDetails", $"Request EMAIL Account: {req.FirstName}.{req.LastName}" },
-                        { "IssueTypeID", 5 },
-                        { "Status", false },
-                        { "LastUpdateDate", DateTime.Now },
-                        { "DRI_UserID", DBNull.Value },
-                        { "Solution", DBNull.Value },
-                        { "FinishedDate", DBNull.Value },
-                        { "Remark", DBNull.Value }
-                    };
-#if !DEBUG
+                        ShowAlert($"Row {i}: First Name, Last Name, and Employee ID are required!");
+                        return;
+                    }
+
+                    var columnValues = new Dictionary<string, object>
+            {
+                { "IssueDate", DateTime.Now },
+                { "DeptNameID", Session["DeptName"].ToString() },
+                { "CompanyID", "ENR" },
+                { "RequestUserID", requestUserID },
+                { "IssueDetails", "Request EMAIL Account: " + firstName + "." + lastName },
+                { "IssueTypeID", 5 },
+                { "Status", false },
+                { "LastUpdateDate", DateTime.Now },
+                { "DRI_UserID", DBNull.Value },
+                { "Solution", DBNull.Value },
+                { "FinishedDate", DBNull.Value },
+                { "Remark", DBNull.Value }
+            };
+
                     _dbHelper.InsertData("IT_RequestList", columnValues);
-#endif
-                    lineNotifyMessageBuilder.AppendLine($"- Row {rowIndex}:");
-                    lineNotifyMessageBuilder.AppendLine($"  Department: {req.Department}");
-                    lineNotifyMessageBuilder.AppendLine($"  Full Name: {req.FirstName} {req.LastName}");
-                    rowIndex++;
+
+                    lineNotifyMessageBuilder.AppendLine($"- Row {i}:");
+                    lineNotifyMessageBuilder.AppendLine($"  Department: {sDepartment}");
+                    lineNotifyMessageBuilder.AppendLine($"  Full Name: {firstName} {lastName}");
                 }
-#if !DEBUG
+
+                // ✅ ส่งเข้า LINE Group แทน user เฉพาะเจาะจง
+                string lineGroupId = ConfigurationManager.AppSettings["LineGroupID"];
                 var notifier = new LineNotificationModel();
-                await notifier.SendLineNotifyAsync(lineNotifyMessageBuilder.ToString());
-#endif
-                //完成後詢問是否下載Word
-                string script = @"
-                    if (confirm('EMail Account Request submitted successfully! Do you want to download the Word document now?')) {
-                        window.location = 'IT_EmailRequest.aspx?download=true';
-                    } else {
-                        window.location = 'Default.aspx';
-                    }";
-                ClientScript.RegisterStartupScript(this.GetType(), "DownloadConfirmation", script, true);
+                await notifier.SendLineGroupMessageAsync(lineGroupId, lineNotifyMessageBuilder.ToString());
+
+                ShowAlert("Email Account Request submitted successfully!");
+                Response.Redirect("~/Default.aspx");
             }
             catch (Exception ex)
             {
                 ShowAlert($"Error: {ex.Message}");
             }
         }
-
-        private MemoryStream GenerateWordDocument(EmailRequestSubmissionModel submissionModel = null)
-        {
-            submissionModel = submissionModel ?? BuildSubmissionModel();
-
-            if (submissionModel == null)
-                return null;
-
-            WordHelper exportModel = new WordHelper();
-            string templatePath = Server.MapPath("~/App_Data/MEMO-Rquest_EMail.docx");
-            MemoryStream generatedDoc = exportModel.GenerateMemoFromSubmit(templatePath, submissionModel, Session["DeptName"]?.ToString());
-
-            return generatedDoc;
-        }
-
-        private DataTable GetDepartments()
-        {
-            string query = "SELECT DeptNameID, DeptName_en FROM Departments";
-            return _dbHelper.ExecuteQuery(query, null);
-        }
-
 
     }
 }

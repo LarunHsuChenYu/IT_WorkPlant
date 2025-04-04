@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using System.Xml.Linq;
+using System.Configuration;
 
 namespace IT_WorkPlant.Pages
 {
@@ -27,7 +28,7 @@ namespace IT_WorkPlant.Pages
                     // 未登入，重定向至登入頁面
                     Response.Redirect("../Login.aspx");
                 }
-                                
+
                 if (!string.IsNullOrEmpty(hfActiveTab.Value))
                 {
                     ShowTab(hfActiveTab.Value);
@@ -162,7 +163,7 @@ namespace IT_WorkPlant.Pages
                     throw new ArgumentException("Invalid table type");
             }
 
-            
+
             ViewState[$"{tableType}_RowCount"] = rowNumber;
         }
 
@@ -178,13 +179,13 @@ namespace IT_WorkPlant.Pages
             switch (tableType)
             {
                 case "VisitorTable":
-                    while (VisitorTable.Rows.Count - 1 < rowCount) 
+                    while (VisitorTable.Rows.Count - 1 < rowCount)
                     {
                         AddRow(VisitorTable.Rows.Count, tableType);
                     }
                     break;
                 case "BizTripTable":
-                    while (BizTripTable.Rows.Count - 1 < rowCount) 
+                    while (BizTripTable.Rows.Count - 1 < rowCount)
                     {
                         AddRow(BizTripTable.Rows.Count, tableType);
                     }
@@ -194,9 +195,9 @@ namespace IT_WorkPlant.Pages
                     {
                         AddRow(OnboardTable.Rows.Count, tableType);
                     }
-                    break;  
+                    break;
             }
-            
+
         }
 
         private HtmlTableCell CreateCellBasedOnType(string dataType, int rowNumber, string columnName)
@@ -365,14 +366,12 @@ namespace IT_WorkPlant.Pages
 
             try
             {
-                // 收集所有行的数据
                 StringBuilder lineNotifyMessageBuilder = new StringBuilder();
                 lineNotifyMessageBuilder.AppendLine($"Requester: {userName}");
                 lineNotifyMessageBuilder.AppendLine($"Department: {Session["DeptName"]}");
                 lineNotifyMessageBuilder.AppendLine($"Request Date: {DateTime.Now:yyyy/MM/dd}");
                 lineNotifyMessageBuilder.AppendLine("Wi-Fi Requests:");
 
-                // 循环处理每一行
                 for (int i = 1; i <= (int)ViewState["VisitorTable_RowCount"]; i++)
                 {
                     HtmlTableRow row = VisitorTable.Rows[i] as HtmlTableRow;
@@ -389,24 +388,22 @@ namespace IT_WorkPlant.Pages
                         return;
                     }
 
-                    // 组装数据库插入的数据
                     var columnValues = new Dictionary<string, object>
-                    {
-                        { "IssueDate", DateTime.Now },
-                        { "DeptNameID", Session["DeptName"].ToString() },
-                        { "CompanyID", "ENR" },
-                        { "RequestUserID", requestUserID },
-                        { "IssueDetails", "Visitor asked WIFI:" + description },
-                        { "IssueTypeID", 5 }, // 固定为 IssueTypeID = 5 (Wi-Fi Request)
-                        { "Status", false },
-                        { "LastUpdateDate", DateTime.Now },
-                        { "DRI_UserID", DBNull.Value },
-                        { "Solution", DBNull.Value },
-                        { "FinishedDate", DBNull.Value },
-                        { "Remark",  DBNull.Value}
-                    };
+            {
+                { "IssueDate", DateTime.Now },
+                { "DeptNameID", Session["DeptName"].ToString() },
+                { "CompanyID", "ENR" },
+                { "RequestUserID", requestUserID },
+                { "IssueDetails", "Visitor asked WIFI:" + description },
+                { "IssueTypeID", 5 },
+                { "Status", false },
+                { "LastUpdateDate", DateTime.Now },
+                { "DRI_UserID", DBNull.Value },
+                { "Solution", DBNull.Value },
+                { "FinishedDate", DBNull.Value },
+                { "Remark", DBNull.Value }
+            };
 
-                    // 插入数据至数据库
                     _dbHelper.InsertData("IT_RequestList", columnValues);
 
                     lineNotifyMessageBuilder.AppendLine($"- Row {i}:");
@@ -420,10 +417,9 @@ namespace IT_WorkPlant.Pages
                     }
                 }
 
-                // 发送 Line Notify 消息
-                string lineNotifyMessage = lineNotifyMessageBuilder.ToString();
+                string lineGroupId = ConfigurationManager.AppSettings["LineGroupID"];
                 var notifier = new LineNotificationModel();
-                await notifier.SendLineNotifyAsync(lineNotifyMessage);
+                await notifier.SendLineGroupMessageAsync(lineGroupId, lineNotifyMessageBuilder.ToString());
 
                 ShowAlert("Wi-Fi Usage Request submitted successfully!");
                 Response.Redirect("~/Default.aspx");
@@ -474,20 +470,20 @@ namespace IT_WorkPlant.Pages
                     }
 
                     var columnValues = new Dictionary<string, object>
-                    {
-                        { "IssueDate", DateTime.Now },
-                        { "DeptNameID", Session["DeptName"].ToString() },
-                        { "CompanyID", "ENR" },
-                        { "RequestUserID", requestUserID },
-                        { "IssueDetails", department + "has " + fullName +" onboard apply WIFI." },
-                        { "IssueTypeID", 5 }, // 固定为 IssueTypeID = 5 (Wi-Fi Request)
-                        { "Status", false },
-                        { "LastUpdateDate", DateTime.Now },
-                        { "DRI_UserID", DBNull.Value },
-                        { "Solution", DBNull.Value },
-                        { "FinishedDate", DBNull.Value },
-                        { "Remark", DBNull.Value }
-                    };
+            {
+                { "IssueDate", DateTime.Now },
+                { "DeptNameID", Session["DeptName"].ToString() },
+                { "CompanyID", "ENR" },
+                { "RequestUserID", requestUserID },
+                { "IssueDetails", department + " has " + fullName + " onboard apply WIFI." },
+                { "IssueTypeID", 5 }, // Wi-Fi Request
+                { "Status", false },
+                { "LastUpdateDate", DateTime.Now },
+                { "DRI_UserID", DBNull.Value },
+                { "Solution", DBNull.Value },
+                { "FinishedDate", DBNull.Value },
+                { "Remark", DBNull.Value }
+            };
 
                     _dbHelper.InsertData("IT_RequestList", columnValues);
 
@@ -504,9 +500,11 @@ namespace IT_WorkPlant.Pages
                     }
                 }
 
+                // ✅ เปลี่ยนจากส่งให้ User → ส่งให้ Group แทน
                 string lineNotifyMessage = lineNotifyMessageBuilder.ToString();
                 var notifier = new LineNotificationModel();
-                await notifier.SendLineNotifyAsync(lineNotifyMessage);
+                string lineGroupId = ConfigurationManager.AppSettings["LineGroupID"];
+                await notifier.SendLineGroupMessageAsync(lineGroupId, lineNotifyMessage);
 
                 ShowAlert("Onboard Wi-Fi Usage Request submitted successfully!");
                 Response.Redirect("~/Default.aspx");
@@ -516,6 +514,7 @@ namespace IT_WorkPlant.Pages
                 ShowAlert($"Error: {ex.Message}");
             }
         }
+
 
         protected async void btnBizTripSubmit_Click(object sender, EventArgs e)
         {
@@ -557,20 +556,20 @@ namespace IT_WorkPlant.Pages
                     }
 
                     var columnValues = new Dictionary<string, object>
-                    {
-                        { "IssueDate", DateTime.Now },
-                        { "DeptNameID", Session["DeptName"].ToString() },
-                        { "CompanyID", "ENR" },
-                        { "RequestUserID", requestUserID },
-                        { "IssueDetails", $"Business Trip: {startDate} - {endDate}" },
-                        { "IssueTypeID", 5 }, // 固定为 IssueTypeID = 5 (Wi-Fi Request)
-                        { "Status", false },
-                        { "LastUpdateDate", DateTime.Now },
-                        { "DRI_UserID", DBNull.Value },
-                        { "Solution", DBNull.Value },
-                        { "FinishedDate", DBNull.Value },
-                        { "Remark", DBNull.Value }
-                    };
+            {
+                { "IssueDate", DateTime.Now },
+                { "DeptNameID", Session["DeptName"].ToString() },
+                { "CompanyID", "ENR" },
+                { "RequestUserID", requestUserID },
+                { "IssueDetails", $"Business Trip: {startDate} - {endDate}" },
+                { "IssueTypeID", 5 }, // Wi-Fi Request
+                { "Status", false },
+                { "LastUpdateDate", DateTime.Now },
+                { "DRI_UserID", DBNull.Value },
+                { "Solution", DBNull.Value },
+                { "FinishedDate", DBNull.Value },
+                { "Remark", DBNull.Value }
+            };
 
                     _dbHelper.InsertData("IT_RequestList", columnValues);
 
@@ -584,9 +583,11 @@ namespace IT_WorkPlant.Pages
                     lineNotifyMessageBuilder.AppendLine($"  End Date: {endDate}");
                 }
 
+                // ✅ ส่งหากลุ่ม LINE แทน user
                 string lineNotifyMessage = lineNotifyMessageBuilder.ToString();
                 var notifier = new LineNotificationModel();
-                await notifier.SendLineNotifyAsync(lineNotifyMessage);
+                string lineGroupId = ConfigurationManager.AppSettings["LineGroupID"];
+                await notifier.SendLineGroupMessageAsync(lineGroupId, lineNotifyMessage);
 
                 ShowAlert("Business Trip Wi-Fi Usage Request submitted successfully!");
                 Response.Redirect("~/Default.aspx");
@@ -596,6 +597,5 @@ namespace IT_WorkPlant.Pages
                 ShowAlert($"Error: {ex.Message}");
             }
         }
-
     }
 }

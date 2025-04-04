@@ -120,6 +120,7 @@
         <!-- Issue Details -->
         <div class="form-group">
             <label for="txtDescription">Issue Description:</label>
+
             <asp:TextBox ID="txtDescription" runat="server" CssClass="form-control full-width-textarea"
                 TextMode="MultiLine" placeholder="Enter details about the issue"></asp:TextBox>
         </div>
@@ -158,7 +159,7 @@
                 fileUpload.addEventListener("change", function () {
                     var allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif|\.bmp|\.webp)$/i;
                     if (!allowedExtensions.exec(fileUpload.value)) {
-                        alert("Only image files (.jpg, .jpeg, .png, .gif, .bmp, .webp) are allowed.");
+                        alert("Only image files (.jpg, .jpeg, .png) are allowed.");
                         fileUpload.value = "";
                     }
                 });
