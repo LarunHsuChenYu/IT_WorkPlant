@@ -16,34 +16,28 @@
             width: 0%;
             transition: width 0.3s ease-in-out;
         }
-    
         .table-style {
             border-collapse: collapse;
             width: 100%;
             font-family: 'Segoe UI', sans-serif;
         }
-
         .table-style th {
             background-color: #4CAF50;
             color: white;
             padding: 8px;
             text-align: left;
         }
-
         .table-style td {
             padding: 8px;
             border-bottom: 1px solid #ddd;
         }
-
         .table-style tr:nth-child(even) {
             background-color: #f9f9f9;
         }
-
         .table-style tr:hover {
             background-color: #f1f1f1;
         }
     </style>
-
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
@@ -58,12 +52,9 @@
                 <div id="progressBar" class="progress-bar" runat="server"></div>
             </div>
             <br />
-            
             <asp:GridView ID="GridView1" runat="server" AutoGenerateColumns="true" CssClass="table-style" />
-
             <asp:Timer ID="Timer1" runat="server" Interval="500" OnTick="Timer1_Tick" Enabled="false" />
         </ContentTemplate>
-
         <Triggers>
             <asp:PostBackTrigger ControlID="btnUpload" />
         </Triggers>

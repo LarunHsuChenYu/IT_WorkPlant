@@ -77,7 +77,8 @@ namespace IT_WorkPlant
                     new[] {
                         new KeyValuePair<string, string>("User Account", "~/Pages/IT_UserManagement"),
                         new KeyValuePair<string, string>("Daily Check", "~/Pages/IT_DailyCheckList"),
-                        new KeyValuePair<string, string>("Web Portal", "~/Pages/IT_WebPortalList")
+                        new KeyValuePair<string, string>("Web Portal", "~/Pages/IT_WebPortalList"),
+                        new KeyValuePair<string, string>("IT Purchase Items Maintain", "~/Pages/IT_PurchaseItemsList")
                     });
                 AddDropdownItem("PMC", "PMC",
                     new[] {

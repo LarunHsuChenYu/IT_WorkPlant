@@ -89,12 +89,14 @@ namespace IT_WorkPlant.Pages
             }
         }
 
+        // Timer tick event handling database update and progress display
         protected void Timer1_Tick(object sender, EventArgs e)
         {
             if (PendingRows == null || CurrentRowIndex >= PendingRows.Rows.Count)
             {
                 _Timer1.Enabled = false;
                 _lblStatus.Text = "Processing completed.";
+                ShowAlert("Processing completed successfully!");
                 return;
             }
 
@@ -139,6 +141,24 @@ namespace IT_WorkPlant.Pages
             }
         }
 
+        private void ShowAlertAndRedirect(string message, string redirectUrl = null)
+        {
+            string script = string.IsNullOrEmpty(redirectUrl)
+                ? $"alert('{message.Replace("", "\n").Replace("'", "\'")}');"
+                : $@"alert('{message.Replace("", "\n").Replace("'", "\'")}'); window.location = '{redirectUrl}'; ";
 
+            ScriptManager.RegisterStartupScript(this, GetType(), "alertRedirect", script, true);
+        }
+
+        private void ShowAlert(string message)
+        {
+            string safeMessage = HttpUtility.JavaScriptStringEncode(message);
+            string script = $"alert('{safeMessage}');";
+
+            if (!ClientScript.IsStartupScriptRegistered("alert"))
+            {
+                ClientScript.RegisterStartupScript(this.GetType(), "alert", script, true);
+            }
+        }
     }
 }

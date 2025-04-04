@@ -7,11 +7,11 @@
 // </自動產生>
 //------------------------------------------------------------------------------
 
-namespace IT_WorkPlant.Pages
+namespace IT_WorkPlant.Models
 {
 
 
-    public partial class IT_Stuff_Purchase
+    public partial class IT_PurchaseItemsList
     {
 
         /// <summary>
@@ -24,93 +24,120 @@ namespace IT_WorkPlant.Pages
         protected global::System.Web.UI.WebControls.Literal litPageTitle;
 
         /// <summary>
-        /// lblEmpName 控制項。
+        /// litBreadcrumb 控制項。
         /// </summary>
         /// <remarks>
         /// 自動產生的欄位。
         /// 若要修改，請將欄位宣告從設計工具檔案移到程式碼後置檔案。
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblEmpName;
+        protected global::System.Web.UI.WebControls.Literal litBreadcrumb;
 
         /// <summary>
-        /// txtEmpName 控制項。
+        /// btnAddNew 控制項。
         /// </summary>
         /// <remarks>
         /// 自動產生的欄位。
         /// 若要修改，請將欄位宣告從設計工具檔案移到程式碼後置檔案。
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtEmpName;
+        protected global::System.Web.UI.WebControls.Button btnAddNew;
 
         /// <summary>
-        /// lblDept 控制項。
+        /// btnDeleteSelected 控制項。
         /// </summary>
         /// <remarks>
         /// 自動產生的欄位。
         /// 若要修改，請將欄位宣告從設計工具檔案移到程式碼後置檔案。
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblDept;
+        protected global::System.Web.UI.WebControls.Button btnDeleteSelected;
 
         /// <summary>
-        /// txtDept 控制項。
+        /// gvItems 控制項。
         /// </summary>
         /// <remarks>
         /// 自動產生的欄位。
         /// 若要修改，請將欄位宣告從設計工具檔案移到程式碼後置檔案。
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtDept;
+        protected global::System.Web.UI.WebControls.GridView gvItems;
 
         /// <summary>
-        /// lblDate 控制項。
+        /// pnlAddItem 控制項。
         /// </summary>
         /// <remarks>
         /// 自動產生的欄位。
         /// 若要修改，請將欄位宣告從設計工具檔案移到程式碼後置檔案。
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblDate;
+        protected global::System.Web.UI.WebControls.Panel pnlAddItem;
 
         /// <summary>
-        /// txtDate 控制項。
+        /// txtItemName 控制項。
         /// </summary>
         /// <remarks>
         /// 自動產生的欄位。
         /// 若要修改，請將欄位宣告從設計工具檔案移到程式碼後置檔案。
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtDate;
+        protected global::System.Web.UI.WebControls.TextBox txtItemName;
 
         /// <summary>
-        /// lblReason 控制項。
+        /// txtCategory 控制項。
         /// </summary>
         /// <remarks>
         /// 自動產生的欄位。
         /// 若要修改，請將欄位宣告從設計工具檔案移到程式碼後置檔案。
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblReason;
+        protected global::System.Web.UI.WebControls.TextBox txtCategory;
 
         /// <summary>
-        /// txtReason 控制項。
+        /// txtUnit 控制項。
         /// </summary>
         /// <remarks>
         /// 自動產生的欄位。
         /// 若要修改，請將欄位宣告從設計工具檔案移到程式碼後置檔案。
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtReason;
+        protected global::System.Web.UI.WebControls.TextBox txtUnit;
 
         /// <summary>
-        /// gvPurchaseItems 控制項。
+        /// txtUnitPrice 控制項。
         /// </summary>
         /// <remarks>
         /// 自動產生的欄位。
         /// 若要修改，請將欄位宣告從設計工具檔案移到程式碼後置檔案。
         /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvPurchaseItems;
+        protected global::System.Web.UI.WebControls.TextBox txtUnitPrice;
 
         /// <summary>
-        /// btnSubmit 控制項。
+        /// txtDescription 控制項。
         /// </summary>
         /// <remarks>
         /// 自動產生的欄位。
         /// 若要修改，請將欄位宣告從設計工具檔案移到程式碼後置檔案。
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnSubmit;
+        protected global::System.Web.UI.WebControls.TextBox txtDescription;
+
+        /// <summary>
+        /// chkStatus 控制項。
+        /// </summary>
+        /// <remarks>
+        /// 自動產生的欄位。
+        /// 若要修改，請將欄位宣告從設計工具檔案移到程式碼後置檔案。
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.CheckBox chkStatus;
+
+        /// <summary>
+        /// btnSaveItem 控制項。
+        /// </summary>
+        /// <remarks>
+        /// 自動產生的欄位。
+        /// 若要修改，請將欄位宣告從設計工具檔案移到程式碼後置檔案。
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnSaveItem;
+
+        /// <summary>
+        /// btnCancelAdd 控制項。
+        /// </summary>
+        /// <remarks>
+        /// 自動產生的欄位。
+        /// 若要修改，請將欄位宣告從設計工具檔案移到程式碼後置檔案。
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnCancelAdd;
     }
 }
