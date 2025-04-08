@@ -2,5 +2,8 @@
 # 這個 .gitignore 檔案由 Microsoft(R) Visual Studio 自動建立。
 ################################################################################
 
-/.vs/slnx.sqlite
-/.vs/IT_WorkPlant
+# Ignore build output
+[Bb]in/
+[Oo]bj/
+*.dll
+*.pdb
