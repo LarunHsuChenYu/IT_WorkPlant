@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.IO;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -31,7 +32,37 @@ namespace IT_WorkPlant.Pages
                 txtName.Text = UserName;
                 txtDept.Text = DeptName;
 
-                BindCategoryDropDown();
+                BindEmptyRows(); // เติมแถวว่าง 5 แถว
+            }
+        }
+
+        private void BindEmptyRows()
+        {
+            var emptyRows = new List<object>();
+            for (int i = 0; i < 5; i++)
+                emptyRows.Add(new object());
+
+            rptRequestItems.DataSource = emptyRows;
+            rptRequestItems.DataBind();
+        }
+
+        protected void rptRequestItems_ItemDataBound(object sender, RepeaterItemEventArgs e)
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                var ddl = e.Item.FindControl("ddlIssueType") as DropDownList;
+                if (ddl != null)
+                {
+                    string query = "SELECT IssueTypeID, IssueTypeCode, IssueTypeName FROM IssueType WHERE IssueTypeID <= 4 ORDER BY IssueTypeID";
+                    DataTable dt = _dbHelper.ExecuteQuery(query, null);
+                    dt.Columns.Add("DisplayText", typeof(string), "IssueTypeCode + ' ' + IssueTypeName");
+
+                    ddl.DataSource = dt;
+                    ddl.DataTextField = "DisplayText";
+                    ddl.DataValueField = "IssueTypeID";
+                    ddl.DataBind();
+                    ddl.Items.Insert(0, new ListItem("Select Issue Type", ""));
+                }
             }
         }
 
@@ -40,127 +71,100 @@ namespace IT_WorkPlant.Pages
             int? requestUserID = _ui.GetRequestUserID(UserName, UserEmpID);
             if (requestUserID == null)
             {
-                ShowAlert("RequestUserID could not be determined.");
-                return;
-            }
-            
-
-            if (string.IsNullOrEmpty(ddlCategory.SelectedValue))
-            {
-                ShowAlert("กรุณาเลือกประเภทปัญหา (Issue Type) ก่อนส่งฟอร์ม");
+                ShowAlert("ไม่สามารถระบุผู้ใช้งานได้");
                 return;
             }
 
-            string imagePath = null;
+            bool hasValidItem = false;
 
-            // ✅ Check and save the image to the UploadedImages folder // ตรวจสอบและบันทึกภาพลงในโฟลเดอร์ UploadedImages
-            if (fileUploadImage.HasFile)
+            foreach (RepeaterItem item in rptRequestItems.Items)
             {
-                string fileExtension = System.IO.Path.GetExtension(fileUploadImage.FileName).ToLower();
+                var ddl = item.FindControl("ddlIssueType") as DropDownList;
+                var txt = item.FindControl("txtDescription") as TextBox;
+                var fileUpload = item.FindControl("fileUploadImage") as FileUpload;
 
-                // ✅ .jpg, .jpeg, .png only !
-                if (fileExtension != ".jpg" && fileExtension != ".jpeg" && fileExtension != ".png")
+                if (ddl == null || txt == null)
+                    continue;
+
+                if (string.IsNullOrWhiteSpace(txt.Text) && string.IsNullOrEmpty(ddl.SelectedValue))
+                    continue;
+
+                hasValidItem = true;
+
+                string imagePath = null;
+                if (fileUpload != null && fileUpload.HasFile)
                 {
-                    ShowAlert("อนุญาตเฉพาะไฟล์รูปภาพ .jpg, .jpeg หรือ .png เท่านั้น");
-                    return;
+                    string ext = Path.GetExtension(fileUpload.FileName).ToLower();
+                    if (ext == ".jpg" || ext == ".jpeg" || ext == ".png")
+                    {
+                        string fileName = Guid.NewGuid().ToString() + ext;
+                        string savePath = Server.MapPath("~/App_Temp/" + fileName);
+                        fileUpload.SaveAs(savePath);
+                        imagePath = fileName;
+                    }
                 }
 
-                // ✅ Create a new filename by generating a GUID.// สร้างชื่อไฟล์ใหม่ด้วย GUID
-                string fileName = Guid.NewGuid().ToString() + fileExtension;
-                fileName = System.IO.Path.GetFileName(fileName); // กัน path แฝง
+                var columnValues = new Dictionary<string, object>
+                {
+                    { "IssueDate", DateTime.Parse(txtDate.Text) },
+                    { "DeptNameID", DeptName },
+                    { "CompanyID", "ENR" },
+                    { "RequestUserID", requestUserID },
+                    { "IssueDetails", HttpUtility.HtmlEncode(txt.Text) },
+                    { "IssueTypeID", ddl.SelectedValue },
+                    { "Status", false },
+                    { "LastUpdateDate", DateTime.Now },
+                    { "DRI_UserID", DBNull.Value },
+                    { "Solution", DBNull.Value },
+                    { "FinishedDate", DBNull.Value },
+                    { "Remark", DBNull.Value },
+                    { "ImagePath", imagePath ?? (object)DBNull.Value }
+                };
 
-                // ✅ Prepare the destination path // เตรียม path ปลายทาง
-                string uploadFolder = Server.MapPath("~/App_Temp/");
-                string serverPath = System.IO.Path.Combine(uploadFolder, fileName);
-                System.Diagnostics.Debug.WriteLine("📁 Image saved to: " + serverPath);
                 try
                 {
-                    // ✅ Create the directory if it does not already exist // สร้างโฟลเดอร์ถ้ายังไม่มี
-                    if (!System.IO.Directory.Exists(uploadFolder))
-                    {
-                        System.IO.Directory.CreateDirectory(uploadFolder);
-                    }
-
-                    // ✅ Save the file // บันทึกไฟล์
-                    fileUploadImage.SaveAs(serverPath);
-                    imagePath = fileName;
+                    _dbHelper.InsertData("IT_RequestList", columnValues);
                 }
                 catch (Exception ex)
                 {
-                    ShowAlert("เกิดข้อผิดพลาดในการบันทึกรูปภาพ: " + ex.Message);
+                    ShowAlert($"Error saving data: {ex.Message}");
                     return;
+                }
+
+                string sNotifyMsg =
+                    $"Date: {DateTime.Now:yyyy/MM/dd}\n" +
+                    $"Department: {DeptName}\n" +
+                    $"Name: {UserName}\n" +
+                    $"Category: {ddl.SelectedItem.Text}\n" +
+                    $"Description: {txt.Text}";
+
+                try
+                {
+                    var notifier = new LineNotificationModel();
+                    string lineGroupId = ConfigurationManager.AppSettings["LineGroupID"];
+                    await notifier.SendLineGroupMessageAsync(lineGroupId, sNotifyMsg);
+                }
+                catch (Exception ex)
+                {
+                    ShowAlert($"Failed to send LINE notification: {ex.Message}");
                 }
             }
 
-            // ✅ Prepare the data to be stored in the database // เตรียมข้อมูลบันทึกลงฐานข้อมูล
-            var columnValues = new Dictionary<string, object>
+            if (!hasValidItem)
             {
-                { "IssueDate", DateTime.Parse(txtDate.Text) },
-                { "DeptNameID", DeptName },
-                { "CompanyID", "ENR" },
-                { "RequestUserID", requestUserID },
-                { "IssueDetails", HttpUtility.HtmlEncode(txtDescription.Text) },
-                { "IssueTypeID", ddlCategory.SelectedValue },
-                { "Status", false },
-                { "LastUpdateDate", DateTime.Now },
-                { "DRI_UserID", DBNull.Value },
-                { "Solution", DBNull.Value },
-                { "FinishedDate", DBNull.Value },
-                { "Remark", DBNull.Value },
-                { "ImagePath", imagePath ?? (object)DBNull.Value }
-            };
-
-            try
-            {
-                int rowsInserted = _dbHelper.InsertData("IT_RequestList", columnValues);
-                ShowAlert(rowsInserted > 0 ? "Request added successfully." : "Failed to add request.");
-            }
-            catch (Exception ex)
-            {
-                ShowAlert($"Error: {ex.Message}");
+                ShowAlert("Please enter at least 1 issue");
                 return;
             }
 
-            // ✅ Send text-only via LINE without image attachment // ส่งLINEเฉพาะข้อความ ไม่แนบรูป
-            string sNotifyMsg =
-                $"Date: {DateTime.Now:yyyy/MM/dd}\n" +
-                $"Department: {DeptName}\n" +
-                $"Name: {UserName}\n" +
-                $"Category: {ddlCategory.SelectedItem.Text}\n" +
-                $"Description: {txtDescription.Text}";
+            ShowAlertAndRedirect("Request submitted successfully.", ResolveUrl("~/Pages/IT_RequestsList.aspx"));
 
-            try
-            {
-                var notifier = new LineNotificationModel();
-                string lineGroupId = ConfigurationManager.AppSettings["LineGroupID"];
-                await notifier.SendLineGroupMessageAsync(lineGroupId, sNotifyMsg);
-                ShowAlert("Successfully sent the notification to the LINE group 🎉");
-            }
-            catch (Exception ex)
-            {
-                ShowAlert($"Failed to send the LINE notification: {ex.Message}");
-            }
-
-            Response.Redirect("~/Default.aspx", false);
-            Context.ApplicationInstance.CompleteRequest();
         }
 
-        private void BindCategoryDropDown()
-        {
-            string query = "SELECT IssueTypeID, IssueTypeCode, IssueTypeName FROM IssueType WHERE IssueTypeID <= 4 ORDER BY IssueTypeID";
-            DataTable dt = _dbHelper.ExecuteQuery(query, null);
 
-            dt.Columns.Add("DisplayText", typeof(string), "IssueTypeCode + ' ' + IssueTypeName");
-            ddlCategory.DataSource = dt;
-            ddlCategory.DataTextField = "DisplayText";
-            ddlCategory.DataValueField = "IssueTypeID";
-            ddlCategory.DataBind();
-            ddlCategory.Items.Insert(0, new ListItem("Select Issue Type", ""));
-        }
 
         protected void CancelForm(object sender, EventArgs e)
         {
-            ShowAlertAndRedirect("Request cancelled.", "~/Default.aspx");
+            ShowAlertAndRedirect("Request cancelled.", ResolveUrl("~/Pages/IT_RequestsList.aspx"));
         }
 
         private void ShowAlertAndRedirect(string message, string redirectUrl)

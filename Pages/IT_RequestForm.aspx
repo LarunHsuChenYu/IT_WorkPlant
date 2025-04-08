@@ -30,19 +30,6 @@
             margin-bottom: 5px;
         }
 
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-
-        .form-group textarea {
-            resize: none;
-        }
-
         .form-row {
             display: flex;
             gap: 20px;
@@ -53,9 +40,16 @@
             flex: 1;
         }
 
-        .full-width-textarea {
+        .table {
             width: 100%;
-            box-sizing: border-box;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .table th, .table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
         }
 
         .btn-container {
@@ -93,78 +87,63 @@
     <div class="form-container">
         <h2>IT Request Form</h2>
 
-        <!-- User Name and Department -->
+        <!-- User Info -->
         <div class="form-row">
             <div class="form-group">
                 <label for="txtName">Requestor Name:</label>
-                <asp:TextBox ID="txtName" runat="server" CssClass="form-control" ReadOnly="true"></asp:TextBox>
+                <asp:TextBox ID="txtName" runat="server" CssClass="form-control" ReadOnly="true" />
             </div>
             <div class="form-group">
                 <label for="txtDept">Department:</label>
-                <asp:TextBox ID="txtDept" runat="server" CssClass="form-control" ReadOnly="true"></asp:TextBox>
+                <asp:TextBox ID="txtDept" runat="server" CssClass="form-control" ReadOnly="true" />
             </div>
             <div class="form-group">
                 <label for="txtDate">Issue Date:</label>
-                <asp:TextBox ID="txtDate" runat="server" CssClass="form-control" placeholder="Select a date"></asp:TextBox>
+                <asp:TextBox ID="txtDate" runat="server" CssClass="form-control" ReadOnly="true" />
             </div>
         </div>
 
-        <!-- Issue Type -->
-        <div class="form-group">
-            <label for="ddlCategory">Issue Type:</label>
-            <asp:DropDownList ID="ddlCategory" runat="server" CssClass="form-control">
-                <asp:ListItem Text="Select Issue Type" Value="" />
-            </asp:DropDownList>
-        </div>
-        
-        <!-- Issue Details -->
-        <div class="form-group">
-            <label for="txtDescription">Issue Description:</label>
-
-            <asp:TextBox ID="txtDescription" runat="server" CssClass="form-control full-width-textarea"
-                TextMode="MultiLine" placeholder="Enter details about the issue"></asp:TextBox>
-        </div>
-
-          <!-- File Upload บังคับแค่รูปภาพ-->
-          <div class="form-group">
-          <label for="fileUploadImage">Upload Attachment:</label>
-          <asp:FileUpload ID="fileUploadImage" runat="server" CssClass="form-control" />
-          </div>
-
-          <script>
-           document.addEventListener("DOMContentLoaded", function () {
-           var fileUpload = document.getElementById('<%= fileUploadImage.ClientID %>');
-           if (fileUpload) {
-            fileUpload.setAttribute("accept", "image/*");
-             }
-              });
-         </script>
-
-
+        <!-- Request Items Table -->
+        <asp:Repeater ID="rptRequestItems" runat="server" OnItemDataBound="rptRequestItems_ItemDataBound">
+            <HeaderTemplate>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Issue Type</th>
+                            <th>Issue Description</th>
+                            <th>Attachment (Image)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            </HeaderTemplate>
+            <ItemTemplate>
+                <tr>
+                    <td><%# Container.ItemIndex + 1 %></td>
+                    <td>
+                        <asp:DropDownList ID="ddlIssueType" runat="server" CssClass="form-control" />
+                    </td>
+                    <td>
+                        <asp:TextBox ID="txtDescription" runat="server" TextMode="MultiLine" Rows="3" CssClass="form-control" />
+                    </td>
+                    <td>
+                        <asp:FileUpload ID="fileUploadImage" runat="server" CssClass="form-control" />
+                    </td>
+                </tr>
+            </ItemTemplate>
+            <FooterTemplate>
+                    </tbody>
+                </table>
+            </FooterTemplate>
+        </asp:Repeater>
 
         <!-- Buttons -->
         <div class="btn-container">
-            <asp:Button ID="btnSubmit" runat="server" CssClass="btn btn-primary" Text="Submit Request"
-                OnClick="SubmitForm" />
-            <asp:Button ID="btnCancel" runat="server" CssClass="btn btn-secondary" Text="Cancel"
-                OnClick="CancelForm" />
+            <asp:Button ID="btnSubmit" runat="server" CssClass="btn btn-primary" Text="Submit Request" OnClick="SubmitForm" />
+            <asp:Button ID="btnCancel" runat="server" CssClass="btn btn-secondary" Text="Cancel" OnClick="CancelForm" />
         </div>
+
+        <!-- Hidden for compatibility with legacy method -->
+        <asp:DropDownList ID="ddlCategory" runat="server" Visible="false" />
     </div>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            var fileUpload = document.getElementById('<%= fileUploadImage.ClientID %>');
-
-            if (fileUpload) {
-                fileUpload.addEventListener("change", function () {
-                    var allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif|\.bmp|\.webp)$/i;
-                    if (!allowedExtensions.exec(fileUpload.value)) {
-                        alert("Only image files (.jpg, .jpeg, .png) are allowed.");
-                        fileUpload.value = "";
-                    }
-                });
-            }
-        });
-    </script>
-
 </asp:Content>
