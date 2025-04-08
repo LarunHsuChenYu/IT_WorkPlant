@@ -71,7 +71,7 @@ namespace IT_WorkPlant.Pages
             int? requestUserID = _ui.GetRequestUserID(UserName, UserEmpID);
             if (requestUserID == null)
             {
-                ShowAlert("ไม่สามารถระบุผู้ใช้งานได้");
+                ShowAlert("Unable to identify user");
                 return;
             }
 
