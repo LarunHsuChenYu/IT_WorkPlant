@@ -11,8 +11,7 @@ namespace IT_WorkPlant.Pages
     public partial class IT_Stuff_Purchase : Page
     {
         private readonly MssqlDatabaseHelper _db = new MssqlDatabaseHelper();
-        private readonly UserInfo _ui = new UserInfo();
-
+        private readonly UserInfo _ui = new UserInfo(); 
         private DataTable PurchaseItemsTable
         {
             get
@@ -208,7 +207,7 @@ namespace IT_WorkPlant.Pages
             BindGrid();
         }
 
-        protected void btnSubmit_Click(object sender, EventArgs e)
+        protected async void btnSubmit_Click(object sender, EventArgs e)
         {
             string userName = Session["UserName"]?.ToString();
             string empId = Session["UserEmpID"]?.ToString();
@@ -286,20 +285,29 @@ namespace IT_WorkPlant.Pages
                     + $"Total: {total: N0} ฿ \r\n"
                     + $"Items: {summary}";
 
-                notifier.SendLineGroupMessageAsync(lineGroupId, lineMessage).Wait();
-
-                Response.Redirect("~/Default.aspx");
+                await notifier.SendLineGroupMessageAsync(lineGroupId, lineMessage);
             }
             catch (Exception ex)
             {
                 ShowAlert("LINE notification failed: " + ex.Message);
             }
-        }
 
+
+            ShowAlertAndRedirect("Request submitted successfully.", ResolveUrl("~/Default.aspx"));
+
+        }
         private void ShowAlert(string msg)
         {
-            string script = $"alert('{msg.Replace("'", "\\'")}');";
+            string safeMsg = System.Web.HttpUtility.JavaScriptStringEncode(msg);
+            string script = "alert('" + safeMsg + "');";
             ClientScript.RegisterStartupScript(this.GetType(), "alert", script, true);
         }
+        private void ShowAlertAndRedirect(string message, string redirectUrl)
+        {
+            string safeMessage = System.Web.HttpUtility.JavaScriptStringEncode(message);
+            string script = $"alert('{safeMessage}'); window.location='{redirectUrl}';";
+            ClientScript.RegisterStartupScript(this.GetType(), "alertRedirect", script, true);
+        }
+
     }
 }

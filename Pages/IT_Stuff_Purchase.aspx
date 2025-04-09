@@ -1,6 +1,7 @@
-﻿<%@ Page Title="IT Service Purchase" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" 
-    CodeBehind="~/Pages/IT_Stuff_Purchase.aspx.cs"
-    Inherits="IT_WorkPlant.Pages.IT_Stuff_Purchase" %>
+﻿<%@ Page Title="IT Service Purchase" Language="C#" MasterPageFile="~/Site.Master"
+    AutoEventWireup="true" CodeBehind="IT_Stuff_Purchase.aspx.cs"
+    Inherits="IT_WorkPlant.Pages.IT_Stuff_Purchase" Async="true" %>
+
 
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
     <div class="container bg-white p-4 rounded shadow-sm">
