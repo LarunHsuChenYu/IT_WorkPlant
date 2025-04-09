@@ -3,71 +3,82 @@
     Inherits="IT_WorkPlant.Pages.IT_Stuff_Purchase" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
-    <div class="page-header">
-        <h2><asp:Literal ID="litPageTitle" runat="server" /></h2>
-    </div>
+    <div class="container bg-white p-4 rounded shadow-sm">
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold text-danger fs-5">👤 Employee Name:</label>
+                <asp:TextBox ID="txtEmpName" runat="server" CssClass="form-control border-danger-subtle bg-light-subtle" ReadOnly="true" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold text-danger fs-5">🏢 Department:</label>
+                <asp:TextBox ID="txtDept" runat="server" CssClass="form-control border-danger-subtle bg-light-subtle" ReadOnly="true" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold text-danger fs-5">📅 Request Date:</label>
+                <asp:TextBox ID="txtDate" runat="server" CssClass="form-control border-danger-subtle bg-light-subtle" ReadOnly="true" />
+            </div>
+        </div>
 
-    <div class="form-section">
-        <table class="form-table">
-            <tr>
-                <td><asp:Label ID="lblEmpName" runat="server" Text="Employee Name:" /></td>
-                <td><asp:TextBox ID="txtEmpName" runat="server" CssClass="form-control" ReadOnly="true" /></td>
-                <td><asp:Label ID="lblDept" runat="server" Text="Department:" /></td>
-                <td><asp:TextBox ID="txtDept" runat="server" CssClass="form-control" ReadOnly="true" /></td>
-            </tr>
-            <tr>
-                <td><asp:Label ID="lblDate" runat="server" Text="Request Date:" /></td>
-                <td><asp:TextBox ID="txtDate" runat="server" CssClass="form-control" ReadOnly="true" /></td>
-                <td><asp:Label ID="lblReason" runat="server" Text="Purchase Reason:" /></td>
-                <td><asp:TextBox ID="txtReason" runat="server" CssClass="form-control" /></td>
-            </tr>
-        </table>
-    </div>
+        <asp:GridView ID="gvPurchaseItems" runat="server" AutoGenerateColumns="False"
+            CssClass="table table-hover border border-1 rounded shadow-sm"
+            OnRowDataBound="gvPurchaseItems_RowDataBound">
+            <Columns>
+                <asp:TemplateField HeaderText="#" ItemStyle-Width="5%">
+                    <ItemTemplate><%# Container.DataItemIndex + 1 %></ItemTemplate>
+                </asp:TemplateField>
 
-    <asp:GridView ID="gvPurchaseItems" runat="server" AutoGenerateColumns="False"
-    CssClass="table table-bordered"
-    OnRowDataBound="gvPurchaseItems_RowDataBound">
-        <Columns>
-            <asp:TemplateField HeaderText="#">
-                <ItemTemplate><%# Container.DataItemIndex + 1 %></ItemTemplate>
-            </asp:TemplateField>
-            <asp:TemplateField HeaderText="Item Name">
-                <ItemTemplate>
-                    <asp:DropDownList ID="ddlItem" runat="server" CssClass="form-control" 
-                        AutoPostBack="true" OnSelectedIndexChanged="ddlItem_SelectedIndexChanged" />
-                </ItemTemplate>
-            </asp:TemplateField>
-            <asp:TemplateField HeaderText="Usage">
-                <ItemTemplate>
-                    <asp:TextBox ID="txtUsage" runat="server" CssClass="form-control" />
-                </ItemTemplate>
-            </asp:TemplateField>
-            <asp:TemplateField HeaderText="Quantity">
-                <ItemTemplate>
-                    <asp:TextBox ID="txtQty" runat="server" CssClass="form-control" TextMode="Number" 
-                        AutoPostBack="true" OnTextChanged="txtQty_TextChanged"/>
-                </ItemTemplate>
-            </asp:TemplateField>
-            <asp:TemplateField HeaderText="Unit">
-                <ItemTemplate>
-                    <asp:Label ID="lblUnit" runat="server" />
-                </ItemTemplate>
-            </asp:TemplateField>
-            <asp:TemplateField HeaderText="Unit Price">
-                <ItemTemplate>
-                    <asp:Label ID="lblPrice" runat="server" />
-                </ItemTemplate>
-            </asp:TemplateField>
-            <asp:TemplateField HeaderText="Subtotal">
-                <ItemTemplate>
-                    <asp:Label ID="lblSubtotal" runat="server" />
-                </ItemTemplate>
-            </asp:TemplateField>
-        </Columns>
-    </asp:GridView>
+                <asp:TemplateField HeaderText="Category" ItemStyle-Width="15%">
+                    <ItemTemplate>
+                        <asp:DropDownList ID="ddlCategory" runat="server" CssClass="form-select form-select-sm"
+                            AutoPostBack="true" OnSelectedIndexChanged="ddlCategory_SelectedIndexChanged" />
+                    </ItemTemplate>
+                </asp:TemplateField>
 
-    <div class="form-section text-right">
-        <%--<asp:Button ID="btnAddRow" runat="server" CssClass="btn btn-info" Text="+ Add Row" OnClick="btnAddRow_Click" />--%>
-        <asp:Button ID="btnSubmit" runat="server" CssClass="btn btn-success" Text="Submit Purchase Request" OnClick="btnSubmit_Click" />
+                <asp:TemplateField HeaderText="Item Name" ItemStyle-Width="20%">
+                    <ItemTemplate>
+                        <asp:DropDownList ID="ddlItem" runat="server" CssClass="form-select form-select-sm"
+                            AutoPostBack="true" OnSelectedIndexChanged="ddlItem_SelectedIndexChanged" />
+                    </ItemTemplate>
+                </asp:TemplateField>
+
+                <asp:TemplateField HeaderText="Purchase Reason" ItemStyle-Width="25%">
+                    <ItemTemplate>
+                        <asp:TextBox ID="txtUsage" runat="server" CssClass="form-control form-control-sm" />
+                    </ItemTemplate>
+                </asp:TemplateField>
+
+                <asp:TemplateField HeaderText="Qty" ItemStyle-Width="8%">
+                    <ItemTemplate>
+                        <asp:TextBox ID="txtQty" runat="server" CssClass="form-control form-control-sm" TextMode="Number"
+                            AutoPostBack="true" OnTextChanged="txtQty_TextChanged" />
+                    </ItemTemplate>
+                </asp:TemplateField>
+
+                <asp:TemplateField HeaderText="Unit" ItemStyle-Width="7%">
+                    <ItemTemplate>
+                        <asp:Label ID="lblUnit" runat="server" CssClass="text-muted" />
+                    </ItemTemplate>
+                </asp:TemplateField>
+
+                <asp:TemplateField HeaderText="Price" ItemStyle-Width="10%">
+                    <ItemTemplate>
+                        <asp:Label ID="lblPrice" runat="server" CssClass="text-muted" />
+                    </ItemTemplate>
+                </asp:TemplateField>
+
+                <asp:TemplateField HeaderText="Subtotal" ItemStyle-Width="10%">
+                    <ItemTemplate>
+                        <asp:Label ID="lblSubtotal" runat="server" CssClass="fw-semibold text-danger" />
+                    </ItemTemplate>
+                </asp:TemplateField>
+            </Columns>
+        </asp:GridView>
+
+        <div class="text-center mt-4">
+    <asp:Button ID="btnSubmit" runat="server" Text="Submit Purchase Request"
+        CssClass="btn btn-danger px-4 py-2"
+        OnClick="btnSubmit_Click"
+        ValidationGroup="SubmitGroup" />
+</div>
     </div>
 </asp:Content>

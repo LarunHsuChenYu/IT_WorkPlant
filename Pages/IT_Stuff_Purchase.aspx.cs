@@ -13,48 +13,56 @@ namespace IT_WorkPlant.Pages
         private readonly MssqlDatabaseHelper _db = new MssqlDatabaseHelper();
         private readonly UserInfo _ui = new UserInfo();
 
+        private DataTable PurchaseItemsTable
+        {
+            get
+            {
+                if (ViewState["PurchaseItems"] == null)
+                {
+                    var dt = new DataTable();
+                    dt.Columns.Add("ItemID");
+                    dt.Columns.Add("Usage");
+                    dt.Columns.Add("Qty");
+                    ViewState["PurchaseItems"] = dt;
+                }
+                return (DataTable)ViewState["PurchaseItems"];
+            }
+            set
+            {
+                ViewState["PurchaseItems"] = value;
+            }
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
-#if !DEBUG
+            // เช็กว่ามี session login หรือไม่
             if (Session["UserEmpID"] == null)
             {
                 Response.Redirect("../Login.aspx");
                 return;
             }
-#endif
+
             if (!IsPostBack)
             {
-#if !DEBUG
+                // ดึงข้อมูลจาก Session มาใส่ textbox ทุกครั้ง
                 txtEmpName.Text = Session["UserName"]?.ToString();
                 txtDept.Text = Session["DeptName"]?.ToString();
                 txtDate.Text = DateTime.Now.ToString("yyyy/MM/dd");
-#endif
-                ViewState["PurchaseItems"] = CreateEmptyTable();
+
+                // เติมให้ครบ 5 แถว
+                var dt = PurchaseItemsTable;
+                for (int i = dt.Rows.Count; i < 5; i++)
+                {
+                    dt.Rows.Add(dt.NewRow());
+                }
                 BindGrid();
             }
         }
 
-        private DataTable CreateEmptyTable()
-        {
-            DataTable dt = new DataTable();
-            dt.Columns.Add("ItemID");
-            dt.Columns.Add("Usage");
-            dt.Columns.Add("Qty");
-            return dt;
-        }
 
         private void BindGrid()
         {
-            DataTable dt = ViewState["PurchaseItems"] as DataTable;
-            if (dt == null || dt.Rows.Count < 5)
-            {
-                dt = CreateEmptyTable();
-                for (int i = 0; i < 5; i++)
-                {
-                    dt.Rows.Add(dt.NewRow());
-                }
-                ViewState["PurchaseItems"] = dt;
-            }
+            var dt = PurchaseItemsTable;
             gvPurchaseItems.DataSource = dt;
             gvPurchaseItems.DataBind();
         }
@@ -63,6 +71,23 @@ namespace IT_WorkPlant.Pages
         {
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
+                DropDownList ddlCategory = (DropDownList)e.Row.FindControl("ddlCategory");
+                if (ddlCategory != null)
+                {
+                    ddlCategory.AutoPostBack = true;
+                    ddlCategory.SelectedIndexChanged += ddlCategory_SelectedIndexChanged;
+
+                    string categoryQuery = "SELECT DISTINCT Category FROM IT_PurchaseItems WHERE Status = 1 ORDER BY Category";
+                    DataTable categories = _db.ExecuteQuery(categoryQuery, null);
+
+                    ddlCategory.DataSource = categories;
+                    ddlCategory.DataTextField = "Category";
+                    ddlCategory.DataValueField = "Category";
+                    ddlCategory.DataBind();
+                    ddlCategory.Items.Insert(0, new ListItem("-- Select --", ""));
+                }
+
+                
                 DropDownList ddlItem = (DropDownList)e.Row.FindControl("ddlItem");
                 if (ddlItem != null)
                 {
@@ -77,15 +102,37 @@ namespace IT_WorkPlant.Pages
                     ddlItem.DataValueField = "ItemID";
                     ddlItem.DataBind();
                     ddlItem.Items.Insert(0, new ListItem("-- Select --", ""));
-                }
-
-                TextBox txtQty = (TextBox)e.Row.FindControl("txtQty");
+                }   
+      TextBox txtQty = (TextBox)e.Row.FindControl("txtQty");
                 if (txtQty != null)
                 {
                     txtQty.AutoPostBack = true;
                     txtQty.TextChanged += txtQty_TextChanged;
                 }
             }
+        }
+        protected void ddlCategory_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            DropDownList ddlCategory = (DropDownList)sender;
+            GridViewRow row = (GridViewRow)ddlCategory.NamingContainer;
+
+            DropDownList ddlItem = (DropDownList)row.FindControl("ddlItem");
+            if (ddlItem == null) return;
+
+            string selectedCategory = ddlCategory.SelectedValue;
+            if (string.IsNullOrEmpty(selectedCategory)) return;
+
+            string query = "SELECT ItemID, ItemName FROM IT_PurchaseItems WHERE Category = @Category AND Status = 1 ORDER BY ItemName";
+            var param = new[] {
+        new System.Data.SqlClient.SqlParameter("@Category", selectedCategory)
+    };
+
+            DataTable items = _db.ExecuteQuery(query, param);
+            ddlItem.DataSource = items;
+            ddlItem.DataTextField = "ItemName";
+            ddlItem.DataValueField = "ItemID";
+            ddlItem.DataBind();
+            ddlItem.Items.Insert(0, new ListItem("-- Select --", ""));
         }
 
         protected void ddlItem_SelectedIndexChanged(object sender, EventArgs e)
@@ -137,24 +184,27 @@ namespace IT_WorkPlant.Pages
             lblSubtotal.Text = (price * qty).ToString("N2");
         }
 
-
         protected void btnAddRow_Click(object sender, EventArgs e)
         {
-            DataTable dt = ViewState["PurchaseItems"] as DataTable;
+            var dt = PurchaseItemsTable;
+
             foreach (GridViewRow row in gvPurchaseItems.Rows)
             {
                 DropDownList ddlItem = (DropDownList)row.FindControl("ddlItem");
                 TextBox txtUsage = (TextBox)row.FindControl("txtUsage");
                 TextBox txtQty = (TextBox)row.FindControl("txtQty");
 
+                if (row.RowIndex >= dt.Rows.Count)
+                    continue;
+
                 DataRow dr = dt.Rows[row.RowIndex];
-                dr["ItemID"] = ddlItem.SelectedValue;
-                dr["Usage"] = txtUsage.Text;
-                dr["Qty"] = txtQty.Text;
+                dr["ItemID"] = ddlItem?.SelectedValue ?? "";
+                dr["Usage"] = txtUsage?.Text ?? "";
+                dr["Qty"] = txtQty?.Text ?? "";
             }
 
             dt.Rows.Add(dt.NewRow());
-            ViewState["PurchaseItems"] = dt;
+            PurchaseItemsTable = dt;
             BindGrid();
         }
 
@@ -169,7 +219,7 @@ namespace IT_WorkPlant.Pages
                 return;
             }
 
-            string reason = txtReason.Text.Trim();
+            string reason = "";
             string summary = "";
             decimal total = 0;
 
@@ -190,7 +240,9 @@ namespace IT_WorkPlant.Pages
                 string itemName = item["ItemName"].ToString();
                 string unit = item["Unit"].ToString();
                 decimal price = Convert.ToDecimal(item["UnitPrice"]);
-                int qty = int.TryParse(txtQty.Text, out int q) ? q : 0;
+                int qty = int.TryParse(txtQty.Text, out int q) && q > 0 ? q : 1;
+                txtQty.Text = qty.ToString();
+
                 decimal subtotal = qty * price;
                 total += subtotal;
 
@@ -210,7 +262,7 @@ namespace IT_WorkPlant.Pages
                 { "CompanyID", "ENR" },
                 { "RequestUserID", userId },
                 { "IssueDetails", reason },
-                { "IssueTypeID", 6 }, // 購買類型固定為 6
+                { "IssueTypeID", 6 },
                 { "Status", false },
                 { "LastUpdateDate", DateTime.Now },
                 { "DRI_UserID", DBNull.Value },
@@ -221,20 +273,19 @@ namespace IT_WorkPlant.Pages
 
             _db.InsertData("IT_RequestList", values);
             ShowAlert("Request submitted successfully.");
-            // 發送 LINE Notify 通知
+
             try
             {
                 var notifier = new LineNotificationModel();
-                
                 string lineGroupId = ConfigurationManager.AppSettings["LineGroupID"];
                 string lineMessage = "【IT Purchase Request】\r\n"
-                    +$"Date: {DateTime.Now:yyyy / MM / dd} \r\n" 
-                    +$"Dept: {Session["DeptName"]} \r\n"
-                    +$"User: {Session["UserName"]} \r\n"
-                    +$"Reason: {reason} \r\n" 
-                    +$"Total: {total: N0} ฿ \r\n"
-                    +$"Items: {summary}";
-                
+                    + $"Date: {DateTime.Now:yyyy / MM / dd} \r\n"
+                    + $"Dept: {Session["DeptName"]} \r\n"
+                    + $"User: {Session["UserName"]} \r\n"
+                    + $"Reason: {reason} \r\n"
+                    + $"Total: {total: N0} ฿ \r\n"
+                    + $"Items: {summary}";
+
                 notifier.SendLineGroupMessageAsync(lineGroupId, lineMessage).Wait();
 
                 Response.Redirect("~/Default.aspx");
@@ -250,6 +301,5 @@ namespace IT_WorkPlant.Pages
             string script = $"alert('{msg.Replace("'", "\\'")}');";
             ClientScript.RegisterStartupScript(this.GetType(), "alert", script, true);
         }
-
     }
 }
