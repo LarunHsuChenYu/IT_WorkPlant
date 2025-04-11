@@ -7,11 +7,12 @@ using System.Web.UI.WebControls;
 
 namespace IT_WorkPlant.Models
 {
-	public partial class IT_PurchaseItemsList : System.Web.UI.Page
-	{
+    public partial class IT_PurchaseItemsList : System.Web.UI.Page
+    {
         private readonly MssqlDatabaseHelper _db = new MssqlDatabaseHelper();
+
         protected void Page_Load(object sender, EventArgs e)
-		{
+        {
             if (!IsPostBack)
             {
                 LoadGrid();
@@ -26,7 +27,6 @@ namespace IT_WorkPlant.Models
             gvItems.DataBind();
         }
 
-
         protected void btnAddNew_Click(object sender, EventArgs e)
         {
             pnlAddItem.Visible = true;
@@ -34,7 +34,7 @@ namespace IT_WorkPlant.Models
 
         protected void btnDeleteSelected_Click(object sender, EventArgs e)
         {
-
+            // ยังไม่ implement
         }
 
         protected void btnSaveItem_Click(object sender, EventArgs e)
@@ -123,9 +123,20 @@ namespace IT_WorkPlant.Models
         {
             litPageTitle.Text = "IT Purchase Items Management";
             litBreadcrumb.Text = "Home > Management > IT Items";
+        }
 
-            //litPageTitle.Text = GetLocalResourceObject("PageTitle")?.ToString() ?? "IT Purchase Items Management";
-            //litBreadcrumb.Text = GetLocalResourceObject("Breadcrumb")?.ToString() ?? "Home > Management > IT Items";
+        // ✅ New: Make checkbox "Active" green when checked
+        protected void gvItems_RowDataBound(object sender, GridViewRowEventArgs e)
+        {
+            if (e.Row.RowType == DataControlRowType.DataRow)
+            {
+                CheckBox chk = e.Row.FindControl("chkStatusRow") as CheckBox;
+                if (chk != null && chk.Checked)
+                {
+                    chk.ForeColor = System.Drawing.Color.SeaGreen;
+                    chk.Font.Bold = true;
+                }
+            }
         }
     }
 }
