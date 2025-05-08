@@ -159,9 +159,6 @@ namespace IT_WorkPlant.Pages
             ShowAlertAndRedirect("Request submitted successfully.", ResolveUrl("~/Pages/IT_RequestsList.aspx"));
 
         }
-
-
-
         protected void CancelForm(object sender, EventArgs e)
         {
             ShowAlertAndRedirect("Request cancelled.", ResolveUrl("~/Pages/IT_RequestsList.aspx"));

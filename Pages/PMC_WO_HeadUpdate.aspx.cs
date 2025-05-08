@@ -34,7 +34,7 @@ namespace IT_WorkPlant.Pages
 
         protected void Page_Load(object sender, EventArgs e)
         {
-#if !DEBUG
+
             if (Session["UserEmpID"] == null)
             {
                 Response.Redirect("../Login.aspx");
@@ -48,7 +48,6 @@ namespace IT_WorkPlant.Pages
                     "../Default.aspx"
                 );
             }
-#endif
         }
 
         protected void btnUpload_Click(object sender, EventArgs e)
@@ -140,15 +139,7 @@ namespace IT_WorkPlant.Pages
                 row["Status"] = "Pending";
             }
         }
-
-        private void ShowAlertAndRedirect(string message, string redirectUrl = null)
-        {
-            string script = string.IsNullOrEmpty(redirectUrl)
-                ? $"alert('{message.Replace("", "\n").Replace("'", "\'")}');"
-                : $@"alert('{message.Replace("", "\n").Replace("'", "\'")}'); window.location = '{redirectUrl}'; ";
-
-            ScriptManager.RegisterStartupScript(this, GetType(), "alertRedirect", script, true);
-        }
+       
 
         private void ShowAlert(string message)
         {
@@ -160,5 +151,19 @@ namespace IT_WorkPlant.Pages
                 ClientScript.RegisterStartupScript(this.GetType(), "alert", script, true);
             }
         }
+        private void ShowAlertAndRedirect(string message, string redirectUrl)
+        {
+            string safeMessage = HttpUtility.JavaScriptStringEncode(message);
+            string script = $@"
+        alert('{safeMessage}');
+        window.location.href = '{redirectUrl}';
+    ";
+
+            if (!ClientScript.IsStartupScriptRegistered("redirectScript"))
+            {
+                ClientScript.RegisterStartupScript(this.GetType(), "redirectScript", script, true);
+            }
+        }
+
     }
 }

@@ -1,13 +1,19 @@
-﻿using IT_WorkPlant.Models;
+﻿using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Wordprocessing;
+using IT_WorkPlant.Models;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using Word = DocumentFormat.OpenXml.Wordprocessing;
+
 
 namespace IT_WorkPlant.Pages
 {
@@ -103,11 +109,12 @@ namespace IT_WorkPlant.Pages
         private void RebuildTableRows(string tableType)
         {
             int rowCount = ViewState[$"{tableType}_RowCount"] != null ? (int)ViewState[$"{tableType}_RowCount"] : 0;
-            for (int i = RequestEmailTable.Rows.Count; i <= rowCount; i++)
+            for (int i = RequestEmailTable.Rows.Count - 1; i < rowCount; i++)
             {
-                AddRow(i, tableType);
+                AddRow(i + 1, tableType);
             }
         }
+
 
         private HtmlTableCell CreateInputCell(string tableType, string columnName, int rowNumber)
         {
@@ -117,6 +124,14 @@ namespace IT_WorkPlant.Pages
                 ID = $"{tableType}_{columnName}_{rowNumber}",
                 CssClass = "form-control"
             };
+
+            // ลองดึงค่าจาก ViewState ถ้ามี
+            string savedValue = ViewState[$"{tableType}_{columnName}_{rowNumber}"] as string;
+            if (!string.IsNullOrEmpty(savedValue))
+            {
+                inputBox.Text = savedValue;
+            }
+
             cell.Controls.Add(inputBox);
             return cell;
         }
@@ -146,23 +161,36 @@ namespace IT_WorkPlant.Pages
                 return;
             }
 
+            System.Diagnostics.Debug.WriteLine($"Total rows in RequestEmailTable: {RequestEmailTable.Rows.Count}");
+            System.Diagnostics.Debug.WriteLine($"Expecting row count from ViewState: {ViewState["RequestEmailTable_RowCount"]}");
+
             try
             {
                 // สร้างข้อความแจ้งเตือน
                 StringBuilder lineNotifyMessageBuilder = new StringBuilder();
-                lineNotifyMessageBuilder.AppendLine($"Requester: {userName}");
-                lineNotifyMessageBuilder.AppendLine($"Department: {Session["DeptName"]}");
-                lineNotifyMessageBuilder.AppendLine($"Request Date: {DateTime.Now:yyyy/MM/dd}");
-                lineNotifyMessageBuilder.AppendLine("Email Account Requests:");
+                lineNotifyMessageBuilder.AppendLine("📧 *Email Account Request*");
+                lineNotifyMessageBuilder.AppendLine($"👤 Requester: {userName}");
+                lineNotifyMessageBuilder.AppendLine($"🏢 Department: {Session["DeptName"]}");
+                lineNotifyMessageBuilder.AppendLine($"📅 Request Date: {DateTime.Now:yyyy/MM/dd}");
+                lineNotifyMessageBuilder.AppendLine("");
+                lineNotifyMessageBuilder.AppendLine("📝 *Requested Accounts:*");
 
+
+
+                // ✅ Insert ข้อมูลเข้า DB
                 for (int i = 1; i <= (int)ViewState["RequestEmailTable_RowCount"]; i++)
                 {
-                    HtmlTableRow row = RequestEmailTable.Rows[i] as HtmlTableRow;
+                    int tableRowIndex = i;
+                    if (RequestEmailTable.Rows.Count <= tableRowIndex) break;
 
-                    string firstName = GetTextBoxValueFromHtmlCell(row.Cells[1]);
-                    string lastName = GetTextBoxValueFromHtmlCell(row.Cells[2]);
-                    string employeeID = GetTextBoxValueFromHtmlCell(row.Cells[3]);
-                    string sDepartment = GetTextBoxValueFromHtmlCell(row.Cells[4]);
+                    HtmlTableRow webRow = RequestEmailTable.Rows[tableRowIndex] as HtmlTableRow;
+                    if (webRow == null) continue;
+
+                    string firstName = GetTextBoxValueFromHtmlCell(webRow.Cells[1]);
+                    string lastName = GetTextBoxValueFromHtmlCell(webRow.Cells[2]);
+                    string employeeID = GetTextBoxValueFromHtmlCell(webRow.Cells[3]);
+                    string sDepartment = GetTextBoxValueFromHtmlCell(webRow.Cells[4]);
+                    lineNotifyMessageBuilder.AppendLine($"▶️ Row {i}: {firstName} {lastName} (Dept: {sDepartment})");
 
                     if (string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName) || string.IsNullOrEmpty(employeeID))
                     {
@@ -187,25 +215,162 @@ namespace IT_WorkPlant.Pages
             };
 
                     _dbHelper.InsertData("IT_RequestList", columnValues);
-
-                    lineNotifyMessageBuilder.AppendLine($"- Row {i}:");
-                    lineNotifyMessageBuilder.AppendLine($"  Department: {sDepartment}");
-                    lineNotifyMessageBuilder.AppendLine($"  Full Name: {firstName} {lastName}");
                 }
 
-                // ✅ ส่งเข้า LINE Group แทน user เฉพาะเจาะจง
-                string lineGroupId = ConfigurationManager.AppSettings["LineGroupID"];
-                var notifier = new LineNotificationModel();
-                await notifier.SendLineGroupMessageAsync(lineGroupId, lineNotifyMessageBuilder.ToString());
+                // 🟢 ส่งแจ้งเตือน LINE
+                try
+                {
+                    var notifier = new LineNotificationModel();
+                    string lineGroupId = ConfigurationManager.AppSettings["LineGroupID"];
+                    await notifier.SendLineGroupMessageAsync(lineGroupId, lineNotifyMessageBuilder.ToString());
+                }
+                catch (Exception ex)
+                {
+                    ShowAlert("LINE notify failed: " + ex.Message);
+                }
 
-                ShowAlert("Email Account Request submitted successfully!");
-                Response.Redirect("~/Default.aspx");
+                // ⏬ จากนี้คือส่วนเดิม MEMO ไม่แตะไม่ยุ่ง
+                string deptName = Session["DeptName"]?.ToString();
+                string todayDate = DateTime.Now.ToString("yyyy/MM/dd");
+                string templatePath = Server.MapPath("~/App_Data/MEMO-Rquest_Email.docx");
+
+                using (MemoryStream mem = new MemoryStream())
+                {
+                    using (FileStream fileStream = new FileStream(templatePath, FileMode.Open, FileAccess.Read))
+                    {
+                        fileStream.CopyTo(mem);
+                    }
+                    mem.Position = 0;
+
+                    using (WordprocessingDocument wordDoc = WordprocessingDocument.Open(mem, true))
+                    {
+                        var body = wordDoc.MainDocumentPart.Document.Body;
+
+                        ReplaceAllPlaceholders(body, new Dictionary<string, string>
+                {
+                    { "[DATE]", DateTime.Now.ToString("yyyy/MM/dd") },
+                    { "[Department]", Session["DeptName"]?.ToString() ?? "N/A" }
+                });
+
+                        var table = body.Descendants<Word.Table>().FirstOrDefault();
+                        if (table != null)
+                        {
+                            var rows = table.Elements<Word.TableRow>().ToList();
+                            int rowOffset = 1;
+
+                            for (int i = 0; i < (int)ViewState["RequestEmailTable_RowCount"]; i++)
+                            {
+                                int tableRowIndex = i + 1;
+                                if (RequestEmailTable.Rows.Count <= tableRowIndex) break;
+
+                                HtmlTableRow webRow = RequestEmailTable.Rows[tableRowIndex] as HtmlTableRow;
+                                if (webRow == null) continue;
+
+                                string firstName = GetTextBoxValueFromHtmlCell(webRow.Cells[1]);
+                                string lastName = GetTextBoxValueFromHtmlCell(webRow.Cells[2]);
+                                string employeeID = GetTextBoxValueFromHtmlCell(webRow.Cells[3]);
+                                string sDepartment = GetTextBoxValueFromHtmlCell(webRow.Cells[4]);
+
+                                while (rows.Count <= rowOffset + i)
+                                {
+                                    Word.TableRow templateRow = rows[1];
+                                    var newRow = (Word.TableRow)templateRow.CloneNode(true);
+                                    table.AppendChild(newRow);
+                                    rows = table.Elements<Word.TableRow>().ToList();
+                                }
+
+                                Word.TableRow dataRow = rows[rowOffset + i];
+                                var cells = dataRow.Elements<Word.TableCell>().ToList();
+
+                                while (cells.Count < 5)
+                                {
+                                    dataRow.AppendChild(new Word.TableCell(new Word.Paragraph(new Word.Run(new Word.Text("")))));
+                                    cells = dataRow.Elements<Word.TableCell>().ToList();
+                                }
+                                
+                                ClearCell(cells[0]); cells[0].Append(CreateCenteredParagraph((i + 1).ToString()));
+                                ClearCell(cells[1]); cells[1].Append(CreateCenteredParagraph(firstName));
+                                ClearCell(cells[2]); cells[2].Append(CreateCenteredParagraph(lastName));
+                                ClearCell(cells[3]); cells[3].Append(CreateCenteredParagraph(employeeID));
+                                ClearCell(cells[4]); cells[4].Append(CreateCenteredParagraph(sDepartment));
+
+                                wordDoc.MainDocumentPart.Document.Save();
+                            }
+                            ClientScript.RegisterStartupScript(this.GetType(), "alert", "alert('📥 MEMO กำลังถูกดาวน์โหลด กรุณารอ...');", true);
+
+                            Response.Clear();
+                            Response.ContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+                            Response.AddHeader("Content-Disposition", "attachment; filename=MEMO-Request_Email.docx");
+                            Response.BinaryWrite(mem.ToArray());
+                            Response.Flush();
+                            HttpContext.Current.ApplicationInstance.CompleteRequest(); // ใช้แทน Response.End()
+
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
                 ShowAlert($"Error: {ex.Message}");
             }
         }
+
+        private void ReplaceAllPlaceholders(Body body, Dictionary<string, string> replacements)
+        {
+            foreach (var text in body.Descendants<Text>())
+            {
+                foreach (var pair in replacements)
+                {
+                    if (text.Text.Contains(pair.Key))
+                    {
+                        text.Text = text.Text.Replace(pair.Key, pair.Value);
+                    }
+                }
+            }
+        }
+
+        private void ClearCell(DocumentFormat.OpenXml.Wordprocessing.TableCell cell)
+        {
+            cell.RemoveAllChildren<DocumentFormat.OpenXml.Wordprocessing.Paragraph>();
+            cell.RemoveAllChildren<DocumentFormat.OpenXml.Wordprocessing.Run>();
+            cell.RemoveAllChildren<DocumentFormat.OpenXml.Wordprocessing.Text>();
+        }
+
+        private void ReplaceTextInWord(Body body, string placeholder, string newText)
+        {
+            foreach (var text in body.Descendants<Text>())
+            {
+                if (text.Text.Contains(placeholder))
+                {
+                    text.Text = text.Text.Replace(placeholder, newText);
+                }
+            }
+        }
+        private Paragraph CreateCenteredParagraph(string text)
+        {
+            return new Paragraph(
+                new ParagraphProperties(
+                    new Justification() { Val = JustificationValues.Center },
+                    new SpacingBetweenLines() { After = "0" } 
+                ),
+                new Run(new Text(text ?? ""))
+            );
+        }
+
+        private void UpdateCellText(DocumentFormat.OpenXml.Wordprocessing.TableCell cell, string text)
+        {
+            cell.RemoveAllChildren<DocumentFormat.OpenXml.Wordprocessing.Paragraph>();
+            cell.Append(new DocumentFormat.OpenXml.Wordprocessing.Paragraph(
+                new DocumentFormat.OpenXml.Wordprocessing.Run(
+                    new DocumentFormat.OpenXml.Wordprocessing.Text(text ?? "")
+                )
+            ));
+        }
+
+
+
+
+
 
     }
 }

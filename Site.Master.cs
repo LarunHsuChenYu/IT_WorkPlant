@@ -78,7 +78,8 @@ namespace IT_WorkPlant
                         new KeyValuePair<string, string>("User Account", "~/Pages/IT_UserManagement"),
                         new KeyValuePair<string, string>("Daily Check", "~/Pages/IT_DailyCheckList"),
                         new KeyValuePair<string, string>("Web Portal", "~/Pages/IT_WebPortalList"),
-                        new KeyValuePair<string, string>("IT Purchase Items Maintain", "~/Pages/IT_PurchaseItemsList")
+                        new KeyValuePair<string, string>("IT Purchase Items Maintain", "~/Pages/IT_PurchaseItemsList"),
+                        new KeyValuePair<string, string>("IT Stock", "~/Pages/IT_StockItems.aspx")
                     });
                 AddDropdownItem("PMC", "PMC",
                     new[] {
@@ -93,7 +94,7 @@ namespace IT_WorkPlant
                     });
                 AddDropdownItem("PUR", "PUR",
                     new[] {
-                        new KeyValuePair<string, string>("PUR Function", "~/Pages/PUR_Function")
+                        new KeyValuePair<string, string>("Vanguard Price Update", "~/Pages/PUR_Vanguard_Price_Update")
                     });
                 AddDropdownItem("ADM", "ADM",
                             new[] {
@@ -127,7 +128,7 @@ namespace IT_WorkPlant
                     case "PU":
                         AddDropdownItem("PUR", "PUR",
                             new[] {
-                                new KeyValuePair<string, string>("PUR Function", "~/Pages/PUR_Function")
+                                new KeyValuePair<string, string>("Vanguard Price Update", "~/Pages/PUR_Vanguard_Price_Update")
                             });
                         break;
                     case "AD":

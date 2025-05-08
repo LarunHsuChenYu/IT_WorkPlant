@@ -141,7 +141,8 @@
         <div class="btn-container">
             <asp:Button ID="btnSubmit" runat="server" CssClass="btn btn-primary" Text="Submit Request" OnClick="SubmitForm" />
             <asp:Button ID="btnCancel" runat="server" CssClass="btn btn-secondary" Text="Cancel" OnClick="CancelForm" />
-        </div>
+            </div>
+
 
         <!-- Hidden for compatibility with legacy method -->
         <asp:DropDownList ID="ddlCategory" runat="server" Visible="false" />

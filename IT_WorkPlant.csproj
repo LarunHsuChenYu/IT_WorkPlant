@@ -52,6 +52,9 @@
     <LegacyPublishPropertiesPageEnabled>true</LegacyPublishPropertiesPageEnabled>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AjaxControlToolkit, Version=20.1.0.0, Culture=neutral, PublicKeyToken=28f01b0e84b6d53e, processorArchitecture=MSIL">
+      <HintPath>packages\AjaxControlToolkit.20.1.0\lib\net40\AjaxControlToolkit.dll</HintPath>
+    </Reference>
     <Reference Include="BouncyCastle.Cryptography, Version=2.0.0.0, Culture=neutral, PublicKeyToken=072edcf4a5328938, processorArchitecture=MSIL">
       <HintPath>packages\BouncyCastle.Cryptography.2.5.1\lib\net461\BouncyCastle.Cryptography.dll</HintPath>
     </Reference>
@@ -64,8 +67,8 @@
     <Reference Include="Enums.NET, Version=5.0.0.0, Culture=neutral, PublicKeyToken=7ea1c1650d506225, processorArchitecture=MSIL">
       <HintPath>packages\Enums.NET.5.0.0\lib\net461\Enums.NET.dll</HintPath>
     </Reference>
-    <Reference Include="EPPlus, Version=8.0.1.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
-      <HintPath>packages\EPPlus.8.0.1\lib\net462\EPPlus.dll</HintPath>
+    <Reference Include="EPPlus, Version=8.0.2.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <HintPath>packages\EPPlus.8.0.2\lib\net462\EPPlus.dll</HintPath>
     </Reference>
     <Reference Include="EPPlus.Interfaces, Version=8.0.0.0, Culture=neutral, PublicKeyToken=a694d7f3b0907a61, processorArchitecture=MSIL">
       <HintPath>packages\EPPlus.Interfaces.8.0.0\lib\net462\EPPlus.Interfaces.dll</HintPath>
@@ -263,9 +266,13 @@
     <Content Include="Login.aspx" />
     <Content Include="Pages\IT_DailyCheckReport.aspx" />
     <Content Include="Pages\IT_EmailRequest.aspx" />
+    <Content Include="Pages\IT_PurchaseItemsList.aspx" />
     <Content Include="Pages\IT_RequestsList.aspx" />
     <Content Include="Pages\IT_RequestForm.aspx" />
     <Content Include="Pages\IT_DailyCheckList.aspx" />
+    <Content Include="Pages\IT_StockIssue.aspx" />
+    <Content Include="Pages\IT_StockItems.aspx" />
+    <Content Include="Pages\IT_StockReceive.aspx" />
     <Content Include="Pages\IT_Stuff_Purchase.aspx" />
     <Content Include="Pages\IT_UserManagement.aspx" />
     <Content Include="Pages\IT_WebPortalList.aspx" />
@@ -295,6 +302,7 @@
     <None Include=".dockerignore">
       <DependentUpon>Dockerfile</DependentUpon>
     </None>
+    <Content Include="Pages\PUR_Vanguard_Price_Update.aspx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.esm.js" />
@@ -401,6 +409,13 @@
     <Compile Include="Pages\IT_EmailRequest.aspx.designer.cs">
       <DependentUpon>IT_EmailRequest.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Pages\IT_PurchaseItemsList.aspx.cs">
+      <DependentUpon>IT_PurchaseItemsList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\IT_PurchaseItemsList.aspx.designer.cs">
+      <DependentUpon>IT_PurchaseItemsList.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Pages\IT_RequestsList.aspx.cs">
       <DependentUpon>IT_RequestsList.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -421,6 +436,27 @@
     </Compile>
     <Compile Include="Pages\IT_DailyCheckList.aspx.designer.cs">
       <DependentUpon>IT_DailyCheckList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\IT_StockIssue.aspx.cs">
+      <DependentUpon>IT_StockIssue.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\IT_StockIssue.aspx.designer.cs">
+      <DependentUpon>IT_StockIssue.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\IT_StockItems.aspx.cs">
+      <DependentUpon>IT_StockItems.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\IT_StockItems.aspx.designer.cs">
+      <DependentUpon>IT_StockItems.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\IT_StockReceive.aspx.cs">
+      <DependentUpon>IT_StockReceive.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\IT_StockReceive.aspx.designer.cs">
+      <DependentUpon>IT_StockReceive.aspx</DependentUpon>
     </Compile>
     <Compile Include="Pages\IT_Stuff_Purchase.aspx.cs">
       <DependentUpon>IT_Stuff_Purchase.aspx</DependentUpon>
@@ -484,6 +520,13 @@
     </Compile>
     <Compile Include="Pages\PMC_WO_HeadUpdate.aspx.designer.cs">
       <DependentUpon>PMC_WO_HeadUpdate.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\PUR_Vanguard_Price_Update.aspx.cs">
+      <DependentUpon>PUR_Vanguard_Price_Update.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\PUR_Vanguard_Price_Update.aspx.designer.cs">
+      <DependentUpon>PUR_Vanguard_Price_Update.aspx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Site.Master.cs">

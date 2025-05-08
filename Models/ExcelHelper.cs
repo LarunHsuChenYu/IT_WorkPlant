@@ -22,35 +22,30 @@ namespace IT_WorkPlant.Models
             fileUpload.SaveAs(filePath);
             return filePath;
         }
-
         public DataTable ReadExcelData(string filePath)
         {
             if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
-            {
                 throw new FileNotFoundException("Excel file not found at the specified path.");
-            }
 
             DataTable dataTable = new DataTable();
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+            
 
             using (var package = new ExcelPackage(new FileInfo(filePath)))
             {
                 var worksheet = package.Workbook.Worksheets[0];
                 if (worksheet == null)
-                {
                     throw new Exception("The Excel file is empty or has no valid worksheet.");
-                }
 
+                // ✅ สร้าง column header จากแถวแรก
                 foreach (var firstRowCell in worksheet.Cells[1, 1, 1, worksheet.Dimension.End.Column])
                 {
-                    string columnName = firstRowCell.Text?.Trim(); // 去除多餘空格
-                    if (!string.IsNullOrEmpty(columnName)) // 僅新增非空欄位
-                    {
+                    string columnName = firstRowCell.Text?.Trim();
+                    if (!string.IsNullOrEmpty(columnName))
                         dataTable.Columns.Add(columnName);
-                    }
                 }
 
-                // 填充數據行，處理跨欄置中
+                // ✅ อ่านข้อมูลจากแถวที่ 2 เป็นต้นไป
                 for (int rowNum = 2; rowNum <= worksheet.Dimension.End.Row; rowNum++)
                 {
                     var row = dataTable.NewRow();
@@ -59,11 +54,9 @@ namespace IT_WorkPlant.Models
                         var cell = worksheet.Cells[rowNum, colNum];
                         string cellValue = cell.Text;
 
-                        // 如果當前單元格為空，檢查它是否屬於合併範圍
+                        // ถ้า cell ว่าง ให้ไปดึงค่าจากเซลล์ที่ merge ไว้แทน
                         if (string.IsNullOrWhiteSpace(cellValue))
-                        {
                             cellValue = GetMergedCellValue(worksheet, rowNum, colNum);
-                        }
 
                         row[colNum - 1] = cellValue;
                     }
@@ -73,7 +66,6 @@ namespace IT_WorkPlant.Models
 
             return dataTable;
         }
-
         private string GetMergedCellValue(ExcelWorksheet worksheet, int row, int column)
         {
             // 檢查 MergedCells 集合，確認當前單元格是否屬於某個合併範圍
@@ -98,19 +90,19 @@ namespace IT_WorkPlant.Models
                 throw new FileNotFoundException("Template file not found.", templatePath);
             }
 
-            // 複製模板文件到輸出路徑
+            // ✅ คัดลอกไฟล์เทมเพลตไปยัง output
             File.Copy(templatePath, outputPath, true);
 
             using (var package = new ExcelPackage(new FileInfo(outputPath)))
             {
-                // 獲取指定的工作表
+                // ✅ เปิด worksheet ตามชื่อ
                 var worksheet = package.Workbook.Worksheets[sheetName];
                 if (worksheet == null)
                 {
                     throw new ArgumentException($"Sheet '{sheetName}' not found in template.");
                 }
 
-                // 刪除不需要的工作表，只保留指定的工作表
+                // ✅ ลบ worksheet อื่นออก ยกเว้น sheet ปัจจุบัน
                 foreach (var ws in package.Workbook.Worksheets.ToList())
                 {
                     if (ws.Name != sheetName)
@@ -119,12 +111,13 @@ namespace IT_WorkPlant.Models
                     }
                 }
 
-                // 插入行以適應數據量
+                // ✅ แทรกแถวเพิ่มถ้าจำนวนแถวเกิน 17
                 if (data.Rows.Count > 17)
                 {
                     worksheet.InsertRow(iStartRow, data.Rows.Count - 17, iStartRow);
                 }
 
+                // ✅ ใส่หัวข้อมูล
                 for (int i = 0; i < sInvHeadInfo.Length; i++)
                 {
                     worksheet.Cells[10 + i, 11].Value = sInvHeadInfo[i];
@@ -132,7 +125,7 @@ namespace IT_WorkPlant.Models
 
                 int startRow = iStartRow;
 
-                // 填充數據
+                // ✅ เติมข้อมูลลงตาราง
                 foreach (DataRow row in data.Rows)
                 {
                     for (int col = 0; col < data.Columns.Count; col++)
@@ -150,7 +143,7 @@ namespace IT_WorkPlant.Models
                     startRow++;
                 }
 
-                // 添加公式
+                // ✅ เพิ่มสูตรรวมท้ายตาราง
                 if (startRow > 34)
                 {
                     string sFormulaG_Col = $"SUM(G18:G{startRow - 1})";
@@ -169,10 +162,10 @@ namespace IT_WorkPlant.Models
                     }
                 }
 
-                // 計算公式
+                // ✅ คำนวณสูตร
                 worksheet.Calculate();
 
-                // 保存文件
+                // ✅ บันทึก
                 package.Save();
             }
         }

@@ -15,6 +15,15 @@ namespace IT_WorkPlant.Pages
     {
 
         /// <summary>
+        /// imgUserIcon control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Image imgUserIcon;
+
+        /// <summary>
         /// requesterName control.
         /// </summary>
         /// <remarks>
@@ -22,6 +31,15 @@ namespace IT_WorkPlant.Pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox requesterName;
+
+        /// <summary>
+        /// imgDeptIcon control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Image imgDeptIcon;
 
         /// <summary>
         /// department control.
@@ -33,6 +51,15 @@ namespace IT_WorkPlant.Pages
         protected global::System.Web.UI.WebControls.TextBox department;
 
         /// <summary>
+        /// imgDateIcon control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Image imgDateIcon;
+
+        /// <summary>
         /// requestDate control.
         /// </summary>
         /// <remarks>
@@ -42,15 +69,6 @@ namespace IT_WorkPlant.Pages
         protected global::System.Web.UI.WebControls.TextBox requestDate;
 
         /// <summary>
-        /// RequestEmailTable control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlTable RequestEmailTable;
-
-        /// <summary>
         /// btnRequestEmailAddRow control.
         /// </summary>
         /// <remarks>
@@ -58,6 +76,15 @@ namespace IT_WorkPlant.Pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnRequestEmailAddRow;
+
+        /// <summary>
+        /// RequestEmailTable control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlTable RequestEmailTable;
 
         /// <summary>
         /// btnRequestEmailSubmit control.
