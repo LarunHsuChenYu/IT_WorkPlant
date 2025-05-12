@@ -232,7 +232,7 @@ Swal.fire({{
             {
                 string timeDisplay = startTime.ToString("HH:mm");
 
-                if (timeDisplay == "12:00" || timeDisplay == "12:30")
+                if (timeDisplay == "12:30")
                 {
                     ListItem lunchBreakItem = new ListItem($"⛔ {timeDisplay} (พักกลางวัน)", timeDisplay);
                     lunchBreakItem.Attributes.Add("style", "color: red;");
@@ -505,45 +505,50 @@ Swal.fire({{
 
         protected void GridView1_RowDataBound(object sender, GridViewRowEventArgs e)
         {
+            if (e.Row.RowType == DataControlRowType.Header)
+            {
+                return;
+            }
+
             if (e.Row.RowType == DataControlRowType.DataRow)
             {
                 e.Row.Attributes["style"] = "background-color: #e0ffe0 !important;";
-            }
-            string[] rooms = { "101", "102", "103", "201", "202", "203" };
-            string currentUser = Session["username"]?.ToString();
-            string timeSlot = DataBinder.Eval(e.Row.DataItem, "TimeSlot")?.ToString();
 
-            for (int i = 1; i <= rooms.Length; i++)
-            {
-                TableCell cell = e.Row.Cells[i];
-                string room = rooms[i - 1];
-                string reservedBy = DataBinder.Eval(e.Row.DataItem, room + "_ReservedBy")?.ToString();
-                string department = DataBinder.Eval(e.Row.DataItem, room + "_Department")?.ToString();
-                string status = DataBinder.Eval(e.Row.DataItem, room)?.ToString();
+                string[] rooms = { "101", "102", "103", "201", "202", "203" };
+                string currentUser = Session["username"]?.ToString();
+                string timeSlot = DataBinder.Eval(e.Row.DataItem, "TimeSlot")?.ToString();
 
-                if (status == "Booked" && !string.IsNullOrEmpty(reservedBy))
+                for (int i = 1; i <= rooms.Length; i++)
                 {
-                    cell.Attributes["style"] = "background-color: #ffcccc !important;";
-                    cell.Controls.Clear();
+                    TableCell cell = e.Row.Cells[i];
+                    string room = rooms[i - 1];
+                    string reservedBy = DataBinder.Eval(e.Row.DataItem, room + "_ReservedBy")?.ToString();
+                    string department = DataBinder.Eval(e.Row.DataItem, room + "_Department")?.ToString();
+                    string status = DataBinder.Eval(e.Row.DataItem, room)?.ToString();
 
-                    Literal lit = new Literal();
-                    lit.Text = !string.IsNullOrEmpty(department)
-                        ? $"<span>Booked by {department}</span>"
-                        : "Free";
-                    cell.Controls.Add(lit);
-
-                    string currentUserDept = ViewState["userDept"]?.ToString();
-                    if (currentUserDept == department && IsEditMode)
+                    if (status == "Booked" && !string.IsNullOrEmpty(reservedBy))
                     {
-                        LinkButton btn = new LinkButton
-                        {
-                            Text = "cancel",
-                            CommandName = "CancelBooking",
-                            CommandArgument = timeSlot + "|" + room,
-                            CssClass = "btn btn-sm btn-danger mt-1"
-                        };
+                        cell.Attributes["style"] = "background-color: #ffcccc !important;";
+                        cell.Controls.Clear();
 
-                        btn.OnClientClick = @"
+                        Literal lit = new Literal();
+                        lit.Text = !string.IsNullOrEmpty(department)
+                            ? $"<span>Booked by {department}</span>"
+                            : "Free";
+                        cell.Controls.Add(lit);
+
+                        string currentUserDept = ViewState["userDept"]?.ToString();
+                        if (currentUserDept == department && IsEditMode)
+                        {
+                            LinkButton btn = new LinkButton
+                            {
+                                Text = "cancel",
+                                CommandName = "CancelBooking",
+                                CommandArgument = timeSlot + "|" + room,
+                                CssClass = "btn btn-sm btn-danger mt-1"
+                            };
+
+                            btn.OnClientClick = @"
 Swal.fire({
   title: 'Are you sure?',
   text: 'This will cancel your booking.',
@@ -558,17 +563,19 @@ Swal.fire({
 });
 return false;
 ";
-                        cell.Controls.Add(btn);
+                            cell.Controls.Add(btn);
+                        }
                     }
-                }
-                else
-                {
-                    cell.Controls.Clear();
-                    Literal lit = new Literal { Text = "Free" };
-                    cell.Controls.Add(lit);
+                    else
+                    {
+                        cell.Controls.Clear();
+                        Literal lit = new Literal { Text = "Free" };
+                        cell.Controls.Add(lit);
+                    }
                 }
             }
         }
+
         protected void GridView1_RowCommand(object sender, GridViewCommandEventArgs e)
         {
             if (e.CommandName == "CancelBooking")

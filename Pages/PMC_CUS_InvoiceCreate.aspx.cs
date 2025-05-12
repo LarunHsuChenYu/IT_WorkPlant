@@ -107,7 +107,7 @@ namespace IT_WorkPlant.Pages
 
         private void CleanExcelFile(string filePath)
         {
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            ExcelPackage.License.SetNonCommercialPersonal("Enrich_Testing");
             using (var package = new ExcelPackage(new System.IO.FileInfo(filePath)))
             {
                 var worksheet = package.Workbook.Worksheets[0];

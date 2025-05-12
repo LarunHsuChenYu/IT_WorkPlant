@@ -277,6 +277,7 @@
     <Content Include="Pages\IT_UserManagement.aspx" />
     <Content Include="Pages\IT_WebPortalList.aspx" />
     <Content Include="Pages\IT_WifiRequest.aspx" />
+    <Content Include="Pages\Logout.aspx" />
     <Content Include="Pages\MeetingRoomBooking.aspx" />
     <Content Include="Pages\PMC_CUS_InvoiceCreate.aspx" />
     <Content Include="Pages\PMC_CUS_ProductCBMMaintain.aspx" />
@@ -302,6 +303,7 @@
     <None Include=".dockerignore">
       <DependentUpon>Dockerfile</DependentUpon>
     </None>
+    <Content Include="Pages\PUR_InvoicePriceUpdate.aspx" />
     <Content Include="Pages\PUR_Vanguard_Price_Update.aspx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
@@ -486,6 +488,13 @@
     <Compile Include="Pages\IT_WifiRequest.aspx.designer.cs">
       <DependentUpon>IT_WifiRequest.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Pages\Logout.aspx.cs">
+      <DependentUpon>Logout.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\Logout.aspx.designer.cs">
+      <DependentUpon>Logout.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Pages\MeetingRoomBooking.aspx.cs">
       <DependentUpon>MeetingRoomBooking.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -520,6 +529,13 @@
     </Compile>
     <Compile Include="Pages\PMC_WO_HeadUpdate.aspx.designer.cs">
       <DependentUpon>PMC_WO_HeadUpdate.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\PUR_InvoicePriceUpdate.aspx.cs">
+      <DependentUpon>PUR_InvoicePriceUpdate.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\PUR_InvoicePriceUpdate.aspx.designer.cs">
+      <DependentUpon>PUR_InvoicePriceUpdate.aspx</DependentUpon>
     </Compile>
     <Compile Include="Pages\PUR_Vanguard_Price_Update.aspx.cs">
       <DependentUpon>PUR_Vanguard_Price_Update.aspx</DependentUpon>

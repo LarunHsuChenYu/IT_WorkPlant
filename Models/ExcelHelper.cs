@@ -9,6 +9,10 @@ namespace IT_WorkPlant.Models
 {
     public class ExcelHelper
     {
+        static ExcelHelper()
+        {
+            ExcelPackage.License.SetNonCommercialPersonal("Enrich_Testing");
+        }
         public string SaveUploadedFile(HttpPostedFile fileUpload, HttpServerUtility server)
         {
             string directoryPath = server.MapPath("~/App_Uploads/");
@@ -28,8 +32,6 @@ namespace IT_WorkPlant.Models
                 throw new FileNotFoundException("Excel file not found at the specified path.");
 
             DataTable dataTable = new DataTable();
-
-            
 
             using (var package = new ExcelPackage(new FileInfo(filePath)))
             {
@@ -89,20 +91,16 @@ namespace IT_WorkPlant.Models
             {
                 throw new FileNotFoundException("Template file not found.", templatePath);
             }
-
-            // ✅ คัดลอกไฟล์เทมเพลตไปยัง output
             File.Copy(templatePath, outputPath, true);
 
             using (var package = new ExcelPackage(new FileInfo(outputPath)))
             {
-                // ✅ เปิด worksheet ตามชื่อ
                 var worksheet = package.Workbook.Worksheets[sheetName];
                 if (worksheet == null)
                 {
                     throw new ArgumentException($"Sheet '{sheetName}' not found in template.");
                 }
 
-                // ✅ ลบ worksheet อื่นออก ยกเว้น sheet ปัจจุบัน
                 foreach (var ws in package.Workbook.Worksheets.ToList())
                 {
                     if (ws.Name != sheetName)
@@ -111,13 +109,11 @@ namespace IT_WorkPlant.Models
                     }
                 }
 
-                // ✅ แทรกแถวเพิ่มถ้าจำนวนแถวเกิน 17
                 if (data.Rows.Count > 17)
                 {
                     worksheet.InsertRow(iStartRow, data.Rows.Count - 17, iStartRow);
                 }
 
-                // ✅ ใส่หัวข้อมูล
                 for (int i = 0; i < sInvHeadInfo.Length; i++)
                 {
                     worksheet.Cells[10 + i, 11].Value = sInvHeadInfo[i];
@@ -125,7 +121,6 @@ namespace IT_WorkPlant.Models
 
                 int startRow = iStartRow;
 
-                // ✅ เติมข้อมูลลงตาราง
                 foreach (DataRow row in data.Rows)
                 {
                     for (int col = 0; col < data.Columns.Count; col++)
@@ -143,7 +138,6 @@ namespace IT_WorkPlant.Models
                     startRow++;
                 }
 
-                // ✅ เพิ่มสูตรรวมท้ายตาราง
                 if (startRow > 34)
                 {
                     string sFormulaG_Col = $"SUM(G18:G{startRow - 1})";
@@ -162,10 +156,7 @@ namespace IT_WorkPlant.Models
                     }
                 }
 
-                // ✅ คำนวณสูตร
                 worksheet.Calculate();
-
-                // ✅ บันทึก
                 package.Save();
             }
         }

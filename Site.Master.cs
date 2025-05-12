@@ -15,60 +15,62 @@ namespace IT_WorkPlant
         {
             if (!IsPostBack)
             {
+                phLoginStatus.Controls.Clear();
+
                 if (Session["UserEmpID"] != null)
                 {
-                    // 用户已登录，添加登出按钮
-                    LinkButton btnLogout = new LinkButton
+                    HyperLink logoutLink = new HyperLink
                     {
-                        ID = "btnLogout",
+                        NavigateUrl = "~/Pages/Logout.aspx", 
                         CssClass = "nav-link",
                         Text = "Log-out"
                     };
-                    btnLogout.Click += Logout_Click;
-                    phLoginStatus.Controls.Add(new HtmlGenericControl("li") { Attributes = { ["class"] = "nav-item" }, Controls = { btnLogout } });
+
+                    phLoginStatus.Controls.Add(new HtmlGenericControl("li")
+                    {
+                        Attributes = { ["class"] = "nav-item" },
+                        Controls = { logoutLink }
+                    });
+
+                    string deptName = Session["DeptName"]?.ToString();
+                    BuildNavbar(deptName);
                 }
                 else
                 {
-                    // 用户未登录，添加登录链接
                     HyperLink loginLink = new HyperLink
                     {
                         NavigateUrl = "Login.aspx",
                         CssClass = "nav-link",
                         Text = "Log-In"
                     };
-                    phLoginStatus.Controls.Add(new HtmlGenericControl("li") { Attributes = { ["class"] = "nav-item" }, Controls = { loginLink } });
+
+                    phLoginStatus.Controls.Add(new HtmlGenericControl("li")
+                    {
+                        Attributes = { ["class"] = "nav-item" },
+                        Controls = { loginLink }
+                    });
                 }
 
                 litYear.Text = DateTime.Now.Year.ToString();
-
-                // 從 Session 獲取部門 ID
-                string deptName = Session["DeptName"]?.ToString();
-
-                // 根據部門顯示導航項目
-                BuildNavbar(deptName);
             }
         }
-
         protected void Logout_Click(object sender, EventArgs e)
         {
-            // 清除 Session 資料
             Session.Clear();
             Session.Abandon();
 
-            // 可選：清除所有的認證 Cookie（如果有使用）
             if (Request.Cookies[".ASPXAUTH"] != null)
             {
                 Response.Cookies[".ASPXAUTH"].Expires = DateTime.Now.AddDays(-1);
             }
-
-            // 重定向至登入頁面
-            Response.Redirect("~/Login.aspx");
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "logoutRedirect",
+                "window.location.href='../Login.aspx';", true);
         }
 
         private void BuildNavbar(string deptName)
         {
             // 基本導航項目
-            AddNavItem("Meeting Room Booking", "~/Pages/MeetingRoomBooking");
+            //AddNavItem("Meeting Room Booking", "~/Pages/MeetingRoomBooking");
 
             // IT 部門可以看到所有導航項目
             if (deptName == "IT")
@@ -94,7 +96,8 @@ namespace IT_WorkPlant
                     });
                 AddDropdownItem("PUR", "PUR",
                     new[] {
-                        new KeyValuePair<string, string>("Vanguard Price Update", "~/Pages/PUR_Vanguard_Price_Update")
+                        new KeyValuePair<string, string>("Vanguard Price Update", "~/Pages/PUR_Vanguard_Price_Update"),
+                        new KeyValuePair<string, string>("InvoicePriceUpdate", "~/Pages/PUR_InvoicePriceUpdate")
                     });
                 AddDropdownItem("ADM", "ADM",
                             new[] {
@@ -128,7 +131,8 @@ namespace IT_WorkPlant
                     case "PU":
                         AddDropdownItem("PUR", "PUR",
                             new[] {
-                                new KeyValuePair<string, string>("Vanguard Price Update", "~/Pages/PUR_Vanguard_Price_Update")
+                                new KeyValuePair<string, string>("Vanguard Price Update", "~/Pages/PUR_Vanguard_Price_Update"),
+                                new KeyValuePair<string, string>("InvoicePriceUpdate", "~/Pages/PUR_InvoicePriceUpdate")
                             });
                         break;
                     case "AD":

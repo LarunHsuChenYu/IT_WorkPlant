@@ -140,7 +140,11 @@
     background-color: #e6f9e6;
     color: #000 !important; /* ✅ เปลี่ยนให้เป็นดำทั้งหมด */
 }
-
+.bg-panel-darkblue {
+    background-color: #d5e2e8 !important; /* ฟ้าเทาเข้ม = เหมือนหัวตาราง */
+    border-radius: 12px;
+    color: white;
+}
 .my-green-table tbody tr:nth-child(odd) td {
     background-color: #ffffff !important; 
 }
@@ -228,8 +232,7 @@ label.form-label {
                         <asp:Label ID="lblDept" runat="server" CssClass="text-muted" />
                     </div>
                 </div>
-            </div>
-           
+            </div>           
             <!-- Body -->
             <div class="card-body p-4">
                 <div class="row g-4 mb-4">
@@ -414,8 +417,8 @@ label.form-label {
     </div>
                   
     <div class="col-md-3">
-        <asp:Panel ID="pnlBookingResult" runat="server" CssClass="card shadow-sm p-3 bg-light-green h-100" Visible="true">
-            <div class="fw-bold text-dark mb-2">✨ Displayable results:</div>
+        <asp:Panel ID="pnlBookingResult" runat="server" CssClass="card shadow-sm p-3 bg-panel-darkblue h-100" Visible="true">
+            <div class="fw-bold text-dark mb-2">✨ Booking Summary ✨</div>
 
             <div class="mb-2">
                 <div class="fw-semibold text-muted">Date</div>
@@ -436,7 +439,7 @@ label.form-label {
                 <div class="fw-semibold text-muted">Start Time</div>
                 <asp:Label ID="lblStart" runat="server" Text="-" CssClass="form-control text-center bg-white fw-bold" />
             </div>
-
+            
             <div class="mb-2">
                 <div class="fw-semibold text-muted">End Time</div>
                 <asp:Label ID="lblEnd" runat="server" Text="-" CssClass="form-control text-center bg-white fw-bold" />
@@ -445,7 +448,7 @@ label.form-label {
             <button type="button" class="btn btn-outline-primary mt-3 w-100" onclick="captureResult()">📥 Export booking as image</button>
             <hr />
 <div class="text-center mt-3">
-    <img src="/Image/room.gif" alt="room icon" class="img-fluid rounded shadow-sm" style="max-width: 160px;" />
+    <img src="/Image/room.gif?v=2" alt="room icon" class="img-fluid" style="max-width: 160px;" />
 </div>
         </asp:Panel>
     </div>
