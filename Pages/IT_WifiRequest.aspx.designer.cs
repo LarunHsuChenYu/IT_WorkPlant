@@ -15,13 +15,22 @@ namespace IT_WorkPlant.Pages
     {
 
         /// <summary>
-        /// wifiRequestPanel control.
+        /// lblTitle control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel wifiRequestPanel;
+        protected global::System.Web.UI.WebControls.Label lblTitle;
+
+        /// <summary>
+        /// lblName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblName;
 
         /// <summary>
         /// requesterName control.
@@ -33,6 +42,15 @@ namespace IT_WorkPlant.Pages
         protected global::System.Web.UI.WebControls.TextBox requesterName;
 
         /// <summary>
+        /// lblDept control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblDept;
+
+        /// <summary>
         /// department control.
         /// </summary>
         /// <remarks>
@@ -40,6 +58,15 @@ namespace IT_WorkPlant.Pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox department;
+
+        /// <summary>
+        /// lblDate control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblDate;
 
         /// <summary>
         /// requestDate control.

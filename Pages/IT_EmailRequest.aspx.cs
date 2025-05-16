@@ -21,7 +21,6 @@ namespace IT_WorkPlant.Pages
     {
         private readonly MssqlDatabaseHelper _dbHelper = new MssqlDatabaseHelper();
         private readonly UserInfo _ui = new UserInfo();
-
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
@@ -37,10 +36,13 @@ namespace IT_WorkPlant.Pages
 
                 ViewState["RequestEmailTable_RowCount"] = 1;
                 AddRow(1, "RequestEmailTable");
+
+                Page.DataBind(); 
             }
             else
             {
                 RebuildTableRows("RequestEmailTable");
+               
             }
         }
 
@@ -366,11 +368,77 @@ namespace IT_WorkPlant.Pages
                 )
             ));
         }
+        protected string GetLabel(string key)
+        {
+            var lang = Session["lang"]?.ToString() ?? "th";
 
+            var th = new Dictionary<string, string>
+    {
+        { "Title", "คำขอเปิดบัญชีอีเมล" },
+        { "Subtitle", "ส่งคำขอเพื่อเปิดบัญชีอีเมลใหม่ คุณสามารถขอเปิดได้ครั้งละไม่เกิน 5 บัญชี" },
+        { "RequesterName", "ชื่อผู้ขอ" },
+        { "Department", "แผนก / ฝ่าย" },
+        { "RequestDate", "วันที่ขอ" },
+        { "EmailRequestList", "คำขอบัญชีอีเมล" },
+        { "No", "ลำดับ" },
+        { "FirstName", "ชื่อจริง" },
+        { "LastName", "นามสกุล" },
+        { "EmployeeID", "รหัสพนักงาน" },
+        { "Dept", "แผนก" },
+        { "Submit", "ส่งคำขอ" },
+        { "AddRow", "+ เพิ่มแถว" },
+        { "Note", "* หลังจากส่งคำขอแล้ว ไฟล์ Word จะถูกดาวน์โหลดโดยอัตโนมัติ" }
+    };
 
+            var en = new Dictionary<string, string>
+    {
+        { "Title", "Email Account Request" },
+        { "Subtitle", "Submit a request for new email accounts. You can request up to 5 accounts at once." },
+        { "RequesterName", "Requester Name" },
+        { "Department", "Department" },
+        { "RequestDate", "Request Date" },
+        { "EmailRequestList", "Email Account Requests" },
+        { "No", "No." },
+        { "FirstName", "First Name" },
+        { "LastName", "Last Name" },
+        { "EmployeeID", "Employee ID" },
+        { "Dept", "Department" },
+        { "Submit", "Submit Request" },
+        { "AddRow", "+ Add Row" },
+        { "Note", "* After submitting the request, the Word document will download automatically." }
+    };
+            var zh = new Dictionary<string, string>
+    {
+        { "Title", "電子郵件申請" },
+        { "Subtitle", "申請新電子郵件帳戶。您可一次申請五位同仁。" },
+        { "RequesterName", "申請者姓名" },
+        { "Department", "部門" },
+        { "RequestDate", "申請日期" },
+        { "EmailRequestList", "電子郵件帳號列表" },
+        { "No", "編號" },
+        { "FirstName", "名" },
+        { "LastName", "姓" },
+        { "EmployeeID", "工號" },
+        { "Dept", "部門" },
+        { "Submit", "提交申請" },
+        { "AddRow", "新增" },
+        { "Note", "送出申請單後，Word文件將自動下載。" }
+    };
+            Dictionary<string, string> dict;
+            if (lang == "en")
+            {
+                dict = en;
+            }
+            else if (lang == "zh")
+            {
+                dict = zh;
+            }
+            else
+            {
+                dict = th;
+            }
+            return dict.ContainsKey(key) ? dict[key] : key;
 
-
-
-
+        }
     }
 }

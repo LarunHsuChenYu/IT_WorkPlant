@@ -142,8 +142,8 @@ namespace IT_WorkPlant.Models
 
             if (!string.IsNullOrEmpty(deptName))
             {
-                query += " AND d.DeptName_en = @DeptName";
-                parameters.Add(new SqlParameter("@DeptName", deptName));
+                query += " AND r.DeptNameID = @DeptNameID";  // ใช้ DeptNameID จริงในการกรอง
+                parameters.Add(new SqlParameter("@DeptNameID", deptName));
             }
 
             if (!string.IsNullOrEmpty(requestUser))
@@ -216,6 +216,33 @@ namespace IT_WorkPlant.Models
         {
             string query = "SELECT IssueTypeID, IssueTypeCode FROM IssueType ORDER BY IssueTypeID";
             return _dbHelper.ExecuteQuery(query, null);
+     
+       }
+        public DataTable GetRequestFinishedDates()
+        {
+            string query = @"
+        SELECT DISTINCT CONVERT(VARCHAR(10), FinishedDate, 120) AS FinishedDate
+        FROM IT_RequestList
+        WHERE FinishedDate IS NOT NULL
+        ORDER BY FinishedDate DESC";
+
+            return _dbHelper.ExecuteQuery(query, null);
+        }
+        public DataTable GetFinishedDatesByMonth(string selectedMonth)
+        {
+            string query = @"
+        SELECT DISTINCT CONVERT(VARCHAR(10), FinishedDate, 120) AS FinishedDate
+        FROM IT_RequestList
+        WHERE 
+            FinishedDate IS NOT NULL AND
+            FORMAT(FinishedDate, 'yyyy-MM') = @SelectedMonth
+        ORDER BY FinishedDate DESC";
+
+            SqlParameter[] parameters = {
+        new SqlParameter("@SelectedMonth", selectedMonth)
+    };
+
+            return _dbHelper.ExecuteQuery(query, parameters);
         }
     }
 }

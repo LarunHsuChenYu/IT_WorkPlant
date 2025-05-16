@@ -20,6 +20,11 @@ namespace IT_WorkPlant.Pages
         private readonly UserInfo _ui = new UserInfo();
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (Session["lang"] == null)
+            {
+                Session["lang"] = "en"; // ตั้งค่าภาษาเริ่มต้น
+            }
+
             if (!IsPostBack)
             {
                 // 檢查是否已登入
@@ -38,7 +43,7 @@ namespace IT_WorkPlant.Pages
                 requesterName.Text = Session["UserName"].ToString();
                 department.Text = Session["DeptName"].ToString();
 
-                ViewState["VisitorTable_RowCount"] = 1; // 初始化行數
+                ViewState["VisitorTable_RowCount"] = 1;
                 ViewState["OnboardTable_RowCount"] = 1;
                 ViewState["BizTripTable_RowCount"] = 1;
 
@@ -46,17 +51,17 @@ namespace IT_WorkPlant.Pages
                 AddRow(1, "BizTripTable");
                 AddRow(1, "OnboardTable");
 
+                Page.DataBind(); // ⭐ สำคัญสุด
             }
             else
             {
                 hfActiveTab.Value = "VisitorDiv";
                 ShowTab("VisitorDiv");
-                // 確保每次回傳表單後，重新建立表格的行
+
                 RebuildTableRows("VisitorTable");
                 RebuildTableRows("BizTripTable");
                 RebuildTableRows("OnboardTable");
             }
-
         }
 
         private void ShowTab(string tabId)
@@ -597,5 +602,92 @@ namespace IT_WorkPlant.Pages
                 ShowAlert($"Error: {ex.Message}");
             }
         }
+        protected string GetLabel(string key)
+        {
+            string lang = Session["lang"]?.ToString() ?? "th";
+
+            var th = new Dictionary<string, string> {
+        { "title", "แบบฟอร์มขอใช้งาน Wi-Fi" },
+        { "requester", "ชื่อผู้ขอ" },
+        { "department", "แผนก" },
+        { "issuedate", "วันที่ขอ" },
+        { "visitor", "ผู้มาติดต่อ" },
+        { "company", "บริษัท" },
+        { "businesstrip", "ออกงานนอกสถานที่" },
+        { "newemployee", "พนักงานใหม่" },
+        { "visitorrequest", "คำขอสำหรับผู้มาติดต่อ" },
+        { "biztriprequest", "คำขอสำหรับออกงานนอกสถานที่" },
+        { "onboardrequest", "คำขอสำหรับพนักงานใหม่" },
+        { "no", "ลำดับ" },
+        { "fullname", "ชื่อ - นามสกุล" },
+        { "empid", "รหัสพนักงาน" },
+        { "email", "อีเมล" },
+        { "devicetype", "ประเภทอุปกรณ์" },
+        { "mac", "MAC Address" },
+        { "description", "รายละเอียด" },
+        { "addrow", "+ เพิ่มแถว" },
+        { "submit", "ส่งคำขอ" },
+        { "startdate", "วันที่เริ่มต้น" },
+        { "enddate", "วันที่สิ้นสุด" },
+    };
+
+            var en = new Dictionary<string, string> {
+        { "title", "Wi-Fi Usage Request Form" },
+        { "requester", "Requester Name" },
+        { "department", "Department" },
+        { "issuedate", "Request Date" },
+        { "visitor", "Visitor Request" },
+        { "company", "Company" },
+        { "businesstrip", "Business Trip" },
+        { "newemployee", "New Employee" },
+        { "visitorrequest", "Visitor Request" },
+        { "biztriprequest", "Business Trip Request" },
+        { "onboardrequest", "New Employee Request" },
+        { "no", "No." },
+        { "fullname", "Full Name" },
+        { "empid", "Employee ID" },
+        { "email", "Email" },
+        { "devicetype", "Device Type" },
+        { "mac", "MAC Address" },
+        { "description", "Description" },
+        { "addrow", "+ Add Row" },
+        { "submit", "Submit Request" },
+        { "startdate", "Start Date" },
+        { "enddate", "End Date" }
+    };
+
+            var zh = new Dictionary<string, string> {
+        { "title", "無線網路使用申請單" },
+        { "requester", "申請者姓名" },
+        { "department", "部門" },
+        { "issuedate", "申請日期" },
+        { "visitor", "訪客需求" },
+        { "company", "公司" },
+        { "businesstrip", "出差" },
+        { "newemployee", "新進員工" },
+        { "visitorrequest", "訪客需求" },
+        { "biztriprequest", "出差申請" },
+        { "onboardrequest", "新進員工需求" },
+        { "no", "編號" },
+        { "fullname", "全名" },
+        { "empid", "工號" },
+        { "email", "電子信箱" },
+        { "devicetype", "設備類別" },
+        { "mac", "硬體位址" },
+        { "description", "描述" },
+        { "addrow", "新增" },
+        { "submit", "送出" },
+        { "startdate", "開始日期" },
+        { "enddate", "結束日期" },
+    };
+
+            Dictionary<string, string> dict;
+            if (lang == "zh") dict = zh;
+            else if (lang == "th") dict = th;
+            else dict = en;
+
+            return dict.ContainsKey(key) ? dict[key] : key;
+        }
+
     }
 }

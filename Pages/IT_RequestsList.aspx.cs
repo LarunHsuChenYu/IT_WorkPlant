@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
@@ -16,12 +17,9 @@ namespace IT_WorkPlant.Pages
         {
             if (_model == null)
                 _model = new IT_RequestModel();
-
-            // App_Temp
             string uploadFolder = Server.MapPath("~/App_Temp");
             if (!System.IO.Directory.Exists(uploadFolder))
             {
-                // ถ้าไม่มีก็สร้างขึ้นมา
                 System.IO.Directory.CreateDirectory(uploadFolder);
             }
 
@@ -36,15 +34,16 @@ namespace IT_WorkPlant.Pages
                 BindDepartmentsDropdown(userDept);
                 BindRequestData();
                 BindFilters();
+                BindIssueDateFilter(ddlIssueMonth.SelectedValue);
 
                 ddlStatus.SelectedValue = "WIP";
                 ViewState["Status"] = "WIP";
+               
 
                 BindRequestData();
             }
         }
-
-
+     
         private void BindDepartmentsDropdown(string userDept)
         {
             DataTable dtDepartments = _model.GetDepartments();
@@ -69,34 +68,38 @@ namespace IT_WorkPlant.Pages
                 ddlDeptName.Enabled = false;
             }
 
-#if DEBUG
+
             //✅ Debug check data ** ตรวจสอบข้อมูล **
             System.Diagnostics.Debug.WriteLine("===== START DEBUG: Dropdown Departments =====");
             foreach (ListItem item in ddlDeptName.Items)
                 System.Diagnostics.Debug.WriteLine($"{item.Value} - {item.Text}");
             System.Diagnostics.Debug.WriteLine("===== END DEBUG: Dropdown Departments =====");
-#endif
-        }
 
+        }
         private void BindRequestData()
         {
             string issueMonth = ViewState["IssueMonth"]?.ToString();
             string issueDate = ViewState["IssueDate"]?.ToString();
+            string finishedDate = ViewState["FinishedDate"]?.ToString();
             string deptName = ViewState["Department"]?.ToString();
             string requestUser = ViewState["RequestUser"]?.ToString();
             string issueType = ViewState["IssueType"]?.ToString();
             string status = ViewState["Status"]?.ToString();
 
-            // ✅ Retrieve data from the database (already sorted) // ดึงข้อมูลจากฐานข้อมูล (ที่เรียงถูกแล้ว)
-            DataTable dt = _model.GetFilteredRequests(deptName, requestUser, issueType, status, issueMonth, issueDate);
+            DataTable dt = _model.GetFilteredRequests(deptName, requestUser, issueType, status, issueMonth, null);
             DataView dv = dt.DefaultView;
             dv.Sort = "ReportID ASC";
 
-#if DEBUG
-            // ✅ Debug to check the retrieved values  // เพื่อตรวจสอบค่าที่ดึงมา
-            foreach (DataRow row in dt.Rows)
-                System.Diagnostics.Debug.WriteLine("ReportID: " + row["ReportID"]);
-#endif
+            List<string> filters = new List<string>();
+
+            if (!string.IsNullOrEmpty(issueDate))
+                filters.Add($"CONVERT(IssueDate, 'System.String') = '{issueDate}'");
+
+            if (!string.IsNullOrEmpty(finishedDate))
+                filters.Add($"CONVERT(FinishedDate, 'System.String') = '{finishedDate}'");
+
+            if (filters.Count > 0)
+                dv.RowFilter = string.Join(" AND ", filters);
 
             gvRequests.DataSource = dv;
             gvRequests.DataBind();
@@ -106,10 +109,17 @@ namespace IT_WorkPlant.Pages
         {
             BindIssueMonthFilter(); // Call the month filter
 
-            //✅ dded this section to ensure the department dropdown only shows "All Department"
-            ddlDeptName.Items.Clear();
+            // ✅ ดึงแผนกจากฐานข้อมูลมาลง dropdown
+            DataTable dtDepartments = _model.GetDepartments();
+            ddlDeptName.DataSource = dtDepartments;
+            ddlDeptName.DataTextField = "DeptName_en";
+            ddlDeptName.DataValueField = "DeptNameID";
+            ddlDeptName.DataBind();
+
+            // ✅ แทรกตัวเลือก All Department ไว้ด้านบน
             ddlDeptName.Items.Insert(0, new ListItem("All Department", ""));
 
+            // ✅ ฟิลเตอร์อื่น ๆ
             BindFilterDropdown(ddlRequestUser, "RequestUser", "All Request Users");
             BindFilterDropdown(ddlIssueType, "IssueType", "All Issue Types");
             BindFilterDropdown(ddlStatus, "Status", "All Statuses");
@@ -134,6 +144,26 @@ namespace IT_WorkPlant.Pages
             ddlIssueMonth.DataBind();
             ddlIssueMonth.Items.Insert(0, new ListItem("All Months", ""));
         }
+        private void BindIssueDateFilter(string selectedMonth)
+        {
+            ddlIssueDate.Items.Clear();
+            ddlIssueDate.Items.Insert(0, new ListItem("All Dates", ""));
+
+            if (string.IsNullOrEmpty(selectedMonth))
+                return;
+
+            if (DateTime.TryParse($"{selectedMonth}-01", out DateTime firstDay))
+            {
+                int daysInMonth = DateTime.DaysInMonth(firstDay.Year, firstDay.Month);
+
+                for (int day = 1; day <= daysInMonth; day++)
+                {
+                    DateTime date = new DateTime(firstDay.Year, firstDay.Month, day);
+                    string formattedDate = date.ToString("yyyy-MM-dd");
+                    ddlIssueDate.Items.Add(new ListItem(date.ToString("dd"), formattedDate));
+                }
+            }
+        }
 
         protected void FilterChanged(object sender, EventArgs e)
         {
@@ -142,10 +172,21 @@ namespace IT_WorkPlant.Pages
             ViewState["RequestUser"] = ddlRequestUser.SelectedValue;
             ViewState["IssueType"] = ddlIssueType.SelectedValue;
             ViewState["Status"] = ddlStatus.SelectedValue;
+            ViewState["IssueDate"] = ddlIssueDate.SelectedValue;
+
+            BindIssueDateFilter(ddlIssueMonth.SelectedValue);
+
+            if (!string.IsNullOrEmpty(ViewState["IssueDate"]?.ToString()))
+            {
+                string selectedDate = ViewState["IssueDate"].ToString();
+                if (ddlIssueDate.Items.FindByValue(selectedDate) != null)
+                {
+                    ddlIssueDate.SelectedValue = selectedDate;
+                }
+            }
 
             BindRequestData();
         }
-
         protected void gvRequests_PageIndexChanging(object sender, GridViewPageEventArgs e)
         {
             gvRequests.PageIndex = e.NewPageIndex;
@@ -175,36 +216,33 @@ namespace IT_WorkPlant.Pages
                 ddlDepartment.DataTextField = "DeptName_en";
                 ddlDepartment.DataValueField = "DeptNameID";
                 ddlDepartment.DataBind();
+                object deptIDObj = gvRequests.DataKeys[e.NewEditIndex].Values["DeptNameID"];
+                string currentDeptID = deptIDObj?.ToString();
 
-                object deptObj = gvRequests.DataKeys[e.NewEditIndex].Values["Department"];
-                string currentDept = deptObj?.ToString().Trim();
-
-#if DEBUG
-                System.Diagnostics.Debug.WriteLine($"===== Current Department: {currentDept} =====");
-                foreach (ListItem item in ddlDepartment.Items)
-                    System.Diagnostics.Debug.WriteLine($"{item.Value} - {item.Text}");
-#endif
-                ListItem selectedItem = ddlDepartment.Items.FindByText(currentDept);
-                if (selectedItem != null)
-                    ddlDepartment.SelectedValue = selectedItem.Value;
+                if (!string.IsNullOrEmpty(currentDeptID) && ddlDepartment.Items.FindByValue(currentDeptID) != null)
+                {
+                    ddlDepartment.SelectedValue = currentDeptID;
+                }
                 else
-                    System.Diagnostics.Debug.WriteLine("⚠️ ไม่พบค่าใน DropDownList: " + currentDept);
-            }
+                {
+                    System.Diagnostics.Debug.WriteLine("⚠️ ไม่พบ DeptNameID ใน DropDown: " + currentDeptID);
+                }
 
-            DropDownList ddlIssueType = gvRequests.Rows[e.NewEditIndex].FindControl("ddlIssueType") as DropDownList;
-            if (ddlIssueType != null)
-            {
-                DataTable dtIssueTypes = _model.GetAllIssueTypes();
-                ddlIssueType.DataSource = dtIssueTypes;
-                ddlIssueType.DataTextField = "IssueTypeCode";
-                ddlIssueType.DataValueField = "IssueTypeID";
-                ddlIssueType.DataBind();
 
-                object issueTypeObj = gvRequests.DataKeys[e.NewEditIndex].Values["IssueTypeID"];
-                ddlIssueType.SelectedValue = issueTypeObj?.ToString();
+                DropDownList ddlIssueType = gvRequests.Rows[e.NewEditIndex].FindControl("ddlIssueType") as DropDownList;
+                if (ddlIssueType != null)
+                {
+                    DataTable dtIssueTypes = _model.GetAllIssueTypes();
+                    ddlIssueType.DataSource = dtIssueTypes;
+                    ddlIssueType.DataTextField = "IssueTypeCode";
+                    ddlIssueType.DataValueField = "IssueTypeID";
+                    ddlIssueType.DataBind();
+
+                    object issueTypeObj = gvRequests.DataKeys[e.NewEditIndex].Values["IssueTypeID"];
+                    ddlIssueType.SelectedValue = issueTypeObj?.ToString();
+                }
             }
         }
-
         protected void gvRequests_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
         {
             gvRequests.EditIndex = -1;
@@ -231,14 +269,14 @@ namespace IT_WorkPlant.Pages
             DropDownList ddlDepartment = gvRequests.Rows[e.RowIndex].FindControl("ddlDepartment") as DropDownList;
             string selectedDeptID = ddlDepartment?.SelectedValue;
 
-#if DEBUG
+
             System.Diagnostics.Debug.WriteLine("======= DEBUG LOG =======");
             System.Diagnostics.Debug.WriteLine("ReportID: " + reportID);
             System.Diagnostics.Debug.WriteLine("isDone: " + isDone);
             System.Diagnostics.Debug.WriteLine("FinishedDate ก่อนอัปเดต: " + finishedDate);
             System.Diagnostics.Debug.WriteLine("SelectedDeptID ก่อนอัปเดต: " + selectedDeptID);
             System.Diagnostics.Debug.WriteLine("=========================");
-#endif
+
 
             string query = @"
                 UPDATE IT_RequestList
@@ -315,7 +353,23 @@ namespace IT_WorkPlant.Pages
             gvRequests.EditIndex = -1;
             BindRequestData();
         }
+        protected void ddlIssueMonth_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ViewState["IssueMonth"] = ddlIssueMonth.SelectedValue;
 
-        protected void gvRequests_SelectedIndexChanged(object sender, EventArgs e) { }
+            // ✅ Reset finishedDate picker เมื่อเปลี่ยนเดือน
+            ViewState["FinishedDate"] = null;
+            txtFinishedDate.Text = "";
+
+            BindIssueDateFilter(ddlIssueMonth.SelectedValue);
+            BindRequestData();
+        }
+
+        protected void txtFinishedDate_TextChanged(object sender, EventArgs e)
+        {
+            ViewState["FinishedDate"] = txtFinishedDate.Text.Trim();
+            BindRequestData();
+        }
+
     }
 }

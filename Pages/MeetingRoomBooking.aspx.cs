@@ -39,11 +39,31 @@ namespace IT_WorkPlant.Pages
                 Response.Redirect("../Login.aspx");
                 return;
             }
+            string lang = Session["lang"] != null ? Session["lang"].ToString() : "en";
+            Session["lang"] = lang; // ถ้ายังไม่มี ให้เซ็ตเลย
 
             GridView1.RowCommand += GridView1_RowCommand;
 
             if (!IsPostBack)
             {
+                lblTitle.Text = GetLabel("title");
+                lblDateLabel.Text = GetLabel("date");      
+                lblRoomLabel.Text = GetLabel("room");
+                submitButton.Text = GetLabel("bookroom");
+                btnEditMode.Text = GetLabel("edit");
+                btnExitEditMode.Text = GetLabel("exit");
+                lblSummary.Text = GetLabel("summary");
+                btnExport.Text = GetLabel("export");
+                lblStartLabel.Text = GetLabel("start");
+                lblEndLabel.Text = GetLabel("end");
+                lblActionsLabel.Text = GetLabel("actions");
+                lblSummaryDate.Text = GetLabel("date");
+                lblSummaryDept.Text = GetLabel("department");
+                lblSummaryRoom.Text = GetLabel("room");
+                lblSummaryStart.Text = GetLabel("start");
+                lblSummaryEnd.Text = GetLabel("end");
+
+
                 UpdateStartTimeList();
                 UpdateEndTimeList();
                 UpdateDepartmentList();
@@ -59,7 +79,6 @@ namespace IT_WorkPlant.Pages
                 lblUser.Text = username;
                 lblDept.Text = dept;
 
-                
                 BindRoomSchedule(Calendar1.SelectedDate);
             }
 
@@ -71,8 +90,7 @@ Swal.fire({{
   icon: 'success',
   title: '{message}',
   confirmButtonText: 'OK'
-}});
-";
+}});";
                 ScriptManager.RegisterStartupScript(this, this.GetType(), Guid.NewGuid().ToString(), script, true);
                 Session["SuccessMessage"] = null;
             }
@@ -502,7 +520,6 @@ Swal.fire({{
         {
             GridView1.HeaderRow.TableSection = TableRowSection.TableHeader;
         }
-
         protected void GridView1_RowDataBound(object sender, GridViewRowEventArgs e)
         {
             if (e.Row.RowType == DataControlRowType.Header)
@@ -516,7 +533,16 @@ Swal.fire({{
 
                 string[] rooms = { "101", "102", "103", "201", "202", "203" };
                 string currentUser = Session["username"]?.ToString();
-                string timeSlot = DataBinder.Eval(e.Row.DataItem, "TimeSlot")?.ToString();
+                string timeSlot = DataBinder.Eval(e.Row.DataItem, "TimeSlot")?.ToString(); 
+                string lang = Session["lang"]?.ToString() ?? "en";
+                string freeText = lang == "th" ? "ว่าง" : lang == "zh" ? "閒置" : "Free";
+                string bookedFormat = lang == "th" ? "จองโดย {0}" : lang == "zh" ? "已被 {0} 預約" : "Booked by {0}";
+                string cancelText = lang == "th" ? "ยกเลิก" : lang == "zh" ? "取消" : "cancel";
+
+                string swalTitle = lang == "th" ? "คุณแน่ใจหรือไม่?" : lang == "zh" ? "您確定要取消嗎？" : "Are you sure?";
+                string swalText = lang == "th" ? "การกระทำนี้จะยกเลิกการจอง" : lang == "zh" ? "此操作將取消預約。" : "This will cancel your booking.";
+                string swalConfirm = lang == "th" ? "ใช่, ยกเลิกเลย!" : lang == "zh" ? "是的，取消！" : "Yes, cancel it!";
+                string swalCancel = lang == "th" ? "ไม่, เก็บไว้" : lang == "zh" ? "不，保留" : "No, keep it";
 
                 for (int i = 1; i <= rooms.Length; i++)
                 {
@@ -533,8 +559,9 @@ Swal.fire({{
 
                         Literal lit = new Literal();
                         lit.Text = !string.IsNullOrEmpty(department)
-                            ? $"<span>Booked by {department}</span>"
-                            : "Free";
+                            ? $"<span style='white-space: nowrap'>{string.Format(bookedFormat, department)}</span>"
+                            : freeText;
+
                         cell.Controls.Add(lit);
 
                         string currentUserDept = ViewState["userDept"]?.ToString();
@@ -542,25 +569,15 @@ Swal.fire({{
                         {
                             LinkButton btn = new LinkButton
                             {
-                                Text = "cancel",
+                                Text = cancelText,
                                 CommandName = "CancelBooking",
                                 CommandArgument = timeSlot + "|" + room,
                                 CssClass = "btn btn-sm btn-danger mt-1"
                             };
 
-                            btn.OnClientClick = @"
-Swal.fire({
-  title: 'Are you sure?',
-  text: 'This will cancel your booking.',
-  icon: 'warning',
-  showCancelButton: true,
-  confirmButtonText: 'Yes, cancel it!',
-  cancelButtonText: 'No, keep it'
-}).then((result) => {
-  if (result.isConfirmed) {
-    __doPostBack('" + GridView1.UniqueID + @"','CancelBooking$" + timeSlot + "|" + room + @"');
-  }
-});
+                            btn.OnClientClick = $@"Swal.fire({{title: '{swalTitle}',text: '{swalText}',icon: 'warning',showCancelButton: 
+true,confirmButtonText: '{swalConfirm}',cancelButtonText: '{swalCancel}'}}).then((result) => {{if (result.isConfirmed) {{__doPostBack('{GridView1.UniqueID}','CancelBooking${timeSlot}|{room}');}}
+}});
 return false;
 ";
                             cell.Controls.Add(btn);
@@ -569,12 +586,13 @@ return false;
                     else
                     {
                         cell.Controls.Clear();
-                        Literal lit = new Literal { Text = "Free" };
+                        Literal lit = new Literal { Text = freeText };
                         cell.Controls.Add(lit);
                     }
                 }
             }
         }
+
 
         protected void GridView1_RowCommand(object sender, GridViewCommandEventArgs e)
         {
@@ -788,9 +806,73 @@ Swal.fire({
                 e.Cell.Font.Bold = true;
             }
         }
+        private string GetLabel(string key)
+        {
+            string lang = Session["lang"]?.ToString() ?? "en";
 
+            Dictionary<string, string> en = new Dictionary<string, string>
+            {
+                ["title"] = "Meeting Room Booking",
+                ["bookroom"] = "Book Room",
+                ["edit"] = "Edit",
+                ["exit"] = "Exit Edit Mode",
+                ["export"] = "📤 Export as Image",
+                ["summary"] = "✨ Booking Summary ✨",
+                ["department"] = "Department",
+                ["room"] = "Room",
+                ["date"] = "Date",
+                ["start"] = "Start Time",
+                ["end"] = "End Time",
+                ["actions"] = "Actions"
+            };
 
+            Dictionary<string, string> th = new Dictionary<string, string>
+            {
+                ["title"] = "การจองห้องประชุม",
+                ["bookroom"] = "จองห้อง",
+                ["edit"] = "แก้ไข",
+                ["exit"] = "ออกจากโหมดแก้ไข",
+                ["export"] = "📤 บันทึกเป็นภาพ",
+                ["summary"] = "✨ สรุปการจอง ✨",
+                ["department"] = "แผนก",
+                ["room"] = "ห้อง",
+                ["date"] = "วันที่",
+                ["start"] = "เวลาเริ่ม",
+                ["end"] = "เวลาสิ้นสุด",
+                ["actions"] = "การดำเนินการ"
+            };
+            Dictionary<string, string> zh = new Dictionary<string, string>
+            {
+                ["title"] = "會議室預約",
+                ["bookroom"] = "預約會議室",
+                ["edit"] = "編輯",
+                ["exit"] = "離開編輯模式",
+                ["export"] = "匯出圖片",
+                ["summary"] = "✨ 預約摘要 ✨",
+                ["department"] = "部門",
+                ["room"] = "會議室",
+                ["date"] = "日期",
+                ["start"] = "開始時間",
+                ["end"] = "結束時間",
+                ["actions"] = "操作"
+            };
 
+            Dictionary<string, string> dict;
+            if (lang == "zh")
+            {
+                dict = zh;
+            }
+            else if (lang == "th")
+            {
+                dict = th;
+            }
+            else
+            {
+                dict = en;
+            }
+
+            return dict.ContainsKey(key) ? dict[key] : key;
+        }
     }
 
 }

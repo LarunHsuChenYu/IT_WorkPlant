@@ -24,30 +24,30 @@
         }
 
         .myGridView th {
-            background: linear-gradient(to right, #2e8b57, #3cb371); /* ✅ หัวไล่เขียวเข้ม → เขียวกลาง */
+            background: linear-gradient(to right, #2e8b57, #3cb371); 
             color: white;
             font-weight: bold;
             text-align: left;
         }
 
         .myGridView tr:nth-child(odd) {
-            background: linear-gradient(to right, #e0fbe8, #c6f3d4); /* ✅ แถวคี่: เขียวอ่อน → เขียวอ่อนมาก */
+            background: linear-gradient(to right, #e0fbe8, #c6f3d4); 
         }
 
         .myGridView tr:nth-child(even) {
-            background: linear-gradient(to right, #d4fcdc, #b9efc5); /* ✅ แถวคู่: สีเข้มขึ้นนิด ๆ */
+            background: linear-gradient(to right, #d4fcdc, #b9efc5);
         }
 
         .myGridView tr:hover {
-            background: linear-gradient(to right, #a4f5af, #80eb9e); /* ✅ Hover: ไล่เขียวกลาง → เขียวสด */
+            background: linear-gradient(to right, #a4f5af, #80eb9e);
         }
 
         .myGridView th,
         .myGridView td {
             border: 1px solid black;
             padding: 8px;
-            text-align: center;        /* ✅ จัดกลางแนวนอน */
-            vertical-align: middle;    /* ✅ จัดกลางแนวตั้ง */
+            text-align: center;        
+            vertical-align: middle;   
         }
 
         h2 {
@@ -63,6 +63,11 @@
     <!-- Filters Section -->
     <div class="filter-container">
         <asp:DropDownList ID="ddlIssueMonth" runat="server" AutoPostBack="true" OnSelectedIndexChanged="FilterChanged" />
+
+         <asp:DropDownList ID="ddlIssueDate" runat="server" AutoPostBack="true" OnSelectedIndexChanged="FilterChanged">
+        <asp:ListItem Value="" Text="All Dates" />
+    </asp:DropDownList>
+
         <asp:DropDownList ID="ddlDeptName" runat="server" AutoPostBack="true" OnSelectedIndexChanged="FilterChanged">
             <asp:ListItem Value="" Text="All Departments" />
         </asp:DropDownList>
@@ -75,15 +80,31 @@
         <asp:DropDownList ID="ddlStatus" runat="server" AutoPostBack="true" OnSelectedIndexChanged="FilterChanged">
             <asp:ListItem Value="" Text="All Status" />
         </asp:DropDownList>
-    </div>
+       <!-- ✅ แทน ddlFinishedDate ด้วย TextBox + Calendar -->
+    <asp:TextBox 
+        ID="txtFinishedDate" 
+        runat="server" 
+        CssClass="form-control" 
+        Width="200px" 
+        AutoPostBack="true"
+        OnTextChanged="txtFinishedDate_TextChanged"
+        placeholder="Select Finished Date"/>
+
+    <ajaxToolkit:CalendarExtender 
+        ID="CalendarExtender1" 
+        runat="server" 
+        TargetControlID="txtFinishedDate"
+        Format="yyyy-MM-dd" />
+</div>
 
     <!-- GridView Section -->
-    <asp:GridView ID="gvRequests" runat="server" AutoGenerateColumns="False" CssClass="myGridView"
-        DataKeyNames="ReportID,Department,IssueTypeID"
-        OnRowEditing="gvRequests_RowEditing"
-        OnRowCancelingEdit="gvRequests_RowCancelingEdit"
-        OnRowUpdating="gvRequests_RowUpdating"
-        OnSelectedIndexChanged="gvRequests_SelectedIndexChanged">
+   <asp:GridView ID="gvRequests" runat="server" AutoGenerateColumns="False" CssClass="myGridView"
+    DataKeyNames="ReportID,Department,IssueTypeID"
+    OnRowEditing="gvRequests_RowEditing"
+    OnRowCancelingEdit="gvRequests_RowCancelingEdit"
+    OnRowUpdating="gvRequests_RowUpdating">
+
+        
 
         <HeaderStyle BackColor="LightBlue" ForeColor="Black" Font-Bold="True" />
         <FooterStyle BackColor="LightBlue" ForeColor="Black" />

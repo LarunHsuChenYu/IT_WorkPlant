@@ -19,11 +19,11 @@
         <asp:LinkButton ID="btnShowNeeds" runat="server" OnClick="btnShowNeeds_Click" CssClass="text-decoration-none">
             <div class="card text-center shadow-sm border-0 w-100" style="background-color: #fff; padding: 0.75rem;">
                 <div class="card-body">
-                    <h6 class="text-muted mb-1">จำนวนสินค้าที่ต้องซื้อเพิ่ม</h6>
+                    <h6 class="text-muted mb-1"><%= GetLabel("needsreplenish") %></h6>
                     <h3 class="fw-bold text-danger">
                         <asp:Label ID="lblNeedsCount" runat="server" Text="0"></asp:Label>
                     </h3>
-                    <p class="mb-0">🛒 ต้องซื้อ</p>
+                    <p class="mb-0">🛒 <%= GetLabel("showneeds") %></p>
                 </div>
             </div>
         </asp:LinkButton>
@@ -34,11 +34,11 @@
         <asp:LinkButton ID="btnShowAll" runat="server" OnClick="btnShowAll_Click" CssClass="text-decoration-none">
             <div class="card text-center shadow-sm border-0 w-100" style="background-color: #fff; padding: 0.75rem;">
                 <div class="card-body">
-                    <h6 class="text-muted mb-1">จำนวนสินค้าทั้งหมด</h6>
+                    <h6 class="text-muted mb-1"><%= GetLabel("totalitems") %></h6>
                     <h3 class="fw-bold text-primary">
                         <asp:Label ID="lblTotalItems" runat="server" Text="0"></asp:Label>
                     </h3>
-                    <p class="mb-0">📦 รายการ</p>
+                    <p class="mb-0">📦 <%= GetLabel("showall") %></p>
                 </div>
             </div>
         </asp:LinkButton>
@@ -51,8 +51,8 @@
                  style="background: linear-gradient(135deg, #fff0f0, #ffe6e6); padding: 1rem;">
                 <div class="card-body">
                     <div style="font-size: 2.2rem;">📦➕</div>
-                    <h6 class="fw-bold text-danger mt-2 mb-1">รับของเข้า</h6>
-                    <p class="text-muted mb-0" style="font-size: 0.9rem;">เพิ่มสินค้าลงคลัง</p>
+                    <h6 class="fw-bold text-danger mt-2 mb-1"><%= GetLabel("receive") %></h6>
+                    <p class="text-muted mb-0" style="font-size: 0.9rem;"><%= GetLabel("receivenote") %></p>
                 </div>
             </div>
         </asp:HyperLink>
@@ -65,25 +65,29 @@
                  style="background: linear-gradient(135deg, #fffbe6, #fff1cc); padding: 1rem;">
                 <div class="card-body">
                     <div style="font-size: 2.2rem;">📤➖</div>
-                    <h6 class="fw-bold text-warning mt-2 mb-1">เบิกของออก</h6>
-                    <p class="text-muted mb-0" style="font-size: 0.9rem;">จ่ายออกจากคลัง</p>
+                    <h6 class="fw-bold text-warning mt-2 mb-1"><%= GetLabel("issue") %></h6>
+                    <p class="text-muted mb-0" style="font-size: 0.9rem;"><%= GetLabel("issuenote") %></p>
+
                 </div>
             </div>
         </asp:HyperLink>
     </div>
 </div>
 
- <!-- Table Title -->
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <h5 class="text-success fw-bold">รายการสินค้าในคลัง – WH</h5>
-        </div>
-        <!-- Search Box -->
-<div class="mb-3 d-flex justify-content-end">
-    <asp:TextBox ID="txtSearch" runat="server" CssClass="form-control me-2" placeholder="ค้นหารายการสินค้า..." Width="250px" />
-    <asp:Button ID="btnSearch" runat="server" Text="🔍 ค้นหา" CssClass="btn btn-primary" OnClick="btnSearch_Click" />
+<!-- Table Title -->
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <h5 class="text-success fw-bold"><%= GetLabel("title") %> – WH</h5>
 </div>
 
-        <!-- Stock Table -->
+<!-- Search Box -->
+<!-- Search Box -->
+<div class="mb-3 d-flex justify-content-end">
+    <asp:TextBox ID="txtSearch" runat="server" CssClass="form-control me-2" Width="250px" />
+    <asp:Button ID="btnSearch" runat="server" CssClass="btn btn-primary" OnClick="btnSearch_Click" />
+</div>
+
+
+<!-- Stock Table -->
 <asp:GridView ID="gvStockItems" runat="server"
     CssClass="table table-bordered"
     AutoGenerateColumns="False"
@@ -96,59 +100,85 @@
     OnRowDataBound="gvStockItems_RowDataBound"
     OnRowEditing="gvStockItems_RowEditing"
     OnRowCancelingEdit="gvStockItems_RowCancelingEdit"
-    OnRowUpdating="gvStockItems_RowUpdating">
-    
+    OnRowUpdating="gvStockItems_RowUpdating"
+    OnRowCreated="gvStockItems_RowCreated">
+
+
     <HeaderStyle CssClass="table-light" />
     <Columns>
+        <asp:TemplateField HeaderText="no">
+            <ItemTemplate>
+                <asp:Label ID="lblRowNumber" runat="server" />
+            </ItemTemplate>
+        </asp:TemplateField>
 
-         <asp:TemplateField HeaderText="ลำดับ">
-        <ItemTemplate>
-            <asp:Label ID="lblRowNumber" runat="server" />
-        </ItemTemplate>
-    </asp:TemplateField>
+        <asp:TemplateField HeaderText="productname">
+            <ItemTemplate><%# Eval("ProductName") %></ItemTemplate>
+        </asp:TemplateField>
 
-        <asp:BoundField DataField="ProductName" HeaderText="รายการ" ReadOnly="true" />
-        <asp:BoundField DataField="Model" HeaderText="รุ่น" ReadOnly="true" />
-        <asp:BoundField DataField="Unit" HeaderText="หน่วยนับ" ReadOnly="true" />
+        <asp:TemplateField HeaderText="model">
+            <ItemTemplate><%# Eval("Model") %></ItemTemplate>
+        </asp:TemplateField>
 
-       
-        <asp:TemplateField HeaderText="ขั้นต่ำ">
+        <asp:TemplateField HeaderText="unit">
+            <ItemTemplate><%# Eval("Unit") %></ItemTemplate>
+        </asp:TemplateField>
+
+        <asp:TemplateField HeaderText="minimumqty">
             <ItemTemplate><%# Eval("MinimumQty") %></ItemTemplate>
             <EditItemTemplate>
                 <asp:TextBox ID="txtMinimumQty" runat="server" Text='<%# Bind("MinimumQty") %>' CssClass="form-control" />
             </EditItemTemplate>
         </asp:TemplateField>
 
-        
-        <asp:TemplateField HeaderText="คงเหลือในคลัง">
+        <asp:TemplateField HeaderText="inventoryqty">
             <ItemTemplate><%# Eval("InventoryQty") %></ItemTemplate>
             <EditItemTemplate>
                 <asp:TextBox ID="txtInventoryQty" runat="server" Text='<%# Bind("InventoryQty") %>' CssClass="form-control" />
             </EditItemTemplate>
         </asp:TemplateField>
 
-       
-       <asp:TemplateField HeaderText="ต้องเติมเพิ่ม">
-    <ItemTemplate>
-        <asp:Label ID="lblReplenishQty" runat="server" Text='<%# Eval("ReplenishQty") %>' />
-    </ItemTemplate>
-</asp:TemplateField>
+        <asp:TemplateField HeaderText="replenishqty">
+            <ItemTemplate>
+                <asp:Label ID="lblReplenishQty" runat="server" Text='<%# Eval("ReplenishQty") %>' />
+            </ItemTemplate>
+        </asp:TemplateField>
 
-
-        
-        <asp:TemplateField HeaderText="ราคาต่อหน่วย">
+        <asp:TemplateField HeaderText="unitcost">
             <ItemTemplate><%# Eval("UnitCost", "{0:N2}") %></ItemTemplate>
             <EditItemTemplate>
                 <asp:TextBox ID="txtUnitCost" runat="server" Text='<%# Bind("UnitCost") %>' CssClass="form-control" />
             </EditItemTemplate>
         </asp:TemplateField>
 
-        <asp:BoundField DataField="InventoryValue" HeaderText="มูลค่ารวม" DataFormatString="{0:N2}" ReadOnly="true" />
-        <asp:BoundField DataField="CreateDate" HeaderText="วันที่เพิ่ม" DataFormatString="{0:yyyy-MM-dd HH:mm}" ReadOnly="true" />
-        <asp:BoundField DataField="ReceivedBy" HeaderText="ผู้รับเข้า" ReadOnly="true" />
+        <asp:TemplateField HeaderText="inventoryvalue">
+            <ItemTemplate><%# Eval("InventoryValue", "{0:N2}") %></ItemTemplate>
+        </asp:TemplateField>
 
-        
-        <asp:CommandField ShowEditButton="true" EditText="✏️ แก้ไข" UpdateText="💾 บันทึก" CancelText="❌ ยกเลิก" />
+        <asp:TemplateField HeaderText="createdate">
+            <ItemTemplate><%# Eval("CreateDate", "{0:yyyy-MM-dd HH:mm}") %></ItemTemplate>
+        </asp:TemplateField>
+
+        <asp:TemplateField HeaderText="receivedby">
+            <ItemTemplate><%# Eval("ReceivedBy") %></ItemTemplate>
+        </asp:TemplateField>
+
+       <asp:TemplateField HeaderText="actions">
+    <ItemTemplate>
+        <asp:LinkButton ID="btnEdit" runat="server" CommandName="Edit" CssClass="btn btn-sm btn-warning">
+            ✏️ <%# GetLabel("edit") %>
+        </asp:LinkButton>
+    </ItemTemplate>
+    <EditItemTemplate>
+        <asp:LinkButton ID="btnUpdate" runat="server" CommandName="Update" CssClass="btn btn-sm btn-success">
+            💾 <%# GetLabel("save") %>
+        </asp:LinkButton>
+        <asp:LinkButton ID="btnCancel" runat="server" CommandName="Cancel" CssClass="btn btn-sm btn-secondary">
+            ❌ <%# GetLabel("cancel") %>
+        </asp:LinkButton>
+    </EditItemTemplate>
+</asp:TemplateField>
+
     </Columns>
 </asp:GridView>
 

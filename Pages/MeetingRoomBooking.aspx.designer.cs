@@ -15,6 +15,15 @@ namespace IT_WorkPlant.Pages
     {
 
         /// <summary>
+        /// lblTitle control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblTitle;
+
+        /// <summary>
         /// lblUser control.
         /// </summary>
         /// <remarks>
@@ -31,6 +40,15 @@ namespace IT_WorkPlant.Pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblDept;
+
+        /// <summary>
+        /// lblDateLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblDateLabel;
 
         /// <summary>
         /// txtBookingDate control.
@@ -51,6 +69,15 @@ namespace IT_WorkPlant.Pages
         protected global::System.Web.UI.WebControls.Calendar Calendar1;
 
         /// <summary>
+        /// lblRoomLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblRoomLabel;
+
+        /// <summary>
         /// roomList control.
         /// </summary>
         /// <remarks>
@@ -58,6 +85,15 @@ namespace IT_WorkPlant.Pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList roomList;
+
+        /// <summary>
+        /// lblStartLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblStartLabel;
 
         /// <summary>
         /// startTimeList control.
@@ -69,6 +105,15 @@ namespace IT_WorkPlant.Pages
         protected global::System.Web.UI.WebControls.DropDownList startTimeList;
 
         /// <summary>
+        /// lblEndLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblEndLabel;
+
+        /// <summary>
         /// endTimeList control.
         /// </summary>
         /// <remarks>
@@ -76,6 +121,15 @@ namespace IT_WorkPlant.Pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList endTimeList;
+
+        /// <summary>
+        /// lblActionsLabel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblActionsLabel;
 
         /// <summary>
         /// submitButton control.
@@ -141,6 +195,24 @@ namespace IT_WorkPlant.Pages
         protected global::System.Web.UI.WebControls.Panel pnlBookingResult;
 
         /// <summary>
+        /// lblSummary control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblSummary;
+
+        /// <summary>
+        /// lblSummaryDate control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblSummaryDate;
+
+        /// <summary>
         /// lblDate control.
         /// </summary>
         /// <remarks>
@@ -148,6 +220,15 @@ namespace IT_WorkPlant.Pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblDate;
+
+        /// <summary>
+        /// lblSummaryDept control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblSummaryDept;
 
         /// <summary>
         /// lblDeptBooked control.
@@ -159,6 +240,15 @@ namespace IT_WorkPlant.Pages
         protected global::System.Web.UI.WebControls.Label lblDeptBooked;
 
         /// <summary>
+        /// lblSummaryRoom control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblSummaryRoom;
+
+        /// <summary>
         /// lblRoom control.
         /// </summary>
         /// <remarks>
@@ -166,6 +256,15 @@ namespace IT_WorkPlant.Pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblRoom;
+
+        /// <summary>
+        /// lblSummaryStart control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblSummaryStart;
 
         /// <summary>
         /// lblStart control.
@@ -177,6 +276,15 @@ namespace IT_WorkPlant.Pages
         protected global::System.Web.UI.WebControls.Label lblStart;
 
         /// <summary>
+        /// lblSummaryEnd control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblSummaryEnd;
+
+        /// <summary>
         /// lblEnd control.
         /// </summary>
         /// <remarks>
@@ -184,5 +292,14 @@ namespace IT_WorkPlant.Pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblEnd;
+
+        /// <summary>
+        /// btnExport control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnExport;
     }
 }

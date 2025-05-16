@@ -115,7 +115,7 @@
     color: #ccc;
 }
 .table-header-softblue thead th {
-    background-color: #607d8b;  /* 🔵 ฟ้าเทาเข้ม */
+    background-color: #607d8b;  
     color: white !important;
     font-weight: bold;
     text-align: center;
@@ -138,10 +138,10 @@
     font-weight: 600;
     font-size: 1.1rem;
     background-color: #e6f9e6;
-    color: #000 !important; /* ✅ เปลี่ยนให้เป็นดำทั้งหมด */
+    color: #000 !important; 
 }
 .bg-panel-darkblue {
-    background-color: #d5e2e8 !important; /* ฟ้าเทาเข้ม = เหมือนหัวตาราง */
+    background-color: #d5e2e8 !important; 
     border-radius: 12px;
     color: white;
 }
@@ -150,7 +150,7 @@
 }
 
 .my-green-table tbody tr:nth-child(even) td {
-    background-color: #f0f4f8 !important; /* ฟ้าเทาอ่อน */
+    background-color: #f0f4f8 !important; 
 }
 
     .meeting-title {
@@ -192,7 +192,7 @@ label.form-label {
     vertical-align: middle;
     text-align: center;
     font-size: 1.15rem !important;
-    color: #000 !important;  /* ✅ ตรงนี้ด้วย */
+    color: #000 !important;  
 }
 .booked-style {
     background-color: #ffe5e5 !important;       
@@ -221,7 +221,10 @@ label.form-label {
             <div class="gradient-header d-flex justify-content-between align-items-center rounded-top px-4 py-3">
                 <h4 class="fw-bold mb-0 text-dark d-flex align-items-center" style="font-size: 1.8rem;">
                     <img src="/Image/calendar.gif" alt="Calendar" style="height: 48px; width: 48px; margin-right: 10px;" />
-                    <span class="meeting-title">Meeting Room Booking</span>
+                    <span class="meeting-title">
+                        <asp:Label ID="lblTitle" runat="server" Text="Meeting Room Booking"></asp:Label>
+                    </span>
+
                 </h4>
                 <div class="d-flex align-items-center gap-2">
                     <div class="avatar-circle bg-white text-dark p-0" style="width: 48px; height: 48px; overflow: hidden;">
@@ -240,7 +243,10 @@ label.form-label {
                     <div class="col-md-12">
                         <div class="row g-4">
                             <div class="col-md-3">
-                                <label class="form-label">Date</label>
+                                <label class="form-label">
+                                    <asp:Label ID="lblDateLabel" runat="server" Text="Date"></asp:Label>
+                                </label>
+
                                 <div class="input-group mb-2">
                                     <asp:TextBox ID="txtBookingDate" runat="server" CssClass="form-control" ReadOnly="true" />
                                     <button type="button" class="btn btn-outline-secondary" onclick="showCalendar()">📅</button>
@@ -252,7 +258,9 @@ label.form-label {
                                     Style="display:none;" />
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Room</label>
+                                <label class="form-label">
+                                    <asp:Label ID="lblRoomLabel" runat="server" Text="Room"></asp:Label>
+                                </label>
                                 <asp:DropDownList ID="roomList" runat="server" CssClass="form-select">
                                     <asp:ListItem Value="" Text="---Select---"></asp:ListItem>
                                     <asp:ListItem Value="101">Room 101</asp:ListItem>
@@ -264,17 +272,23 @@ label.form-label {
                                 </asp:DropDownList>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Start Time</label>
+                                <label class="form-label">
+                                    <asp:Label ID="lblStartLabel" runat="server" Text="Start Time"></asp:Label>
+                                </label>
                                 <asp:DropDownList ID="startTimeList" runat="server" CssClass="form-select" />
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">End Time</label>
+                                <label class="form-label">
+                                    <asp:Label ID="lblEndLabel" runat="server" Text="End Time"></asp:Label>
+                                </label>
                                 <asp:DropDownList ID="endTimeList" runat="server" CssClass="form-select" />
                             </div>
                         </div>
                     </div><!-- Actions -->
                     <div class="col-md-12">
-                        <label class="form-label invisible">Actions</label>
+                        <label class="form-label invisible">
+                            <asp:Label ID="lblActionsLabel" runat="server" Text="Actions"></asp:Label>
+                        </label>
                         <div class="d-flex justify-content-center gap-3 flex-wrap">
                             <asp:Button ID="submitButton" runat="server" Text="Book Room"
                                 OnClick="submitButton_Click"
@@ -418,34 +432,51 @@ label.form-label {
                   
     <div class="col-md-3">
         <asp:Panel ID="pnlBookingResult" runat="server" CssClass="card shadow-sm p-3 bg-panel-darkblue h-100" Visible="true">
-            <div class="fw-bold text-dark mb-2">✨ Booking Summary ✨</div>
+            <div class="fw-bold text-dark mb-2">
+    <asp:Label ID="lblSummary" runat="server" Text="✨ Booking Summary ✨"></asp:Label>
+</div>
+
 
             <div class="mb-2">
-                <div class="fw-semibold text-muted">Date</div>
+                <label class="form-label fw-semibold text-muted">
+    <asp:Label ID="lblSummaryDate" runat="server" Text="Date"></asp:Label>
+</label>
+
                 <asp:Label ID="lblDate" runat="server" Text="-" CssClass="form-control text-center bg-white fw-bold" />
             </div>
 
             <div class="mb-2">
-                <div class="fw-semibold text-muted">Department</div>
+                <div class="fw-semibold text-muted">
+    <asp:Label ID="lblSummaryDept" runat="server" Text="Department"></asp:Label>
+</div>
+
                 <asp:Label ID="lblDeptBooked" runat="server" Text="-" CssClass="form-control text-center bg-white fw-bold" />
             </div>
 
             <div class="mb-2">
-                <div class="fw-semibold text-muted">Room</div>
+                <div class="fw-semibold text-muted">
+    <asp:Label ID="lblSummaryRoom" runat="server" Text="Room"></asp:Label>
+</div>
                 <asp:Label ID="lblRoom" runat="server" Text="-" CssClass="form-control text-center bg-white fw-bold" />
             </div>
 
             <div class="mb-2">
-                <div class="fw-semibold text-muted">Start Time</div>
+                <div class="fw-semibold text-muted">
+    <asp:Label ID="lblSummaryStart" runat="server" Text="Start Time"></asp:Label>
+</div>
                 <asp:Label ID="lblStart" runat="server" Text="-" CssClass="form-control text-center bg-white fw-bold" />
             </div>
             
             <div class="mb-2">
-                <div class="fw-semibold text-muted">End Time</div>
+                <div class="fw-semibold text-muted">
+    <asp:Label ID="lblSummaryEnd" runat="server" Text="End Time"></asp:Label>
+</div>
                 <asp:Label ID="lblEnd" runat="server" Text="-" CssClass="form-control text-center bg-white fw-bold" />
             </div>
 
-            <button type="button" class="btn btn-outline-primary mt-3 w-100" onclick="captureResult()">📥 Export booking as image</button>
+            <asp:Button ID="btnExport" runat="server" Text="📥 Export booking as image"
+    CssClass="btn btn-outline-primary mt-3 w-100" OnClientClick="captureResult(); return false;" />
+
             <hr />
 <div class="text-center mt-3">
     <img src="/Image/room.gif?v=2" alt="room icon" class="img-fluid" style="max-width: 160px;" />

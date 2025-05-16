@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
@@ -22,13 +23,29 @@ namespace IT_WorkPlant.Pages
 
             lblUsername.Text = Session["username"].ToString();
 
+            txtSearch.Attributes["placeholder"] = GetLabel("searchplaceholder");
+            btnSearch.Text = "🔍 " + GetLabel("search");
+
+            if (Session["ForceRebindHeader"] != null)
+            {
+                gvStockItems.DataSource = new DataTable();
+                gvStockItems.DataBind();
+                Session["ForceRebindHeader"] = null;
+            }
+
             if (!IsPostBack)
             {
                 Session["FilterMode"] = "all";
-                LoadStockItems();
                 lblTotalItems.Text = CountAllItems().ToString();
                 lblNeedsCount.Text = CountNeeds().ToString();
+                LoadStockItems();
             }
+        }
+        protected void ddlLang_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            
+            Session["ForceRebindHeader"] = true;
+            Response.Redirect(Request.RawUrl);
         }
 
         protected void gvStockItems_PageIndexChanging(object sender, GridViewPageEventArgs e)
@@ -228,6 +245,125 @@ WHERE (@keyword = '' OR s.ProductName LIKE '%' + @keyword + '%')
 
             gvStockItems.EditIndex = -1;
             LoadStockItems();
+        }
+        protected string GetLabel(string key)
+        {
+            string lang = Session["lang"]?.ToString() ?? "th";
+
+            var th = new Dictionary<string, string> {
+        { "title", "รายการสินค้าในคลัง" },
+        { "search", "ค้นหา" },
+        { "showall", "แสดงทั้งหมด" },
+        { "showneeds", "เฉพาะสินค้าที่ต้องเติม" },
+        { "totalitems", "จำนวนรายการทั้งหมด" },
+        { "needsreplenish", "จำนวนสินค้าที่ต้องเติม" },
+        { "no", "ลำดับ" },
+        { "productname", "ชื่อสินค้า" },
+        { "model", "รุ่น" },
+        { "unit", "หน่วย" },
+        { "minimumqty", "ขั้นต่ำ" },
+        { "inventoryqty", "คงเหลือในคลัง" },
+        { "replenishqty", "ต้องเติมเพิ่ม" },
+        { "unitcost", "ราคาต่อหน่วย" },
+        { "inventoryvalue", "มูลค่าคงคลัง" },
+        { "createdate", "วันที่เพิ่ม" },
+        { "latestreceivedate", "วันที่รับเข้าล่าสุด" },
+        { "receivedby", "ผู้รับล่าสุด" },
+        { "edit", "แก้ไข" },
+        { "save", "บันทึก" },
+        { "cancel", "ยกเลิก" },
+        { "receive", "รับของเข้า" },
+        { "receivenote", "เพิ่มสินค้าลงคลัง" },
+        { "issue", "เบิกของออก" },
+        { "issuenote", "จ่ายออกจากคลัง" }
+    };
+
+            var en = new Dictionary<string, string> {
+        { "title", "Stock Item List" },
+        { "search", "Search" },
+        { "showall", "Show All" },
+        { "showneeds", "Show Only Items to Replenish" },
+        { "totalitems", "Total Items" },
+        { "needsreplenish", "Items Needing Replenishment" },
+        { "no", "No." },
+        { "productname", "Product Name" },
+        { "model", "Model" },
+        { "unit", "Unit" },
+        { "minimumqty", "Minimum Qty" },
+        { "inventoryqty", "Inventory Qty" },
+        { "replenishqty", "To Replenish" },
+        { "unitcost", "Unit Cost" },
+        { "inventoryvalue", "Inventory Value" },
+        { "createdate", "Created Date" },
+        { "latestreceivedate", "Latest Receive Date" },
+        { "receivedby", "Received By" },
+        { "edit", "Edit" },
+        { "save", "Save" },
+        { "cancel", "Cancel" },
+        { "receive", "Receive" },
+        { "receivenote", "Add items to stock" },
+        { "issue", "Issue" },
+        { "issuenote", "Deduct from stock" }
+
+    };
+
+            var zh = new Dictionary<string, string> {
+        { "title", "庫存項目列表" },
+        { "search", "搜尋" },
+        { "showall", "顯示全部" },
+        { "showneeds", "僅顯示需補貨項目" },
+        { "totalitems", "總項目數" },
+        { "needsreplenish", "需補貨項目" },
+        { "no", "編號" },
+        { "productname", "產品名稱" },
+        { "model", "型號" },
+        { "unit", "單位" },
+        { "minimumqty", "最低庫存" },
+        { "inventoryqty", "目前庫存" },
+        { "replenishqty", "需補數量" },
+        { "unitcost", "單價" },
+        { "inventoryvalue", "庫存價值" },
+        { "createdate", "建立日期" },
+        { "latestreceivedate", "最近入庫日期" },
+        { "receivedby", "最近入庫者" },
+        { "edit", "編輯" },
+        { "save", "儲存" },
+        { "cancel", "取消" },
+        { "receive", "入庫" },
+        { "receivenote", "新增庫存項目" },
+        { "issue", "出庫" },
+        { "issuenote", "從庫存扣除" }
+
+    };
+            Dictionary<string, string> dict;
+            if (lang == "en")
+            {
+                dict = en;
+            }
+            else if (lang == "zh")
+            {
+                dict = zh;
+            }
+            else
+            {
+                dict = th;
+            }
+
+            return dict.ContainsKey(key) ? dict[key] : key;
+        }
+        protected void gvStockItems_RowCreated(object sender, GridViewRowEventArgs e)
+        {
+            if (e.Row.RowType == DataControlRowType.Header)
+            {
+                for (int i = 0; i < gvStockItems.Columns.Count; i++)
+                {
+                    if (gvStockItems.Columns[i] is TemplateField tf)
+                    {
+                        string originalKey = tf.HeaderText?.Trim().ToLower();
+                        tf.HeaderText = GetLabel(originalKey);
+                    }
+                }
+            }
         }
 
 

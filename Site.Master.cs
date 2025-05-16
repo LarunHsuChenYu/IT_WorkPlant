@@ -13,6 +13,13 @@ namespace IT_WorkPlant
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+            // ✅ เพิ่มตรงนี้เพื่อเซ็ตภาษาเริ่มต้นเป็นอังกฤษ
+            if (Session["lang"] == null)
+            {
+                Session["lang"] = "en"; // ตั้ง default เป็น English
+            }
+
+
             if (!IsPostBack)
             {
                 phLoginStatus.Controls.Clear();
@@ -21,7 +28,7 @@ namespace IT_WorkPlant
                 {
                     HyperLink logoutLink = new HyperLink
                     {
-                        NavigateUrl = "~/Pages/Logout.aspx", 
+                        NavigateUrl = "~/Pages/Logout.aspx",
                         CssClass = "nav-link",
                         Text = "Log-out"
                     };

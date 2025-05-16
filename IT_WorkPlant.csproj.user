@@ -8,7 +8,7 @@
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
     <UseGlobalApplicationHostFile />
-    <LastActiveSolutionConfig>Release|Any CPU</LastActiveSolutionConfig>
+    <LastActiveSolutionConfig>Debug|Any CPU</LastActiveSolutionConfig>
     <ActiveDebugTarget>
     </ActiveDebugTarget>
     <NameOfLastUsedPublishProfile>D:\Web\IT_WorkPlant\Properties\PublishProfiles\FolderProfile.pubxml</NameOfLastUsedPublishProfile>

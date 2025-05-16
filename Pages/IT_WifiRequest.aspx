@@ -8,15 +8,6 @@
         $(document).ready(function () {
             updateTable();
         });
-
-        function showTab(tabId) {
-            var tabs = document.getElementsByClassName('tab-content');
-            for (var i = 0; i < tabs.length; i++) {
-                tabs[i].style.display = 'none';
-            }
-            document.getElementById(tabId).style.display = 'block';
-        }
-
         function updateTable() {
             $.ajax({
                 type: "POST",
@@ -56,136 +47,312 @@
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
-
             // 顯示選中的 tab-content
             document.getElementById(tabId).classList.add('active');
-
             // 更新 HiddenField 的值
             document.getElementById('<%= hfActiveTab.ClientID %>').value = tabId;
         }
     </script>
     <style>
-        .tabs {
-            display: flex;
-            border: 1px solid #ccc; /* 加上外框 */
-            border-radius: 10px; /* 外框也加上圓角 */
-            overflow: hidden; /* 避免 border-radius 造成邊框溢出 */
-        }
-        .tab {
-            flex-grow: 1;
-            text-align: center;
-            padding: 10px;
-            background-color: #aaa2a2e7;
-            cursor: pointer;
-            border: none; /* 移除個別 tab 的邊框 */
-            box-sizing: border-box;
-            border-right: 1px solid #ccc; /* 除了最後一個 tab，其他加上右邊框 */
-        }
-        .tab:last-child {
-            border-right: none;
-        }
-        .tab:hover { /* 滑鼠移上去的效果 */
-            background-color: #808080;
-            color: white;
-        }
-        .tab.active { /* 目前選中的 tab */
-            background-color: #888282e7;
-        }
-        .tab-content { display: none; padding: 20px; border: 1px solid #ccc; margin-top: 10px; border-radius: 5px;}
-        .active { display: block; }
-    </style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 14px;
+        background-color: #ffffff;
+    }
+
+    .form-control {
+        font-size: 14px;
+        padding: 8px 12px;
+        height: 38px;
+        border-radius: 6px;
+        border: 1px solid #ced4da;
+        background-color: #f0f4ff;
+    }
+
+    .form-icon {
+        width: 32px;
+        height: 32px;
+        object-fit: contain;
+        margin-bottom: 4px;
+    }
+
+    .form-label {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a3c6c;
+        margin: 6px 0;
+    }
+
+    .title-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .wizard-header {
+        font-size: 40px;
+        font-weight: bold;
+        color: #0d6efd;
+    }
+
+    .form-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 30px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+
+    .form-group {
+        flex: 1 1 30%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 4px;
+    }
+
+    .info-box {
+        background-color: #f0f4ff !important;
+        border: 1px solid #cfdcec;
+        color: #333;
+    }
+
+    .form-box {
+        background-color: #f9fcff;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+
+    .tabs {
+        display: flex;
+        border: 1px solid #cfdcec;
+        border-radius: 10px;
+        overflow: hidden;
+        background-color: #e9f2ff;
+    }
+
+    .tab {
+        flex-grow: 1;
+        text-align: center;
+        font-size: 17px;
+        font-weight: 500;
+        color: #1a3c6c;
+        padding: 12px 0;
+        height: 40px;
+        cursor: pointer;
+        border: none;
+        border-right: 1px solid #cfdcec;
+        transition: background-color 0.2s ease;
+    }
+
+    .tab:last-child {
+        border-right: none;
+    }
+
+    .tab:hover {
+        background-color: #d0e5ff;
+        color: #0d6efd;
+    }
+
+    .tab.active {
+        background-color: #d0e5ff;
+        font-weight: 600;
+    }
+
+    .tab-content {
+        display: none;
+        padding: 20px;
+        border: 1px solid #ccc;
+        margin-top: 10px;
+        border-radius: 5px;
+    }
+
+    .active {
+        display: block;
+    }
+
+    .table-bordered {
+        border: 1px solid #d1e0f5;
+        border-radius: 8px;
+        background-color: #f9fcff;
+    }
+
+    .table-bordered thead th {
+        background-color: #e4efff;
+        color: #1a3c6c;
+        font-weight: 600;
+    }
+
+    .btn-primary {
+        background-color: #0d6efd;
+        border: none;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #0b5ed7;
+    }
+
+    .btn-success {
+        background-color: #198754;
+        border: none;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background-color: #157347;
+    }
+
+    .container-center {
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 40px;
+    }
+    .button-group {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.btn-add {
+    background-color: #adb5bd; /* สีเทา */
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: background-color 0.2s ease;
+}
+
+.btn-add:hover {
+    background-color: #868e96;
+}
+
+.btn-submit {
+    background-color: #9ec5fe; /* สีฟ้าเทา */
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: background-color 0.2s ease;
+}
+
+.btn-submit:hover {
+    background-color: #74b0f4;
+}
+
+</style>
+
 </asp:Content>
-
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
-    <h2>Wi-Fi Usage Request Form</h2>
 
-    <asp:Panel ID="wifiRequestPanel" runat="server">
-        <table>
-            <tr>
-                <td>Requester Name:</td>
-                <td><asp:TextBox ID="requesterName" runat="server" CssClass="form-control" ReadOnly="true"></asp:TextBox></td>
-            </tr>
-            <tr>
-                <td>Department:</td>
-                <td><asp:TextBox ID="department" runat="server" CssClass="form-control" ReadOnly="true"></asp:TextBox></td>
-            </tr>
-            <tr>
-                <td>Date:</td>
-                <td><asp:TextBox ID="requestDate" runat="server" CssClass="form-control" ReadOnly="true"></asp:TextBox></td>
-            </tr>
-        </table>
+        <div class="title-header">
+            <img src="/Image/wifi.gif" alt="form Icon" style="width: 90px; height: 90px;" />
+            <asp:Label ID="lblTitle" runat="server" Text='<%# GetLabel("title") %>' CssClass="wizard-header" />
+        </div>
+
+        <div class="form-row centered-row">
+            <div class="form-group">
+                <img src="/Image/user1.png" alt="User Icon" class="form-icon" />
+                <asp:Label ID="lblName" runat="server" Text='<%# GetLabel("requester") %>' CssClass="form-label" AssociatedControlID="requesterName" />
+                <asp:TextBox ID="requesterName" runat="server" CssClass="form-control info-box" ReadOnly="true" />
+            </div>
+
+            <div class="form-group">
+                <img src="/Image/Department.png" alt="Department Icon" class="form-icon" />
+               <asp:Label ID="lblDept" runat="server" Text='<%# GetLabel("department") %>' CssClass="form-label" AssociatedControlID="department" />
+                <asp:TextBox ID="department" runat="server" CssClass="form-control info-box" ReadOnly="true" />
+            </div>
+
+            <div class="form-group">
+                <img src="/Image/date.png" alt="Date Icon" class="form-icon" />
+                <asp:Label ID="lblDate" runat="server" Text='<%# GetLabel("issuedate") %>' CssClass="form-label" AssociatedControlID="requestDate" />
+                <asp:TextBox ID="requestDate" runat="server" CssClass="form-control info-box" ReadOnly="true" />
+            </div>
+           
+
+        </div>
+        <div class="form-box">
         <div class="tabs">
-            <div class="tab" onclick="showTab('VisitorDiv')">Visitor</div>
-            <div class="tab" onclick="showTab('BizTripDiv')">Buiness Trip</div>
-            <div class="tab" onclick="showTab('OnboardDiv')">New Employee</div>
+            <div class="tab" onclick="showTab('VisitorDiv')"><%= GetLabel("visitor") %></div>
+<div class="tab" onclick="showTab('BizTripDiv')"><%= GetLabel("businesstrip") %></div>
+<div class="tab" onclick="showTab('OnboardDiv')"><%= GetLabel("newemployee") %></div>
+
         </div>
         <asp:HiddenField ID="hfActiveTab" runat="server" />
-        
+
         <div id="VisitorDiv" class="tab-content active">
-            <h4>Visitor Request</h4>
+            <h4><%= GetLabel("visitorrequest") %></h4>
             <table id="VisitorTable" class="table table-bordered" runat="server">
                 <thead>
                     <tr>
-                        <th>No.</th>
-                        <th>Full Name</th>
-                        <th>Company</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
-                        <th>Description</th>
+                        <th><%= GetLabel("no") %></th>
+<th><%= GetLabel("fullname") %></th>
+<th><%= GetLabel("company") %></th>
+<th><%= GetLabel("startdate") %></th>
+<th><%= GetLabel("enddate") %></th>
+<th><%= GetLabel("description") %></th>
+
                     </tr>
                 </thead>
-                <tbody id="tbVisitor">
-                </tbody>
+                <tbody id="tbVisitor"></tbody>
             </table>
+           <div class="button-group">
+    <asp:Button ID="btnVisitorAddRow" runat="server" Text="➕ Add Row" CssClass="btn-add" OnClick="AddRow_Click" />
+    <asp:Button ID="btnVisitorSubmit" runat="server" Text="Submit Request" CssClass="btn-submit" OnClick="SubmitForm_Click" />
+</div>
 
-            <asp:Button ID="btnVisitorAddRow" runat="server" Text="Add Row" CssClass="btn btn-primary" OnClick="AddRow_Click" />
-            <asp:Button ID="btnVisitorSubmit" runat="server" Text="Submit" CssClass="btn btn-success" OnClick="SubmitForm_Click" />
-        </div>
-        
         <div id="BizTripDiv" class="tab-content">
-            <h4>BizTrip Request</h4>
+            <h4><%= GetLabel("biztriprequest") %></h4>
             <table id="BizTripTable" class="table table-bordered" runat="server">
                 <thead>
                     <tr>
-                        <th>No.</th>
-                        <th>Full Name</th>
-                        <th>Employee ID</th>
-                        <th>Department</th>
-                        <th>Device Type</th>
-                        <th>Device MAC Address</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
+                       <th><%= GetLabel("no") %></th>
+<th><%= GetLabel("fullname") %></th>
+<th><%= GetLabel("empid") %></th>
+<th><%= GetLabel("department") %></th>
+<th><%= GetLabel("devicetype") %></th>
+<th><%= GetLabel("mac") %></th>
+<th><%= GetLabel("startdate") %></th>
+<th><%= GetLabel("enddate") %></th>
+
                     </tr>
                 </thead>
-                <tbody id="tbBizTrip">
-                </tbody>
+                <tbody id="tbBizTrip"></tbody>
             </table>
-
             <asp:Button ID="btnBizTripAddRow" runat="server" Text="Add Row" CssClass="btn btn-primary" OnClick="btnBizTripAddRow_Click" />
             <asp:Button ID="btnBizTripSubmit" runat="server" Text="Submit" CssClass="btn btn-success" OnClick="btnBizTripSubmit_Click" />
         </div>
 
         <div id="OnboardDiv" class="tab-content">
-            <h4>New Emplyee Request</h4>
+            <h4><%= GetLabel("onboardrequest") %></h4>
             <table id="OnboardTable" class="table table-bordered" runat="server">
                 <thead>
                     <tr>
-                        <th>No.</th>
-                        <th>Full Name</th>
-                        <th>Employee ID</th>
-                        <th>Department</th>
-                        <th>Email</th>
-                        <th>Device Type</th>
-                        <th>MAC Address</th>
-                        <th>Description</th>
+                        <th><%= GetLabel("no") %></th>
+<th><%= GetLabel("fullname") %></th>
+<th><%= GetLabel("empid") %></th>
+<th><%= GetLabel("department") %></th>
+<th><%= GetLabel("email") %></th>
+<th><%= GetLabel("devicetype") %></th>
+<th><%= GetLabel("mac") %></th>
+<th><%= GetLabel("description") %></th>
                     </tr>
                 </thead>
-                <tbody id="tbOnboard">
-                </tbody>
+                <tbody id="tbOnboard"></tbody>
             </table>
-
-            <asp:Button ID="btnOnboardAddRow" runat="server" Text="Add Row" CssClass="btn btn-primary" OnClick="btnOnboardAddRow_Click" />
-            <asp:Button ID="btnOnboardSubmit" runat="server" Text="Submit" CssClass="btn btn-success" OnClick="btnOnboardSubmit_Click" />
+            <asp:Button ID="btnOnboardAddRow" runat="server" Text='<%# "➕" + GetLabel("addrow") %>' CssClass="btn btn-primary" OnClick="btnOnboardAddRow_Click" />
+<asp:Button ID="btnOnboardSubmit" runat="server" Text='<%# GetLabel("submit") %>' CssClass="btn btn-success" OnClick="btnOnboardSubmit_Click" />
+            </div>
         </div>
-    </asp:Panel>
+            </div>
 </asp:Content>

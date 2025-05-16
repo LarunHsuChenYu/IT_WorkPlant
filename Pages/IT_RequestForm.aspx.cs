@@ -23,6 +23,16 @@ namespace IT_WorkPlant.Pages
         {
             if (!IsPostBack)
             {
+                lblTitle.Text = GetLabel("title");
+                lblName.Text = GetLabel("requestorname");
+                lblDept.Text = GetLabel("department");
+                lblDate.Text = GetLabel("issuedate");
+                lblTitle.Text = GetLabel("title");
+                lblName.Text = GetLabel("requestorname");
+                lblDept.Text = GetLabel("department");
+                lblDate.Text = GetLabel("issuedate");
+                btnSubmit.Text = GetLabel("submit");
+                btnCancel.Text = GetLabel("cancel");
                 if (string.IsNullOrEmpty(UserEmpID))
                 {
                     Response.Redirect("../Login.aspx");
@@ -61,7 +71,7 @@ namespace IT_WorkPlant.Pages
                     ddl.DataTextField = "DisplayText";
                     ddl.DataValueField = "IssueTypeID";
                     ddl.DataBind();
-                    ddl.Items.Insert(0, new ListItem("Select Issue Type", ""));
+                    ddl.Items.Insert(0, new ListItem(GetLabel("selectissuetype"), ""));
                 }
             }
         }
@@ -178,6 +188,65 @@ namespace IT_WorkPlant.Pages
         {
             string safeMessage = HttpUtility.JavaScriptStringEncode(message);
             ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", $"alert('{safeMessage}');", true);
+        }
+        protected string GetLabel(string key)
+        {
+            string lang = Session["lang"]?.ToString() ?? "en";
+
+            var th = new Dictionary<string, string>
+            {
+                ["title"] = "แบบฟอร์มคำร้อง IT",
+                ["requestorname"] = "ชื่อผู้ขอ",
+                ["department"] = "แผนก",
+                ["issuedate"] = "วันที่",
+                ["no"] = "ลำดับ",
+                ["issuetype"] = "ประเภทปัญหา",
+                ["description"] = "รายละเอียด",
+                ["attachment"] = "แนบรูปภาพ",
+                ["submit"] = "ส่งคำขอ",
+                ["cancel"] = "ยกเลิก",
+                ["selectissuetype"] = "เลือกประเภทปัญหา",
+                ["choosefile"] = "เลือกไฟล์"
+            };
+
+            var en = new Dictionary<string, string>
+            {
+                ["title"] = "IT Request Form",
+                ["requestorname"] = "Requestor Name",
+                ["department"] = "Department",
+                ["issuedate"] = "Issue Date",
+                ["no"] = "No.",
+                ["issuetype"] = "Issue Type",
+                ["description"] = "Issue Description",
+                ["attachment"] = "Attachment (Image)",
+                ["submit"] = "Submit Request",
+                ["cancel"] = "Cancel",
+                ["selectissuetype"] = "Select Issue Type",
+                ["choosefile"] = "Choose File"
+            };
+
+            var zh = new Dictionary<string, string>
+            {
+                ["title"] = "資訊相關申請",
+                ["requestorname"] = "申請者姓名",
+                ["department"] = "部門",
+                ["issuedate"] = "事件發生日",
+                ["no"] = "編號",
+                ["issuetype"] = "事件類型",
+                ["description"] = "事件描述",
+                ["attachment"] = "圖片附件",
+                ["submit"] = "確認需求",
+                ["cancel"] = "取消",
+                ["selectissuetype"] = "選擇需求類型",
+                ["choosefile"] = "選擇檔案"
+            };
+
+            Dictionary<string, string> dict;
+            if (lang == "th") dict = th;
+            else if (lang == "zh") dict = zh;
+            else dict = en;
+
+            return dict.ContainsKey(key) ? dict[key] : key;
         }
     }
 }

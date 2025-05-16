@@ -2,106 +2,192 @@
     CodeBehind="IT_RequestForm.aspx.cs" Inherits="IT_WorkPlant.Pages.IT_RequestForm" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
-    <style>
-        .form-container {
-            max-width: 1000px;
-            margin: auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background-color: #f9f9f9;
-            box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.1);
-        }
+   <style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #ffffff;
+    }
 
-        .form-container h2 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 20px;
-        }
+    .form-container {
+        max-width: 1000px;
+        margin: 40px auto;
+        padding: 30px;
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border-left: 6px solid #70aee4;
+    }
 
-        .form-group {
-            margin-bottom: 15px;
-            width: 100%;
-        }
+    .form-container h2 {
+        text-align: center;
+        color: #3b5f7c;
+        font-size: 28px;
+        margin-bottom: 30px;
+    }
 
-        .form-group label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
+    .form-group {
+        margin-bottom: 20px;
+    }
 
-        .form-row {
-            display: flex;
-            gap: 20px;
-            width: 100%;
-        }
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: #456b87;
+        margin-bottom: 6px;
+    }
 
-        .form-row .form-group {
-            flex: 1;
-        }
+    .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
 
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
+    .form-row .form-group {
+        flex: 1;
+    }
 
-        .table th, .table td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
-        }
+    .form-control {
+        width: 100%;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #ccd6dd;
+        background-color: #f2f7fb;
+        font-size: 15px;
+    }
 
-        .btn-container {
-            text-align: center;
-            margin-top: 20px;
-        }
+    .form-control:focus {
+        outline: none;
+        border-color: #70aee4;
+        background-color: #eaf3fb;
+    }
 
-        .btn-container .btn {
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: #ffffff;
+        margin-top: 25px;
+        border-radius: 8px;
+        overflow: hidden;
+    }
 
-        .btn-primary {
-            background-color: #007bff;
-            color: white;
-        }
+    .table th {
+        background-color: #d9e9f5;
+        color: #2f506b;
+        font-weight: 600;
+        padding: 10px;
+        border: 1px solid #c4d5e0;
+    }
 
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
+    .table td {
+        border: 1px solid #e0e9f1;
+        padding: 10px;
+        background-color: #f9fcfe;
+    }
 
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
+    .btn-container {
+        text-align: center;
+        margin-top: 30px;
+    }
 
-        .btn-secondary:hover {
-            background-color: #5a6268;
-        }
-    </style>
+    .btn {
+        padding: 10px 24px;
+        font-size: 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
 
-    <div class="form-container">
-        <h2>IT Request Form</h2>
+    .btn-primary {
+        background-color: #5fa8e5;
+        color: white;
+        border: none;
+    }
 
+    .btn-primary:hover {
+        background-color: #4896d8;
+    }
+
+    .btn-secondary {
+        background-color: #a0aec0;
+        color: white;
+        border: none;
+    }
+
+    .btn-secondary:hover {
+        background-color: #8899b1;
+    }
+    .form-icon {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 6px;
+    object-fit: contain;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+    .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-bottom: 20px;
+}
+.centered-row {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 0 0 250px;
+}
+.title-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 32px;
+    text-align: center;
+}
+
+.title-header img {
+    height: 72px;
+    width: 72px;
+    object-fit: contain;
+}
+
+.title-header span {
+    font-size: 40px;
+    font-weight: 900;
+    color: #0d6efd;
+}
+
+</style>
+    <div class="title-header">
+    <img src="/Image/from.gif" alt="form Icon" />
+    <asp:Label ID="lblTitle" runat="server" CssClass="wizard-header"></asp:Label>
+</div>
         <!-- User Info -->
-        <div class="form-row">
-            <div class="form-group">
-                <label for="txtName">Requestor Name:</label>
-                <asp:TextBox ID="txtName" runat="server" CssClass="form-control" ReadOnly="true" />
-            </div>
-            <div class="form-group">
-                <label for="txtDept">Department:</label>
-                <asp:TextBox ID="txtDept" runat="server" CssClass="form-control" ReadOnly="true" />
-            </div>
-            <div class="form-group">
-                <label for="txtDate">Issue Date:</label>
-                <asp:TextBox ID="txtDate" runat="server" CssClass="form-control" ReadOnly="true" />
-            </div>
-        </div>
+       <div class="form-row centered-row">
+    <div class="form-group">
+        <img src="/Image/user1.png" alt="User Icon" class="form-icon" />
+        <asp:Label ID="lblName" runat="server" CssClass="form-label" AssociatedControlID="txtName"></asp:Label>
+        <asp:TextBox ID="txtName" runat="server" CssClass="form-control" ReadOnly="true" />
+    </div>
+    <div class="form-group">
+        <img src="/Image/Department.png" alt="Department Icon" class="form-icon" />
+        <asp:Label ID="lblDept" runat="server" CssClass="form-label" AssociatedControlID="txtDept"></asp:Label>
+        <asp:TextBox ID="txtDept" runat="server" CssClass="form-control" ReadOnly="true" />
+    </div>
+    <div class="form-group">
+        <img src="/Image/date.png" alt="Date Icon" class="form-icon" />
+        <asp:Label ID="lblDate" runat="server" CssClass="form-label" AssociatedControlID="txtDate"></asp:Label>
+        <asp:TextBox ID="txtDate" runat="server" CssClass="form-control" ReadOnly="true" />
+    </div>
+</div>
+
 
         <!-- Request Items Table -->
         <asp:Repeater ID="rptRequestItems" runat="server" OnItemDataBound="rptRequestItems_ItemDataBound">
@@ -109,10 +195,10 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>No.</th>
-                            <th>Issue Type</th>
-                            <th>Issue Description</th>
-                            <th>Attachment (Image)</th>
+                            <th><%= GetLabel("No.") %></th>
+                            <th><%= GetLabel("issuetype") %></th>
+                            <th><%= GetLabel("description") %></th>
+                            <th><%= GetLabel("attachment") %></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -139,12 +225,13 @@
 
         <!-- Buttons -->
         <div class="btn-container">
-            <asp:Button ID="btnSubmit" runat="server" CssClass="btn btn-primary" Text="Submit Request" OnClick="SubmitForm" />
-            <asp:Button ID="btnCancel" runat="server" CssClass="btn btn-secondary" Text="Cancel" OnClick="CancelForm" />
+            <asp:Button ID="btnSubmit" runat="server" CssClass="btn btn-primary" OnClick="SubmitForm" />
+            <asp:Button ID="btnCancel" runat="server" CssClass="btn btn-secondary" OnClick="CancelForm" />
+
             </div>
 
 
         <!-- Hidden for compatibility with legacy method -->
         <asp:DropDownList ID="ddlCategory" runat="server" Visible="false" />
-    </div>
+    
 </asp:Content>

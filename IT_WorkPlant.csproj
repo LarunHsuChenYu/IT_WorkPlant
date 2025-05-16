@@ -264,6 +264,7 @@
     <Content Include="Image\repair-tools.gif" />
     <Content Include="Image\shopping-cart.gif" />
     <Content Include="Login.aspx" />
+    <Content Include="Pages\ChangeLang.aspx" />
     <Content Include="Pages\IT_DailyCheckReport.aspx" />
     <Content Include="Pages\IT_EmailRequest.aspx" />
     <Content Include="Pages\IT_PurchaseItemsList.aspx" />
@@ -397,6 +398,13 @@
     <Compile Include="Models\UserInfo.cs" />
     <Compile Include="Models\WordHelper.cs" />
     <Compile Include="Models\WO_Update.cs" />
+    <Compile Include="Pages\ChangeLang.aspx.cs">
+      <DependentUpon>ChangeLang.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\ChangeLang.aspx.designer.cs">
+      <DependentUpon>ChangeLang.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Pages\IT_DailyCheckReport.aspx.cs">
       <DependentUpon>IT_DailyCheckReport.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
