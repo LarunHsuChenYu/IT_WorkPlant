@@ -1,5 +1,7 @@
 ﻿<%@ Page Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" 
     CodeBehind="IT_RequestsList.aspx.cs" Inherits="IT_WorkPlant.Pages.IT_RequestsList" %>
+<%@ Import Namespace="System.Web" %>
+
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <title>IT Requests List</title>
@@ -80,31 +82,15 @@
         <asp:DropDownList ID="ddlStatus" runat="server" AutoPostBack="true" OnSelectedIndexChanged="FilterChanged">
             <asp:ListItem Value="" Text="All Status" />
         </asp:DropDownList>
-       <!-- ✅ แทน ddlFinishedDate ด้วย TextBox + Calendar -->
-    <asp:TextBox 
-        ID="txtFinishedDate" 
-        runat="server" 
-        CssClass="form-control" 
-        Width="200px" 
-        AutoPostBack="true"
-        OnTextChanged="txtFinishedDate_TextChanged"
-        placeholder="Select Finished Date"/>
-
-    <ajaxToolkit:CalendarExtender 
-        ID="CalendarExtender1" 
-        runat="server" 
-        TargetControlID="txtFinishedDate"
-        Format="yyyy-MM-dd" />
-</div>
+    </div>
 
     <!-- GridView Section -->
-   <asp:GridView ID="gvRequests" runat="server" AutoGenerateColumns="False" CssClass="myGridView"
-    DataKeyNames="ReportID,Department,IssueTypeID"
-    OnRowEditing="gvRequests_RowEditing"
-    OnRowCancelingEdit="gvRequests_RowCancelingEdit"
-    OnRowUpdating="gvRequests_RowUpdating">
-
-        
+    <asp:GridView ID="gvRequests" runat="server" AutoGenerateColumns="False" CssClass="myGridView"
+        DataKeyNames="ReportID,Department,IssueTypeID"
+        OnRowEditing="gvRequests_RowEditing"
+        OnRowCancelingEdit="gvRequests_RowCancelingEdit"
+        OnRowUpdating="gvRequests_RowUpdating"
+        OnSelectedIndexChanged="gvRequests_SelectedIndexChanged">
 
         <HeaderStyle BackColor="LightBlue" ForeColor="Black" Font-Bold="True" />
         <FooterStyle BackColor="LightBlue" ForeColor="Black" />
@@ -139,7 +125,8 @@
             </asp:TemplateField>
 
             <asp:BoundField DataField="RequestUser" HeaderText="Request User" ReadOnly="true" />
-            <asp:BoundField DataField="IssueDetails" HeaderText="Issue Details" ReadOnly="true" />
+            <asp:TemplateField HeaderText="Issue Details"><ItemTemplate> <%# HttpUtility.HtmlDecode(Eval("IssueDetails").ToString()) %></ItemTemplate></asp:TemplateField>
+
 
             <asp:TemplateField HeaderText="Issue Type">
                 <ItemTemplate>

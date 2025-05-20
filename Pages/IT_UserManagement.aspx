@@ -45,7 +45,8 @@
                 OnRowEditing="gvUsers_RowEditing"
                 OnRowUpdating="gvUsers_RowUpdating" 
                 OnRowCancelingEdit="gvUsers_RowCancelingEdit"
-                OnPageIndexChanging="gvUsers_PageIndexChanging">
+                OnPageIndexChanging="gvUsers_PageIndexChanging"
+                OnRowDataBound="gvUsers_RowDataBound">
                 <Columns>
                     <asp:BoundField DataField="UserIndex" HeaderText="Index" ReadOnly="true" />
                     
@@ -82,6 +83,15 @@
                         </ItemTemplate>
                         <EditItemTemplate>
                             <asp:TextBox ID="tbDeptName" runat="server" Text='<%# Bind("DeptName") %>'></asp:TextBox>
+                        </EditItemTemplate>
+                    </asp:TemplateField>
+                    
+                    <asp:TemplateField HeaderText="Position">
+                        <ItemTemplate>
+                            <asp:Label ID="lblPositionName" runat="server" Text='<%# Bind("PositionName_EN") %>'></asp:Label>
+                        </ItemTemplate>
+                        <EditItemTemplate>
+                            <asp:DropDownList ID="ddlPosition" runat="server"></asp:DropDownList>
                         </EditItemTemplate>
                     </asp:TemplateField>
                     
@@ -124,6 +134,10 @@
                     <asp:DropDownList ID="ddlNewDept" CssClass="form-control" runat="server"></asp:DropDownList>
                 </div>
                 
+                <div class="col-md-6">
+                    <label for="ddlNewPosition">Position:</label>
+                    <asp:DropDownList ID="ddlNewPosition" CssClass="form-control" runat="server"></asp:DropDownList>
+                </div>
                 <div class="col-md-6">
                     <label for="tbNewPassword">Password:</label>
                     <asp:TextBox ID="tbNewPassword" CssClass="form-control" runat="server" placeholder="Enter Password"></asp:TextBox>

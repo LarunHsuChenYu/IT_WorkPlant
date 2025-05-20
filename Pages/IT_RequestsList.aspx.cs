@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
@@ -38,12 +37,12 @@ namespace IT_WorkPlant.Pages
 
                 ddlStatus.SelectedValue = "WIP";
                 ViewState["Status"] = "WIP";
-               
 
                 BindRequestData();
             }
         }
-     
+
+
         private void BindDepartmentsDropdown(string userDept)
         {
             DataTable dtDepartments = _model.GetDepartments();
@@ -76,35 +75,30 @@ namespace IT_WorkPlant.Pages
             System.Diagnostics.Debug.WriteLine("===== END DEBUG: Dropdown Departments =====");
 
         }
+
         private void BindRequestData()
         {
             string issueMonth = ViewState["IssueMonth"]?.ToString();
             string issueDate = ViewState["IssueDate"]?.ToString();
-            string finishedDate = ViewState["FinishedDate"]?.ToString();
             string deptName = ViewState["Department"]?.ToString();
             string requestUser = ViewState["RequestUser"]?.ToString();
             string issueType = ViewState["IssueType"]?.ToString();
             string status = ViewState["Status"]?.ToString();
 
-            DataTable dt = _model.GetFilteredRequests(deptName, requestUser, issueType, status, issueMonth, null);
+            // ✅ Retrieve data from the database (already sorted) // ดึงข้อมูลจากฐานข้อมูล (ที่เรียงถูกแล้ว)
+            DataTable dt = _model.GetFilteredRequests(deptName, requestUser, issueType, status, issueMonth, issueDate);
             DataView dv = dt.DefaultView;
             dv.Sort = "ReportID ASC";
 
-            List<string> filters = new List<string>();
 
-            if (!string.IsNullOrEmpty(issueDate))
-                filters.Add($"CONVERT(IssueDate, 'System.String') = '{issueDate}'");
+            // ✅ Debug to check the retrieved values  // เพื่อตรวจสอบค่าที่ดึงมา
+            foreach (DataRow row in dt.Rows)
+                System.Diagnostics.Debug.WriteLine("ReportID: " + row["ReportID"]);
 
-            if (!string.IsNullOrEmpty(finishedDate))
-                filters.Add($"CONVERT(FinishedDate, 'System.String') = '{finishedDate}'");
-
-            if (filters.Count > 0)
-                dv.RowFilter = string.Join(" AND ", filters);
 
             gvRequests.DataSource = dv;
             gvRequests.DataBind();
         }
-
         private void BindFilters()
         {
             BindIssueMonthFilter(); // Call the month filter
@@ -132,7 +126,13 @@ namespace IT_WorkPlant.Pages
             dropdown.DataTextField = "Value";
             dropdown.DataValueField = "Value";
             dropdown.DataBind();
+
             dropdown.Items.Insert(0, new ListItem(defaultText, ""));
+
+            if (columnName == "Status")
+            {
+                dropdown.Items.Insert(1, new ListItem("Finished Today", "Today")); // ✅ แทรกตัวเลือกพิเศษ
+            }
         }
 
         private void BindIssueMonthFilter()
@@ -353,23 +353,7 @@ namespace IT_WorkPlant.Pages
             gvRequests.EditIndex = -1;
             BindRequestData();
         }
-        protected void ddlIssueMonth_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            ViewState["IssueMonth"] = ddlIssueMonth.SelectedValue;
-
-            // ✅ Reset finishedDate picker เมื่อเปลี่ยนเดือน
-            ViewState["FinishedDate"] = null;
-            txtFinishedDate.Text = "";
-
-            BindIssueDateFilter(ddlIssueMonth.SelectedValue);
-            BindRequestData();
-        }
-
-        protected void txtFinishedDate_TextChanged(object sender, EventArgs e)
-        {
-            ViewState["FinishedDate"] = txtFinishedDate.Text.Trim();
-            BindRequestData();
-        }
+        protected void gvRequests_SelectedIndexChanged(object sender, EventArgs e) { }
 
     }
 }

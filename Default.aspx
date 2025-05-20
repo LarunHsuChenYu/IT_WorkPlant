@@ -61,6 +61,13 @@
                         <img src="Image/checklist.gif" alt="Logo" style="width:150px; height: 150px;"/>
                     </a>
                 </section>
+
+                <section class="col-md-3" aria-labelledby="dashboardTitle">
+    <h2 id="dashboardTitle">IT Dashboard</h2>
+    <a href="Pages/IT_RequestsDashboard.aspx">
+        <img src="Image/graph.gif" alt="IT Dashboard" style="width:150px; height:150px;" />
+    </a>
+</section>
                 
                 <%--<section class="col-md-4" aria-labelledby="librariesTitle">
                     <h2 id="librariesTitle">Get more libraries</h2>

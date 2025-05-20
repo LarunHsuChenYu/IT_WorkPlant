@@ -19,63 +19,104 @@ namespace IT_WorkPlant.Pages
             {
                 BindGridView();
                 BindDepartmentDropDowns();
+                BindPositionDropDown();
             }
         }
 
         private void BindDepartmentDropDowns()
         {
-                // 定義查詢和參數（無參數的情況下可以使用空字典）
-                string query = "SELECT DISTINCT DeptNameID, DeptName_en FROM Departments";
-                var parameters = new Dictionary<string, object>();
+            // 定義查詢和參數（無參數的情況下可以使用空字典）
+            string query = "SELECT DISTINCT DeptNameID, DeptName_en FROM Departments";
+            var parameters = new Dictionary<string, object>();
 
-                // 執行查詢
-                DataTable dt = _dbHelper.ExecuteDynamicQuery(query, parameters);
+            // 執行查詢
+            DataTable dt = _dbHelper.ExecuteDynamicQuery(query, parameters);
 
-                // 綁定搜尋區域 DropDownList
-                ddlSearchDept.DataSource = dt;
-                ddlSearchDept.DataTextField = "DeptName_en";  // 顯示英文部門名稱
-                ddlSearchDept.DataValueField = "DeptNameID";  // 使用 DeptNameID 作為值
-                ddlSearchDept.DataBind();
-                ddlSearchDept.Items.Insert(0, new ListItem("All Departments", ""));
+            // 綁定搜尋區域 DropDownList
+            ddlSearchDept.DataSource = dt;
+            ddlSearchDept.DataTextField = "DeptName_en";  // 顯示英文部門名稱
+            ddlSearchDept.DataValueField = "DeptNameID";  // 使用 DeptNameID 作為值
+            ddlSearchDept.DataBind();
+            ddlSearchDept.Items.Insert(0, new ListItem("All Departments", ""));
 
-                // 綁定新增區域 DropDownList
-                ddlNewDept.DataSource = dt;
-                ddlNewDept.DataTextField = "DeptName_en";
-                ddlNewDept.DataValueField = "DeptNameID";
-                ddlNewDept.DataBind();
-                ddlNewDept.Items.Insert(0, new ListItem("Select Department", ""));
+            // 綁定新增區域 DropDownList
+            ddlNewDept.DataSource = dt;
+            ddlNewDept.DataTextField = "DeptName_en";
+            ddlNewDept.DataValueField = "DeptNameID";
+            ddlNewDept.DataBind();
+            ddlNewDept.Items.Insert(0, new ListItem("Select Department", ""));
         }
 
+        private DataTable GetPositions()
+        {
+            string query = "SELECT PositionID, PositionName_EN FROM Positions WHERE IsActive = 1";
+            return _dbHelper.ExecuteQuery(query, null);
+        }
+
+        private void BindPositionDropDown()
+        {
+            var dt = GetPositions();
+            ddlNewPosition.DataSource = dt;
+            ddlNewPosition.DataTextField = "PositionName_EN";
+            ddlNewPosition.DataValueField = "PositionID";
+            ddlNewPosition.DataBind();
+            ddlNewPosition.Items.Insert(0, new ListItem("Select Position", ""));
+        }
 
         // 綁定 GridView 數據
         private void BindGridView()
         {
-            string query = "SELECT * FROM Users WHERE 1=1";
+            string query = @"SELECT u.*, p.PositionName_EN 
+                             FROM Users u
+                             LEFT JOIN Positions p ON u.PositionID = p.PositionID
+                             WHERE 1=1";
             var parameters = new List<SqlParameter>();
 
             // 搜尋條件
             if (!string.IsNullOrEmpty(tbSearchEmpID.Text.Trim()))
             {
-                query += " AND UserEmpID LIKE @EmpID";
+                query += " AND u.UserEmpID LIKE @EmpID";
                 parameters.Add(new SqlParameter("@EmpID", $"%{tbSearchEmpID.Text.Trim()}%"));
             }
             if (!string.IsNullOrEmpty(tbSearchName.Text.Trim()))
             {
-                query += " AND UserName LIKE @Name";
+                query += " AND u.UserName LIKE @Name";
                 parameters.Add(new SqlParameter("@Name", $"%{tbSearchName.Text.Trim()}%"));
             }
             if (!string.IsNullOrEmpty(ddlSearchDept.SelectedValue))
             {
-                query += " AND DeptName = @Dept";
+                query += " AND u.DeptName = @Dept";
                 parameters.Add(new SqlParameter("@Dept", ddlSearchDept.SelectedValue));
             }
 
-            query += " ORDER BY UserIndex";
+            query += " ORDER BY u.UserIndex";
             DataTable dt = _dbHelper.ExecuteQuery(query, parameters.ToArray());
             gvUsers.DataSource = dt;
             gvUsers.DataBind();
         }
 
+        protected void gvUsers_RowDataBound(object sender, GridViewRowEventArgs e)
+        {
+            if (e.Row.RowType == DataControlRowType.DataRow && (e.Row.RowState & DataControlRowState.Edit) > 0)
+            {
+                DropDownList ddlPosition = (DropDownList)e.Row.FindControl("ddlPosition");
+                if (ddlPosition != null)
+                {
+                    ddlPosition.DataSource = GetPositions();
+                    ddlPosition.DataTextField = "PositionName_EN";
+                    ddlPosition.DataValueField = "PositionID";
+                    ddlPosition.DataBind();
+
+                    var drv = (DataRowView)e.Row.DataItem;
+                    if (drv != null)
+                    {
+                        string posId = drv["PositionID"].ToString();
+                        if (ddlPosition.Items.FindByValue(posId) != null)
+                            ddlPosition.SelectedValue = posId;
+                    }
+                }
+            }
+        }
 
         // 搜尋按鈕事件
         protected void btnSearch_Click(object sender, EventArgs e)
@@ -93,17 +134,19 @@ namespace IT_WorkPlant.Pages
                 string email = tbNewEmail.Text.Trim();
                 string dept = ddlNewDept.SelectedValue;
                 string password = tbNewPassword.Text.Trim();
+                string positionId = ddlNewPosition.SelectedValue;
 
                 string query = @"
-                    INSERT INTO Users (UserEmpID, UserName, UserEmpMail, DeptName,  UserEmpPW)
-                    VALUES (@UserEmpID, @UserName, @UserEmpMail, @DeptName,  @UserEmpPW)";
+                    INSERT INTO Users (UserEmpID, UserName, UserEmpMail, DeptName, UserEmpPW, PositionID)
+                    VALUES (@UserEmpID, @UserName, @UserEmpMail, @DeptName, @UserEmpPW, @PositionID)";
 
                 SqlParameter[] parameters = {
                     new SqlParameter("@UserEmpID", empID),
                     new SqlParameter("@UserName", name),
                     new SqlParameter("@UserEmpMail", email),
                     new SqlParameter("@DeptName", dept),
-                    new SqlParameter("@UserEmpPW", password)
+                    new SqlParameter("@UserEmpPW", password),
+                    new SqlParameter("@PositionID", positionId)
                 };
 
                 _dbHelper.ExecuteNonQuery(query, parameters);
@@ -145,13 +188,16 @@ namespace IT_WorkPlant.Pages
                 string email = ((TextBox)row.FindControl("tbUserEmpMail"))?.Text;
                 string dept = ((TextBox)row.FindControl("tbDeptName"))?.Text;
                 string password = ((TextBox)row.FindControl("tbUserEmpPW"))?.Text;
+                DropDownList ddlPosition = (DropDownList)row.FindControl("ddlPosition");
+                string positionId = ddlPosition?.SelectedValue;
 
                 string query = @"
                     UPDATE Users 
                     SET UserName = @UserName, 
                         UserEmpMail = @UserEmpMail, 
                         DeptName = @DeptName, 
-                        UserEmpPW = @UserEmpPW 
+                        UserEmpPW = @UserEmpPW,
+                        PositionID = @PositionID
                     WHERE UserEmpID = @UserEmpID";
 
                 SqlParameter[] parameters = {
@@ -159,7 +205,8 @@ namespace IT_WorkPlant.Pages
                     new SqlParameter("@UserName", name),
                     new SqlParameter("@UserEmpMail", email),
                     new SqlParameter("@DeptName", dept),
-                    new SqlParameter("@UserEmpPW", password)
+                    new SqlParameter("@UserEmpPW", password),
+                    new SqlParameter("@PositionID", positionId)
                 };
 
                 _dbHelper.ExecuteNonQuery(query, parameters);

@@ -142,7 +142,7 @@ namespace IT_WorkPlant.Models
 
             if (!string.IsNullOrEmpty(deptName))
             {
-                query += " AND r.DeptNameID = @DeptNameID";  // ใช้ DeptNameID จริงในการกรอง
+                query += " AND r.DeptNameID = @DeptNameID";
                 parameters.Add(new SqlParameter("@DeptNameID", deptName));
             }
 
@@ -160,8 +160,16 @@ namespace IT_WorkPlant.Models
 
             if (!string.IsNullOrEmpty(status))
             {
-                query += " AND r.Status = @Status";
-                parameters.Add(new SqlParameter("@Status", status == "Done" ? 1 : 0));
+                if (status == "Today")
+                {
+                    query += " AND CONVERT(DATE, r.FinishedDate) = @Today";
+                    parameters.Add(new SqlParameter("@Today", DateTime.Today));
+                }
+                else
+                {
+                    query += " AND r.Status = @Status";
+                    parameters.Add(new SqlParameter("@Status", status == "Done" ? 1 : 0));
+                }
             }
 
             // ✅ Add an ORDER BY clause to sort ReportID in ascending order // เพิ่มคำสั่ง ORDER BY ให้เรียง ReportID จากน้อยไปมาก 
@@ -216,33 +224,7 @@ namespace IT_WorkPlant.Models
         {
             string query = "SELECT IssueTypeID, IssueTypeCode FROM IssueType ORDER BY IssueTypeID";
             return _dbHelper.ExecuteQuery(query, null);
-     
-       }
-        public DataTable GetRequestFinishedDates()
-        {
-            string query = @"
-        SELECT DISTINCT CONVERT(VARCHAR(10), FinishedDate, 120) AS FinishedDate
-        FROM IT_RequestList
-        WHERE FinishedDate IS NOT NULL
-        ORDER BY FinishedDate DESC";
-
-            return _dbHelper.ExecuteQuery(query, null);
         }
-        public DataTable GetFinishedDatesByMonth(string selectedMonth)
-        {
-            string query = @"
-        SELECT DISTINCT CONVERT(VARCHAR(10), FinishedDate, 120) AS FinishedDate
-        FROM IT_RequestList
-        WHERE 
-            FinishedDate IS NOT NULL AND
-            FORMAT(FinishedDate, 'yyyy-MM') = @SelectedMonth
-        ORDER BY FinishedDate DESC";
 
-            SqlParameter[] parameters = {
-        new SqlParameter("@SelectedMonth", selectedMonth)
-    };
-
-            return _dbHelper.ExecuteQuery(query, parameters);
-        }
     }
 }

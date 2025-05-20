@@ -11,133 +11,97 @@ namespace IT_WorkPlant.Pages
 {
 
 
-    public partial class IT_UserManagement
+    public partial class IT_RequestsDashboard
     {
 
         /// <summary>
-        /// tblSearch control.
+        /// ddlTimeFilter control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Table tblSearch;
+        protected global::System.Web.UI.WebControls.DropDownList ddlTimeFilter;
 
         /// <summary>
-        /// tbSearchEmpID control.
+        /// lblTotal control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox tbSearchEmpID;
+        protected global::System.Web.UI.WebControls.Label lblTotal;
 
         /// <summary>
-        /// tbSearchName control.
+        /// lblWIP control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox tbSearchName;
+        protected global::System.Web.UI.WebControls.Label lblWIP;
 
         /// <summary>
-        /// ddlSearchDept control.
+        /// lblDone control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlSearchDept;
+        protected global::System.Web.UI.WebControls.Label lblDone;
 
         /// <summary>
-        /// btnSearch control.
+        /// lblDoneToday control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnSearch;
+        protected global::System.Web.UI.WebControls.Label lblDoneToday;
 
         /// <summary>
-        /// gvUsers control.
+        /// ltTableType control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvUsers;
+        protected global::System.Web.UI.WebControls.Literal ltTableType;
 
         /// <summary>
-        /// tbNewEmpID control.
+        /// ltTableDept control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox tbNewEmpID;
+        protected global::System.Web.UI.WebControls.Literal ltTableDept;
 
         /// <summary>
-        /// tbNewName control.
+        /// ltTableTrend control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox tbNewName;
+        protected global::System.Web.UI.WebControls.Literal ltTableTrend;
 
         /// <summary>
-        /// tbNewEmail control.
+        /// ltTableDRI control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox tbNewEmail;
+        protected global::System.Web.UI.WebControls.Literal ltTableDRI;
 
         /// <summary>
-        /// ddlNewDept control.
+        /// hfChartData control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlNewDept;
-
-        /// <summary>
-        /// ddlNewPosition control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlNewPosition;
-
-        /// <summary>
-        /// tbNewPassword control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox tbNewPassword;
-
-        /// <summary>
-        /// btnInsert control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnInsert;
-
-        /// <summary>
-        /// lblStatus control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblStatus;
+        protected global::System.Web.UI.WebControls.HiddenField hfChartData;
     }
 }
