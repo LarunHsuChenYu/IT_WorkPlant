@@ -15,7 +15,7 @@ namespace IT_WorkPlant
             if (Session["UserEmpID"] == null)
             {
                 // 未登入，重定向至登入頁面
-                Response.Redirect("Login.aspx");
+                Response.Redirect("~/Login.aspx");
             }
 
             // 若已登入，可以顯示使用者名稱

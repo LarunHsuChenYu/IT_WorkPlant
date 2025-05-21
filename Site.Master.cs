@@ -13,54 +13,60 @@ namespace IT_WorkPlant
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            // ✅ เพิ่มตรงนี้เพื่อเซ็ตภาษาเริ่มต้นเป็นอังกฤษ
+            // ✅ ตั้งค่าภาษาเริ่มต้น
             if (Session["lang"] == null)
             {
-                Session["lang"] = "en"; // ตั้ง default เป็น English
+                Session["lang"] = "en"; // Default เป็น English
             }
 
+            // ✅ ล้าง Login status ทุกครั้ง
+            phLoginStatus.Controls.Clear();
 
+            if (Session["UserEmpID"] != null)
+            {
+                // ✅ แสดงปุ่ม Logout
+                HyperLink logoutLink = new HyperLink
+                {
+                    NavigateUrl = "~/Pages/Logout.aspx",
+                    CssClass = "nav-link",
+                    Text = "Log-out"
+                };
+
+                phLoginStatus.Controls.Add(new HtmlGenericControl("li")
+                {
+                    Attributes = { ["class"] = "nav-item" },
+                    Controls = { logoutLink }
+                });
+
+                // ✅ แสดง Navbar ทุกครั้ง ไม่จำกัดเฉพาะ IsPostBack
+                string deptName = Session["DeptName"]?.ToString();
+                AddNavItem("Home", "~/Default.aspx");
+                BuildNavbar(deptName);
+            }
+            else
+            {
+                // ✅ ยังไม่ login → แสดงปุ่ม login
+                HyperLink loginLink = new HyperLink
+                {
+                    NavigateUrl = "Login.aspx",
+                    CssClass = "nav-link",
+                    Text = "Log-In"
+                };
+
+                phLoginStatus.Controls.Add(new HtmlGenericControl("li")
+                {
+                    Attributes = { ["class"] = "nav-item" },
+                    Controls = { loginLink }
+                });
+            }
+
+            // ✅ ปีปัจจุบันแค่ตอนโหลดครั้งแรก
             if (!IsPostBack)
             {
-                phLoginStatus.Controls.Clear();
-
-                if (Session["UserEmpID"] != null)
-                {
-                    HyperLink logoutLink = new HyperLink
-                    {
-                        NavigateUrl = "~/Pages/Logout.aspx",
-                        CssClass = "nav-link",
-                        Text = "Log-out"
-                    };
-
-                    phLoginStatus.Controls.Add(new HtmlGenericControl("li")
-                    {
-                        Attributes = { ["class"] = "nav-item" },
-                        Controls = { logoutLink }
-                    });
-
-                    string deptName = Session["DeptName"]?.ToString();
-                    BuildNavbar(deptName);
-                }
-                else
-                {
-                    HyperLink loginLink = new HyperLink
-                    {
-                        NavigateUrl = "Login.aspx",
-                        CssClass = "nav-link",
-                        Text = "Log-In"
-                    };
-
-                    phLoginStatus.Controls.Add(new HtmlGenericControl("li")
-                    {
-                        Attributes = { ["class"] = "nav-item" },
-                        Controls = { loginLink }
-                    });
-                }
-
                 litYear.Text = DateTime.Now.Year.ToString();
             }
         }
+
         protected void Logout_Click(object sender, EventArgs e)
         {
             Session.Clear();

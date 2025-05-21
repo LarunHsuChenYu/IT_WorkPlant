@@ -4,8 +4,8 @@
 <html lang="zh">
 <head runat="server">
     <!-- ✅ SweetAlert2 -->
-<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta charset="utf-8" />
@@ -51,7 +51,9 @@
 
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark">
             <div class="container">
-                <a class="navbar-brand" runat="server" href="~/">Home</a>
+
+                <!-- 🔥 ลบลิงก์ Home ซ้ำออก (ไม่จำเป็นเพราะมี AddNavItem อยู่แล้ว) -->
+
                 <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" title="切換導覽" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -59,33 +61,33 @@
                     <ul id="navbar" class="navbar-nav flex-grow-1" runat="server">                        
                     </ul>
 
-                    <<ul class="navbar-nav align-items-center" style="gap: 8px;">
-    <asp:PlaceHolder ID="phLoginStatus" runat="server" />
-    <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="langDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <% string lang = Session["lang"]?.ToString() ?? "th"; %>
-            <img src="/image/<%= lang == "th" ? "Thai.png" : (lang == "zh" ? "Taiwan.png" : "English.png") %>" alt="flag" style="width: 20px; margin-right: 5px;">
-            <%= lang == "th" ? "ภาษาไทย" : (lang == "zh" ? "中文" : "English") %>
-        </a>
-        <ul class="dropdown-menu" aria-labelledby="langDropdown">
-            <li>
-                <a class="dropdown-item" href="#" onclick="changeLang('th')">
-                    <img src="/image/Thai.png" alt="Thai" style="width: 20px; margin-right: 5px;"> ภาษาไทย
-                </a>
-            </li>
-            <li>
-                <a class="dropdown-item" href="#" onclick="changeLang('en')">
-                    <img src="/image/English.png" alt="English" style="width: 20px; margin-right: 5px;"> English
-                </a>
-            </li>
-            <li>
-                <a class="dropdown-item" href="#" onclick="changeLang('zh')">
-                    <img src="/image/Taiwan.png" alt="Chinese" style="width: 20px; margin-right: 5px;"> 中文
-                </a>
-            </li>
-        </ul>
-    </li>
-</ul>
+                    <ul class="navbar-nav align-items-center" style="gap: 8px;">
+                        <asp:PlaceHolder ID="phLoginStatus" runat="server" />
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="langDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <% string lang = Session["lang"]?.ToString() ?? "th"; %>
+                                <img src="/image/<%= lang == "th" ? "Thai.png" : (lang == "zh" ? "Taiwan.png" : "English.png") %>" alt="flag" style="width: 20px; margin-right: 5px;">
+                                <%= lang == "th" ? "ภาษาไทย" : (lang == "zh" ? "中文" : "English") %>
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="langDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="#" onclick="changeLang('th')">
+                                        <img src="/image/Thai.png" alt="Thai" style="width: 20px; margin-right: 5px;"> ภาษาไทย
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="#" onclick="changeLang('en')">
+                                        <img src="/image/English.png" alt="English" style="width: 20px; margin-right: 5px;"> English
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="#" onclick="changeLang('zh')">
+                                        <img src="/image/Taiwan.png" alt="Chinese" style="width: 20px; margin-right: 5px;"> 中文
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
 
                 </div>
             </div>

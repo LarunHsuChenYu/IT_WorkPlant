@@ -85,7 +85,7 @@ namespace IT_WorkPlant.Pages
                 return;
             }
 
-            bool hasValidItem = false;
+            var validItems = new List<(string issueTypeText, string issueTypeID, string description, string imagePath)>();
 
             foreach (RepeaterItem item in rptRequestItems.Items)
             {
@@ -98,8 +98,6 @@ namespace IT_WorkPlant.Pages
 
                 if (string.IsNullOrWhiteSpace(txt.Text) && string.IsNullOrEmpty(ddl.SelectedValue))
                     continue;
-
-                hasValidItem = true;
 
                 string imagePath = null;
                 if (fileUpload != null && fileUpload.HasFile)
@@ -114,22 +112,33 @@ namespace IT_WorkPlant.Pages
                     }
                 }
 
+                validItems.Add((ddl.SelectedItem.Text, ddl.SelectedValue, txt.Text, imagePath));
+            }
+
+            if (validItems.Count == 0)
+            {
+                ShowAlert("Please enter at least 1 issue");
+                return;
+            }
+
+            foreach (var item in validItems)
+            {
                 var columnValues = new Dictionary<string, object>
-                {
-                    { "IssueDate", DateTime.Parse(txtDate.Text) },
-                    { "DeptNameID", DeptName },
-                    { "CompanyID", "ENR" },
-                    { "RequestUserID", requestUserID },
-                    { "IssueDetails", HttpUtility.HtmlEncode(txt.Text) },
-                    { "IssueTypeID", ddl.SelectedValue },
-                    { "Status", false },
-                    { "LastUpdateDate", DateTime.Now },
-                    { "DRI_UserID", DBNull.Value },
-                    { "Solution", DBNull.Value },
-                    { "FinishedDate", DBNull.Value },
-                    { "Remark", DBNull.Value },
-                    { "ImagePath", imagePath ?? (object)DBNull.Value }
-                };
+        {
+            { "IssueDate", DateTime.Parse(txtDate.Text) },
+            { "DeptNameID", DeptName },
+            { "CompanyID", "ENR" },
+            { "RequestUserID", requestUserID },
+            { "IssueDetails", HttpUtility.HtmlEncode(item.description) },
+            { "IssueTypeID", item.issueTypeID },
+            { "Status", false },
+            { "LastUpdateDate", DateTime.Now },
+            { "DRI_UserID", DBNull.Value },
+            { "Solution", DBNull.Value },
+            { "FinishedDate", DBNull.Value },
+            { "Remark", DBNull.Value },
+            { "ImagePath", item.imagePath ?? (object)DBNull.Value }
+        };
 
                 try
                 {
@@ -140,35 +149,42 @@ namespace IT_WorkPlant.Pages
                     ShowAlert($"Error saving data: {ex.Message}");
                     return;
                 }
-
-                string sNotifyMsg =
-                    $"Date: {DateTime.Now:yyyy/MM/dd}\n" +
-                    $"Department: {DeptName}\n" +
-                    $"Name: {UserName}\n" +
-                    $"Category: {ddl.SelectedItem.Text}\n" +
-                    $"Description: {txt.Text}";
-
-                try
-                {
-                    var notifier = new LineNotificationModel();
-                    string lineGroupId = ConfigurationManager.AppSettings["LineGroupID"];
-                    await notifier.SendLineGroupMessageAsync(lineGroupId, sNotifyMsg);
-                }
-                catch (Exception ex)
-                {
-                    ShowAlert($"Failed to send LINE notification: {ex.Message}");
-                }
             }
 
-            if (!hasValidItem)
+            string sNotifyMsg = $"Date: {DateTime.Now:yyyy/MM/dd}\nDepartment: {DeptName}\nName: {UserName}";
+            for (int i = 0; i < validItems.Count; i++)
             {
-                ShowAlert("Please enter at least 1 issue");
-                return;
+                sNotifyMsg += $"\n\n#{i + 1}\nCategory: {validItems[i].issueTypeText}\nDescription: {validItems[i].description}";
             }
 
-            ShowAlertAndRedirect("Request submitted successfully.", ResolveUrl("~/Pages/IT_RequestsList.aspx"));
+            try
+            {
+                var notifier = new LineNotificationModel();
+                string lineGroupId = ConfigurationManager.AppSettings["LineGroupID"];
+                await notifier.SendLineGroupMessageAsync(lineGroupId, sNotifyMsg);
+            }
+            catch (Exception ex)
+            {
+                ShowAlert($"Failed to send LINE notification: {ex.Message}");
+            }
+
+            string script = $@"
+    Swal.fire({{
+        icon: 'success',
+        title: 'Issue Submitted Successfully!',
+        text: 'Your issue has been recorded. Thank you for your submission.',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#6c5ce7'
+    }}).then((result) => {{
+        if (result.isConfirmed) {{
+            window.location.href = '{ResolveUrl("~/Pages/IT_RequestsList.aspx")}';
+        }}
+    }});
+";
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "swalSuccess", script, true);
 
         }
+
         protected void CancelForm(object sender, EventArgs e)
         {
             ShowAlertAndRedirect("Request cancelled.", ResolveUrl("~/Pages/IT_RequestsList.aspx"));

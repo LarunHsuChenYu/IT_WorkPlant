@@ -5,12 +5,13 @@
 <asp:Content ID="HeaderContent" ContentPlaceHolderID="HeadContent" runat="server">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <style>
         body {
             background-color: #1e1e2f;
             color: white;
         }
-
         .card-summary {
             text-align: center;
             padding: 20px;
@@ -18,40 +19,21 @@
             border: 1px solid #3c4d5f;
             border-radius: 10px;
         }
-
         .dark-card {
             background-color: #3b4f63;
             border: 1px solid #3c4d5f;
             border-radius: 10px;
             color: white;
         }
-
-        .dark-card h6 {
-            color: white;
-        }
-
-        h1 {
-            color: #448cd4;
-        }
-
-        h3 {
-            color: white;
-        }
-
-        .chart-box {
-            height: 300px;
-        }
-
-        .summary-table {
-            font-size: 0.9rem;
-        }
-
-        .summary-table th,
-        .summary-table td {
+        .dark-card h6 { color: white; }
+        h1 { color: #448cd4; }
+        h3 { color: white; }
+        .chart-box { height: 300px; }
+        .summary-table { font-size: 0.9rem; }
+        .summary-table th, .summary-table td {
             background-color: #34495e !important;
             color: white !important;
         }
-
         .form-select {
             background-color: #2c3e50;
             color: white;
@@ -70,6 +52,7 @@
                 CssClass="form-select w-auto d-inline">
                 <asp:ListItem Text="All Time" Value="all" />
                 <asp:ListItem Text="This Month" Value="month" />
+                <asp:ListItem Text="This Week" Value="week" />
                 <asp:ListItem Text="Today" Value="today" />
             </asp:DropDownList>
         </div>
@@ -134,20 +117,25 @@
                 </div>
             </div>
         </div>
-
-        <asp:HiddenField ID="hfChartData" runat="server" />
     </div>
 
-    <script>
+    <asp:HiddenField ID="hfChartData" runat="server" />
+
+    <script type="text/javascript">
+        let chartType, chartDept, chartTrend, chartDRI;
+
         window.onload = function () {
-            const chartData = JSON.parse(document.getElementById('<%= hfChartData.ClientID %>').value || '{}');
+            let raw = document.getElementById('<%= hfChartData.ClientID %>').value || '{}';
+            let chartData = {};
+            try { chartData = JSON.parse(raw); } catch (e) { console.error("Invalid JSON", e); }
+
             const createChart = (id, type, labels, data, bgColors) => {
-                new Chart(document.getElementById(id), {
+                return new Chart(document.getElementById(id), {
                     type: type,
                     data: {
-                        labels: labels,
+                        labels: labels || [],
                         datasets: [{
-                            data: data,
+                            data: data || [],
                             backgroundColor: bgColors,
                             borderColor: '#ffffff',
                             borderWidth: type === 'line' ? 2 : 1,
@@ -177,13 +165,13 @@
                 });
             };
 
-            createChart('chartType', 'bar', chartData.type.labels, chartData.type.data,
+            chartType = createChart('chartType', 'bar', chartData.type?.labels, chartData.type?.data,
                 ['#f1c40f', '#2ecc71', '#e74c3c', '#3498db', '#9b59b6', '#1abc9c']);
-            createChart('chartDept', 'bar', chartData.dept.labels, chartData.dept.data,
+            chartDept = createChart('chartDept', 'bar', chartData.dept?.labels, chartData.dept?.data,
                 ['#e67e22', '#f39c12', '#16a085', '#27ae60', '#8e44ad', '#c0392b', '#2980b9']);
-            createChart('chartTrend', 'line', chartData.trend.labels, chartData.trend.data,
-                '#3498db');
-            createChart('chartDRI', 'pie', chartData.dri.labels, chartData.dri.data,
+            chartTrend = createChart('chartTrend', 'line', chartData.trend?.labels, chartData.trend?.data,
+                ['#3498db']);
+            chartDRI = createChart('chartDRI', 'pie', chartData.dri?.labels, chartData.dri?.data,
                 ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6']);
         };
     </script>
