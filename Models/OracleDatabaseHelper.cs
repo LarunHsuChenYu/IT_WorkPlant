@@ -28,7 +28,18 @@ namespace IT_WorkPlant.Models
                     using (var adapter = new OracleDataAdapter(cmd))
                     {
                         DataTable resultTable = new DataTable();
-                        adapter.Fill(resultTable);
+                        try
+                        {
+                            adapter.Fill(resultTable);
+                        }
+                        catch (NotSupportedException ex) when (ex.Message.Contains("SafeMapping"))
+                        {
+                            // 如果 SafeMapping 出現問題，使用替代方法
+                            using (var reader = cmd.ExecuteReader())
+                            {
+                                resultTable.Load(reader);
+                            }
+                        }
                         return resultTable;
                     }
                 }

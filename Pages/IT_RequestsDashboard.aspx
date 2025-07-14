@@ -6,12 +6,30 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<!-- 💡 Flatpickr Initializer -->
+<script type="text/javascript">
+    Sys.Application.add_load(function () {
+        flatpickr(".flatpickr-input", {
+            dateFormat: "Y/m/d",        // ✅ ส่งให้ backend เข้าใจตรงกัน
+            altInput: true,             // ✨ แสดงแบบ user-friendly
+            altFormat: "d M Y",         // 🧠 ตัวอย่าง: 11 Jul 2025
+            allowInput: false,          // 🛑 ห้ามพิมพ์
+            defaultDate: "today",       // 🗓 ตั้งให้โชว์วันนี้เป็นค่า default
+            wrap: false
+        });
+    });
+</script>
+
 
     <style>
         body {
             background-color: #1e1e2f;
             color: white;
         }
+
         .card-summary {
             text-align: center;
             padding: 20px;
@@ -19,21 +37,40 @@
             border: 1px solid #3c4d5f;
             border-radius: 10px;
         }
+
         .dark-card {
             background-color: #3b4f63;
             border: 1px solid #3c4d5f;
             border-radius: 10px;
             color: white;
         }
-        .dark-card h6 { color: white; }
-        h1 { color: #448cd4; }
-        h3 { color: white; }
-        .chart-box { height: 300px; }
-        .summary-table { font-size: 0.9rem; }
-        .summary-table th, .summary-table td {
+
+        .dark-card h6 {
+            color: white;
+        }
+
+        h1 {
+            color: #448cd4;
+        }
+
+        h3 {
+            color: white;
+        }
+
+        .chart-box {
+            height: 300px;
+        }
+
+        .summary-table {
+            font-size: 0.9rem;
+        }
+
+        .summary-table th,
+        .summary-table td {
             background-color: #34495e !important;
             color: white !important;
         }
+
         .form-select {
             background-color: #2c3e50;
             color: white;
@@ -52,10 +89,43 @@
                 CssClass="form-select w-auto d-inline">
                 <asp:ListItem Text="All Time" Value="all" />
                 <asp:ListItem Text="This Month" Value="month" />
+                <asp:ListItem Text="Last Month" Value="lastmonth" />
                 <asp:ListItem Text="This Week" Value="week" />
+                <asp:ListItem Text="Last Week" Value="lastweek" />
                 <asp:ListItem Text="Today" Value="today" />
             </asp:DropDownList>
         </div>
+
+        <!-- 🔥 New Date Range UI [พร้อม Flatpickr] -->
+<div class="row justify-content-center mb-4">
+    <div class="col-md-2 text-center">
+        <label class="d-block">Start Date (Y/m/d)</label>
+        <asp:TextBox ID="txtFromDate" runat="server" CssClass="form-control flatpickr-input" />
+    </div>
+    <div class="col-md-2 text-center">
+        <label class="d-block">End Date (Y/m/d)</label>
+        <asp:TextBox ID="txtToDate" runat="server" CssClass="form-control flatpickr-input" />
+    </div>
+    <div class="col-md-1 text-center d-flex align-items-end">
+        <asp:Button ID="btnSearchRange" runat="server" Text="Query" CssClass="btn btn-primary w-100"
+            OnClick="btnSearchRange_Click" />
+    </div>
+</div>
+
+<!-- 💡 Flatpickr Initializer -->
+<script type="text/javascript">
+    Sys.Application.add_load(function () {
+        flatpickr(".flatpickr-input", {
+            dateFormat: "Y/m/d",        // ✅ ส่งให้ backend เข้าใจตรงกัน
+            altInput: true,             // ✨ แสดงแบบ user-friendly
+            altFormat: "d M Y",         // 🧠 ตัวอย่าง: 11 Jul 2025
+            allowInput: false,          // 🛑 ห้ามพิมพ์
+            defaultDate: "today",       // 🗓 ตั้งให้โชว์วันนี้เป็นค่า default
+            wrap: false
+        });
+    });
+</script>
+
 
         <div class="row mb-4 text-white text-center">
             <div class="col-md-3">
@@ -66,7 +136,7 @@
             </div>
             <div class="col-md-3">
                 <div class="card-summary" style="background-color: #f1c40f; color: black;">
-                    <h6>In Progress</h6>
+                    <h6>WIP</h6>
                     <h3><asp:Label ID="lblWIP" runat="server" Text="0" /></h3>
                 </div>
             </div>

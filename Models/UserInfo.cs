@@ -9,6 +9,7 @@ namespace IT_WorkPlant.Models
         public string UserName { get; set; }
         public string UserEmpMail { get; set; }
         public string DeptName { get; set; }
+        public string UserPosition { get; set; }
 
         private readonly MssqlDatabaseHelper _dbHelper = new MssqlDatabaseHelper();
         public int? GetRequestUserID(string userName, string userEmpID)
@@ -36,7 +37,7 @@ namespace IT_WorkPlant.Models
         }
         public UserInfo AuthenticateUser(string userId, string password)
         {
-            string query = "SELECT UserName, UserEmpMail, DeptName FROM Users WHERE UserEmpID = @UserID AND UserEmpPW = @Password";
+            string query = "SELECT UserName, UserEmpMail, DeptName, PositionID FROM Users WHERE UserEmpID = @UserID AND UserEmpPW = @Password";
 
             SqlParameter[] parameters =
             {
@@ -53,7 +54,8 @@ namespace IT_WorkPlant.Models
                 {
                     UserName = row["UserName"].ToString(),
                     UserEmpMail = row["UserEmpMail"].ToString(),
-                    DeptName = row["DeptName"].ToString()
+                    DeptName = row["DeptName"].ToString(),
+                    UserPosition = row["PositionID"].ToString()
                 };
             }
 

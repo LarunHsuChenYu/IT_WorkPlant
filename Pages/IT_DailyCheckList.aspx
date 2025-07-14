@@ -1,7 +1,5 @@
-﻿<%@ Page Title="IT Daily Check List" Language="C#" MasterPageFile="~/Site.Master" 
-    AutoEventWireup="true" CodeBehind="IT_DailyCheckList.aspx.cs" 
-    Inherits="IT_WorkPlant.Pages.IT_DailyCheckList" %>
-
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" 
+    CodeBehind="IT_DailyCheckList.aspx.cs" Inherits="IT_WorkPlant.Pages.IT_DailyCheckList" %>
     
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">

@@ -90,11 +90,15 @@ namespace IT_WorkPlant
             {
                 AddDropdownItem("IT", "IT",
                     new[] {
+                        new KeyValuePair<string, string>("ERP Account", "~/Pages/IT_erpNewUserCreate.aspx"),
                         new KeyValuePair<string, string>("User Account", "~/Pages/IT_UserManagement"),
                         new KeyValuePair<string, string>("Daily Check", "~/Pages/IT_DailyCheckList"),
                         new KeyValuePair<string, string>("Web Portal", "~/Pages/IT_WebPortalList"),
                         new KeyValuePair<string, string>("IT Purchase Items Maintain", "~/Pages/IT_PurchaseItemsList"),
-                        new KeyValuePair<string, string>("IT Stock", "~/Pages/IT_StockItems.aspx")
+                        new KeyValuePair<string, string>("IT Stock", "~/Pages/IT_StockItems.aspx"),
+                        new KeyValuePair<string, string>("IT Borrow Approval", "~/Pages/IT_BorrowApproval.aspx"),
+                        new KeyValuePair<string, string>("IT ComputerList", "~/Pages/IT_ComputerAdd.aspx"),                       
+                        new KeyValuePair<string, string>("Working Flow", "~/Pages/WF_FlowMaintain.aspx"),
                     });
                 AddDropdownItem("PMC", "PMC",
                     new[] {
@@ -117,7 +121,12 @@ namespace IT_WorkPlant
                                 new KeyValuePair<string, string>("G3", "http://192.168.32.129:8015/hrp/login.do"),
                                 new KeyValuePair<string, string>("N8", "http://192.168.30.238:8012/#/login"),
                             });
-                
+                AddDropdownItem("Dashboard", "OPD",
+                            new[] {
+                                new KeyValuePair<string, string>("WO Entry Posting", "~/Pages/OPD_TLF_Statics"),
+                                new KeyValuePair<string, string>("Sale Order Entry", "~/Pages/OPD_SalesOrderAnalysis")
+                            });
+
             }
             else
             {
@@ -160,6 +169,18 @@ namespace IT_WorkPlant
                         // 可以加入默認或無權限顯示的處理
                         break;
                 }
+                // 階級特定導航
+                int positionID = Session["Position"] != null ? Convert.ToInt32(Session["Position"]) : 0;
+                if (positionID > 3)
+                {
+                    AddDropdownItem("Dashboard", "OPD",
+                            new[] {
+                                new KeyValuePair<string, string>("War Room", "~/Pages/WarRoom"),
+                                new KeyValuePair<string, string>("WO Entry Posting", "~/Pages/OPD_TLF_Statics"),
+                                new KeyValuePair<string, string>("Sale Order Entry", "~/Pages/OPD_SaleOrderAnalysis")
+                            });
+                }
+
             }
         }
 

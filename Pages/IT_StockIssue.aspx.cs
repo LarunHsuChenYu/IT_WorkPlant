@@ -3,9 +3,7 @@ using System.Data.SqlClient;
 using System.Configuration;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Data;
-using System.Collections.Generic;
-
+using System.Data;             
 
 
 namespace IT_WorkPlant.Pages
@@ -21,12 +19,11 @@ namespace IT_WorkPlant.Pages
                 Response.Redirect("~/Login.aspx");
                 return;
             }
-            Page.DataBind();
+
             if (!IsPostBack)
             {
                 LoadProductCodes();
-                LoadIssuedUsers();
-                LoadStatus();
+                LoadIssuedUsers(); // 👈 เพิ่มโหลดผู้เบิก
                 txtIssueDate.Text = DateTime.Now.ToString("yyyy-MM-dd");
                 txtApprovedBy.Text = Session["username"].ToString();
                 LoadIssueHistory();
@@ -87,7 +84,7 @@ namespace IT_WorkPlant.Pages
                 SqlDataReader reader = cmd.ExecuteReader();
 
                 ddlIssuedBy.Items.Clear();
-                ddlIssuedBy.Items.Add(new ListItem(GetLabel("selectname"), ""));
+                ddlIssuedBy.Items.Add(new ListItem("เลือกชื่อ", ""));
                 while (reader.Read())
                 {
                     string username = reader["UserName"].ToString();
@@ -321,131 +318,6 @@ WHERE ItemID = @ItemID";
                         $"alert('เกิดข้อผิดพลาดขณะคืนของ: {ex.Message}');", true);
                 }
             }
-        }
-        protected string GetLabel(string key)
-        {
-            string lang = (Session["lang"]?.ToString()?.ToLower()) ?? "th";
-            key = key.ToLower(); // ✅ ป้องกัน headerText เป็นตัวใหญ่
-
-            var th = new Dictionary<string, string> {
-        { "title", "เบิกของออกจากคลัง" },
-        { "productcode", "รหัสสินค้า" },
-        { "productname", "ชื่อสินค้า" },
-        { "model", "รุ่น" },
-        { "unit", "หน่วย" },
-        { "quantity", "จำนวน" },
-        { "issuedby", "ผู้เบิก" },
-        { "department", "แผนก" },
-        { "approvedby", "ผู้อนุมัติ" },
-        { "issuetype", "ประเภทการเบิก" },
-        { "status", "สถานะ" },
-        { "purpose", "นำไปใช้ทำอะไร" },
-        { "submit", "บันทึกการเบิก" },
-        { "history", "ประวัติการเบิกล่าสุด" },
-        { "return", "คืนของ" },
-        { "returndate", "วันที่คืนของ" },
-        { "isreturned", "คืนของแล้ว?" },
-        { "filter_all", "ทั้งหมด" },
-        { "filter_used", "เบิกใช้" },
-        { "filter_borrowed", "ยืมของ" },
-        { "selectname", "เลือกชื่อ" },
-        { "pending", "รออนุมัติ" },
-        { "approved", "อนุมัติ" },
-        { "rejected", "ไม่อนุมัติ" }
-    };
-
-            var en = new Dictionary<string, string> {
-        { "title", "Stock Issue" },
-        { "productcode", "Product Code" },
-        { "productname", "Product Name" },
-        { "model", "Model" },
-        { "unit", "Unit" },
-        { "quantity", "Quantity" },
-        { "issuedby", "Issued By" },
-        { "department", "Department" },
-        { "approvedby", "Approved By" },
-        { "issuetype", "Issue Type" },
-        { "status", "Status" },
-        { "purpose", "Purpose" },
-        { "submit", "Submit" },
-        { "history", "Issue History" },
-        { "return", "Return" },
-        { "returndate", "Return Date" },
-        { "isreturned", "Returned?" },
-        { "filter_all", "All" },
-        { "filter_used", "Used" },
-        { "filter_borrowed", "Borrowed" },
-        { "selectname", "Select Name" },
-        { "pending", "Pending" },
-        { "approved", "Approved" },
-        { "rejected", "Rejected" }
-    };
-
-            var zh = new Dictionary<string, string> {
-        { "title", "出庫作業" },
-        { "productcode", "產品代碼" },
-        { "productname", "產品名稱" },
-        { "model", "型號" },
-        { "unit", "單位" },
-        { "quantity", "數量" },
-        { "issuedby", "領用人" },
-        { "department", "部門" },
-        { "approvedby", "審核人" },
-        { "issuetype", "出庫類型" },
-        { "status", "狀態" },
-        { "purpose", "用途" },
-        { "submit", "提交" },
-        { "history", "出庫記錄" },
-        { "return", "歸還" },
-        { "returndate", "歸還日期" },
-        { "isreturned", "已歸還？" },
-        { "filter_all", "全部" },
-        { "filter_used", "領用" },
-        { "filter_borrowed", "借用" },
-        { "selectname", "選擇姓名" },
-        { "pending", "待批准" },
-        { "approved", "已批准" },
-        { "rejected", "未批准" }
-    };
-
-            Dictionary<string, string> dict = lang == "en" ? en : lang == "zh" ? zh : th;
-            return dict.ContainsKey(key) ? dict[key] : key;
-        }
-        protected void gvUsed_RowCreated(object sender, GridViewRowEventArgs e)
-        {
-            if (e.Row.RowType == DataControlRowType.Header)
-            {
-                for (int i = 0; i < gvUsed.Columns.Count; i++)
-                {
-                    if (gvUsed.Columns[i] is DataControlField field)
-                    {
-                        string key = field.HeaderText.ToLower().Trim();
-                        field.HeaderText = GetLabel(key);
-                    }
-                }
-            }
-        }
-
-        protected void gvBorrowed_RowCreated(object sender, GridViewRowEventArgs e)
-        {
-            if (e.Row.RowType == DataControlRowType.Header)
-            {
-                for (int i = 0; i < gvBorrowed.Columns.Count; i++)
-                {
-                    if (gvBorrowed.Columns[i] is DataControlField field)
-                    {
-                        string key = field.HeaderText.ToLower().Trim();
-                        field.HeaderText = GetLabel(key);
-                    }
-                }
-            }
-        }
-        private void LoadStatus()
-        {
-            ddlStatus.Items.Clear();
-            ddlStatus.Items.Add(new ListItem(GetLabel("pending"), "รออนุมัติ"));
-            ddlStatus.Items.Add(new ListItem(GetLabel("approved"), "อนุมัติ"));
-            ddlStatus.Items.Add(new ListItem(GetLabel("rejected"), "ไม่อนุมัติ"));
         }
 
     }

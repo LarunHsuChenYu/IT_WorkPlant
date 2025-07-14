@@ -25,26 +25,26 @@ namespace IT_WorkPlant.Pages
 
         private void BindDepartmentDropDowns()
         {
-            // 定義查詢和參數（無參數的情況下可以使用空字典）
-            string query = "SELECT DISTINCT DeptNameID, DeptName_en FROM Departments";
-            var parameters = new Dictionary<string, object>();
+                // 定義查詢和參數（無參數的情況下可以使用空字典）
+                string query = "SELECT DISTINCT DeptNameID, DeptName_en FROM Departments";
+                var parameters = new Dictionary<string, object>();
 
-            // 執行查詢
-            DataTable dt = _dbHelper.ExecuteDynamicQuery(query, parameters);
+                // 執行查詢
+                DataTable dt = _dbHelper.ExecuteDynamicQuery(query, parameters);
 
-            // 綁定搜尋區域 DropDownList
-            ddlSearchDept.DataSource = dt;
-            ddlSearchDept.DataTextField = "DeptName_en";  // 顯示英文部門名稱
-            ddlSearchDept.DataValueField = "DeptNameID";  // 使用 DeptNameID 作為值
-            ddlSearchDept.DataBind();
-            ddlSearchDept.Items.Insert(0, new ListItem("All Departments", ""));
+                // 綁定搜尋區域 DropDownList
+                ddlSearchDept.DataSource = dt;
+                ddlSearchDept.DataTextField = "DeptName_en";  // 顯示英文部門名稱
+                ddlSearchDept.DataValueField = "DeptNameID";  // 使用 DeptNameID 作為值
+                ddlSearchDept.DataBind();
+                ddlSearchDept.Items.Insert(0, new ListItem("All Departments", ""));
 
-            // 綁定新增區域 DropDownList
-            ddlNewDept.DataSource = dt;
-            ddlNewDept.DataTextField = "DeptName_en";
-            ddlNewDept.DataValueField = "DeptNameID";
-            ddlNewDept.DataBind();
-            ddlNewDept.Items.Insert(0, new ListItem("Select Department", ""));
+                // 綁定新增區域 DropDownList
+                ddlNewDept.DataSource = dt;
+                ddlNewDept.DataTextField = "DeptName_en";
+                ddlNewDept.DataValueField = "DeptNameID";
+                ddlNewDept.DataBind();
+                ddlNewDept.Items.Insert(0, new ListItem("Select Department", ""));
         }
 
         private DataTable GetPositions()

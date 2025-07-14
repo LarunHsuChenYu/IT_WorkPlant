@@ -98,31 +98,33 @@ namespace IT_WorkPlant.Models
         public DataTable GetFilteredRequests(string deptName, string requestUser, string issueType, string status, string issueMonth, string issueDate)
         {
             string query = @"
-                SELECT 
-                    r.ReportID, 
-                    r.IssueDate, 
-                    d.DeptName_en AS Department, 
-                    u.UserName AS RequestUser, 
-                    r.IssueDetails, 
-                    it.IssueTypeCode AS IssueType, 
-                    r.IssueTypeID,
-                    r.DRI_UserID, 
-                    (SELECT UserName FROM Users WHERE UserIndex = r.DRI_UserID) AS DRI_UserName,
-                    r.Solution, 
-                    r.Status AS StatusValue,  
-                    CASE 
-                        WHEN r.Status = 1 THEN 'Done'
-                        ELSE 'WIP'
-                    END AS Status, 
-                    r.LastUpdateDate, 
-                    r.FinishedDate, 
-                    r.Remark,
-                    r.ImagePath
-                FROM IT_RequestList r
-                LEFT JOIN Departments d ON r.DeptNameID = d.DeptNameID
-                LEFT JOIN Users u ON r.RequestUserID = u.UserIndex
-                LEFT JOIN IssueType it ON r.IssueTypeID = it.IssueTypeID
-                WHERE 1 = 1";
+        SELECT 
+            r.ReportID, 
+            r.IssueDate, 
+            r.DeptNameID,                              -- <<== ✅ เพิ่มบรรทัดนี้เข้าไป
+            d.DeptName_en AS Department, 
+            u.UserName AS RequestUser, 
+            r.IssueDetails, 
+            it.IssueTypeCode AS IssueType, 
+            r.IssueTypeID,
+            r.DRI_UserID, 
+            (SELECT UserName FROM Users WHERE UserIndex = r.DRI_UserID) AS DRI_UserName,
+            r.Solution, 
+            r.Status AS StatusValue,  
+            CASE 
+                WHEN r.Status = 1 THEN 'Done'
+                ELSE 'WIP'
+            END AS Status, 
+            r.LastUpdateDate, 
+            r.FinishedDate, 
+            r.Remark,
+            r.ImagePath
+        FROM IT_RequestList r
+        LEFT JOIN Departments d ON r.DeptNameID = d.DeptNameID
+        LEFT JOIN Users u ON r.RequestUserID = u.UserIndex
+        LEFT JOIN IssueType it ON r.IssueTypeID = it.IssueTypeID
+        WHERE 1 = 1";
+
 
             var parameters = new List<SqlParameter>();
 

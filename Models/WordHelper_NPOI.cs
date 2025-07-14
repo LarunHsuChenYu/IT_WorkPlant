@@ -7,7 +7,7 @@ using NPOI.XWPF.UserModel;
 
 namespace IT_WorkPlant.Models
 {
-    public class WordHelper
+    public class WordHelperNPOI
     {
         public MemoryStream GenerateWordDocumentFromSubmission(string templatePath, EmailRequestSubmissionModel submission)
         {

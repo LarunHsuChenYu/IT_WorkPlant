@@ -11,7 +11,7 @@ namespace IT_WorkPlant.Pages
 {
     public partial class IT_RequestsDashboard : Page
     {
-        private IT_RequestModel _model;  
+        private IT_RequestModel _model;
         private static readonly Dictionary<string, string> DepartmentShortMap = new Dictionary<string, string>
         {
             { "Administration Dept.", "AD" },
@@ -28,6 +28,57 @@ namespace IT_WorkPlant.Pages
             { "Quality Control Dept.", "QC" },
             { "Trial Production Section", "TP" }
         };
+        protected void btnSearchRange_Click(object sender, EventArgs e)
+        {
+            if (_model == null)
+                _model = new IT_RequestModel();
+
+            DateTime fromDate, toDate;
+
+            if (DateTime.TryParse(txtFromDate.Text, out fromDate) && DateTime.TryParse(txtToDate.Text, out toDate))
+            {
+                DataTable allRequests = _model.GetAllRequests();
+
+                var filtered = allRequests.AsEnumerable()
+                    .Where(r =>
+                    {
+                        DateTime issueDate;
+                        return DateTime.TryParse(r["IssueDate"].ToString(), out issueDate)
+                            && issueDate.Date >= fromDate.Date && issueDate.Date <= toDate.Date;
+                    });
+
+                DataTable result = filtered.Any() ? filtered.CopyToDataTable() : allRequests.Clone();
+
+                // 👉 ส่งต่อให้เมธอดเดิมเพื่อ render
+                RenderDashboard(result);
+            }
+        }
+        private void RenderDashboard(DataTable allRequests)
+        {
+            lblTotal.Text = allRequests.Rows.Count.ToString();
+            lblWIP.Text = allRequests.AsEnumerable().Count(r => r["Status"].ToString() == "WIP").ToString();
+            lblDone.Text = allRequests.AsEnumerable().Count(r => r["Status"].ToString() == "Done").ToString();
+            lblDoneToday.Text = allRequests.AsEnumerable()
+                .Count(r => r["Status"].ToString() == "Done"
+                         && r["FinishedDate"] != DBNull.Value
+                         && Convert.ToDateTime(r["FinishedDate"]).Date == DateTime.Today.Date)
+                .ToString();
+
+            var chartData = new
+            {
+                type = GetChartData(allRequests, "IssueType"),
+                dept = GetChartData(allRequests, "Department"),
+                trend = GetChartData(allRequests, "IssueDate", "yyyy-MM-dd"),
+                dri = GetChartData(allRequests, "DRI_UserName", replaceEmpty: "Unassigned")
+            };
+
+            hfChartData.Value = new JavaScriptSerializer().Serialize(chartData);
+
+            RenderSummaryTable(ToTupleList(chartData.type), ltTableType);
+            RenderSummaryTable(ToTupleList(chartData.dept, mapShortDept: true), ltTableDept);
+            RenderSummaryTable(ToTupleList(chartData.trend), ltTableTrend);
+            RenderSummaryTable(ToTupleList(chartData.dri), ltTableDRI);
+        }
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -42,11 +93,35 @@ namespace IT_WorkPlant.Pages
 
             if (!IsPostBack)
             {
-                ddlTimeFilter.SelectedValue = "all";
+                SetDynamicTimeLabels(); // ✅ เรียกฟังก์ชันนี้ก่อน
+                ddlTimeFilter.SelectedValue = "week";
                 LoadDashboardData();
             }
         }
 
+        private void SetDynamicTimeLabels()
+        {
+            // 🗓 Last Week
+            DateTime today = DateTime.Today;
+            DateTime startOfThisWeek = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Monday);
+            DateTime startOfLastWeek = startOfThisWeek.AddDays(-7);
+            DateTime endOfLastWeek = startOfLastWeek.AddDays(4); // จันทร์–ศุกร์
+
+            string lastWeekLabel = $"Last Week ({startOfLastWeek:dd MMM} – {endOfLastWeek:dd MMM})";
+
+            // 🗓 Last Month
+            DateTime firstDayLastMonth = new DateTime(today.Year, today.Month, 1).AddMonths(-1);
+            DateTime lastDayLastMonth = firstDayLastMonth.AddMonths(1).AddDays(-1);
+
+            string lastMonthLabel = $"Last Month ({firstDayLastMonth:dd MMM} – {lastDayLastMonth:dd MMM})";
+
+            // 🔄 ใส่ค่าที่คำนวณได้เข้าไปใน ListItem
+            var lastWeekItem = ddlTimeFilter.Items.FindByValue("lastweek");
+            if (lastWeekItem != null) lastWeekItem.Text = lastWeekLabel;
+
+            var lastMonthItem = ddlTimeFilter.Items.FindByValue("lastmonth");
+            if (lastMonthItem != null) lastMonthItem.Text = lastMonthLabel;
+        }
 
         protected void ddlTimeFilter_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -56,11 +131,26 @@ namespace IT_WorkPlant.Pages
         {
             string filter = ddlTimeFilter.SelectedValue;
             DataTable allRequests = _model.GetAllRequests();
+
             if (filter == "month")
             {
                 var filtered = allRequests.AsEnumerable()
                     .Where(r => Convert.ToDateTime(r["IssueDate"]).Month == DateTime.Today.Month &&
                                 Convert.ToDateTime(r["IssueDate"]).Year == DateTime.Today.Year);
+                allRequests = filtered.Any() ? filtered.CopyToDataTable() : allRequests.Clone();
+            }
+            else if (filter == "lastmonth")
+            {
+                var firstDayLastMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddMonths(-1);
+                var lastDayLastMonth = firstDayLastMonth.AddMonths(1).AddDays(-1);
+
+                var filtered = allRequests.AsEnumerable()
+                    .Where(r =>
+                    {
+                        DateTime issueDate;
+                        return DateTime.TryParse(r["IssueDate"].ToString(), out issueDate)
+                            && issueDate >= firstDayLastMonth && issueDate <= lastDayLastMonth;
+                    });
                 allRequests = filtered.Any() ? filtered.CopyToDataTable() : allRequests.Clone();
             }
             else if (filter == "today")
@@ -72,17 +162,34 @@ namespace IT_WorkPlant.Pages
             else if (filter == "week")
             {
                 var startOfWeek = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek + (int)DayOfWeek.Monday);
-                var endOfWeek = startOfWeek.AddDays(5); // ✅ จันทร์-ศุกร์
+                var endOfWeek = startOfWeek.AddDays(4); // จันทร์-ศุกร์
 
                 var filtered = allRequests.AsEnumerable()
                     .Where(r =>
                     {
                         DateTime issueDate;
                         return DateTime.TryParse(r["IssueDate"].ToString(), out issueDate)
-                            && issueDate >= startOfWeek && issueDate < endOfWeek;
+                            && issueDate >= startOfWeek && issueDate <= endOfWeek;
                     });
                 allRequests = filtered.Any() ? filtered.CopyToDataTable() : allRequests.Clone();
             }
+            else if (filter == "lastweek")
+            {
+                var today = DateTime.Today;
+                var startOfThisWeek = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Monday);
+                var startOfLastWeek = startOfThisWeek.AddDays(-7);
+                var endOfLastWeek = startOfLastWeek.AddDays(4); // จันทร์-ศุกร์ ของสัปดาห์ก่อน
+
+                var filtered = allRequests.AsEnumerable()
+                    .Where(r =>
+                    {
+                        DateTime issueDate;
+                        return DateTime.TryParse(r["IssueDate"].ToString(), out issueDate)
+                            && issueDate >= startOfLastWeek && issueDate <= endOfLastWeek;
+                    });
+                allRequests = filtered.Any() ? filtered.CopyToDataTable() : allRequests.Clone();
+            }
+
             lblTotal.Text = allRequests.Rows.Count.ToString();
             lblWIP.Text = allRequests.AsEnumerable().Count(r => r["Status"].ToString() == "WIP").ToString();
             lblDone.Text = allRequests.AsEnumerable().Count(r => r["Status"].ToString() == "Done").ToString();
@@ -91,11 +198,13 @@ namespace IT_WorkPlant.Pages
                          && r["FinishedDate"] != DBNull.Value
                          && Convert.ToDateTime(r["FinishedDate"]).Date == DateTime.Today.Date)
                 .ToString();
+
             string trendFormat = "yyyy-MM";
-            if (filter == "today" || filter == "week")
+            if (filter == "today" || filter == "week" || filter == "lastweek")
                 trendFormat = "yyyy-MM-dd";
-            else if (filter == "month")
+            else if (filter == "month" || filter == "lastmonth")
                 trendFormat = "yyyy-ww";
+
             var chartData = new
             {
                 type = GetChartData(allRequests, "IssueType"),

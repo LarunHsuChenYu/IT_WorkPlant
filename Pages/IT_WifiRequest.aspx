@@ -282,77 +282,96 @@
 
         </div>
         <div class="form-box">
-        <div class="tabs">
-            <div class="tab" onclick="showTab('VisitorDiv')"><%= GetLabel("visitor") %></div>
-<div class="tab" onclick="showTab('BizTripDiv')"><%= GetLabel("businesstrip") %></div>
-<div class="tab" onclick="showTab('OnboardDiv')"><%= GetLabel("newemployee") %></div>
+    <div class="tabs">
+        <div class="tab" onclick="showTab('VisitorDiv')"><%= GetLabel("visitor") %></div>
+        <div class="tab" onclick="showTab('BizTripDiv')"><%= GetLabel("businesstrip") %></div>
+        <div class="tab" onclick="showTab('OnboardDiv')"><%= GetLabel("newemployee") %></div>
+    </div>
 
+    <asp:HiddenField ID="hfActiveTab" runat="server" />
+
+    <!-- Visitor Tab -->
+    <div id="VisitorDiv" class="tab-content active">
+        <h4><%= GetLabel("visitorrequest") %></h4>
+        <table id="VisitorTable" class="table table-bordered" runat="server">
+            <thead>
+                <tr>
+                    <th><%= GetLabel("no") %></th>
+                    <th><%= GetLabel("fullname") %></th>
+                    <th><%= GetLabel("company") %></th>
+                    <th><%= GetLabel("startdate") %></th>
+                    <th><%= GetLabel("enddate") %></th>
+                    <th><%= GetLabel("description") %></th>
+                </tr>
+            </thead>
+        </table>
+        <div class="button-group">
+            <asp:Button ID="btnVisitorAddRow" runat="server" Text="➕ Add Row" CssClass="btn-add" OnClick="AddRow_Click" />
+            <asp:Button ID="btnVisitorSubmit" runat="server" Text="Submit Request" CssClass="btn-submit" OnClick="SubmitForm_Click" />
         </div>
-        <asp:HiddenField ID="hfActiveTab" runat="server" />
+    </div>
 
-        <div id="VisitorDiv" class="tab-content active">
-            <h4><%= GetLabel("visitorrequest") %></h4>
-            <table id="VisitorTable" class="table table-bordered" runat="server">
-                <thead>
-                    <tr>
-                        <th><%= GetLabel("no") %></th>
-<th><%= GetLabel("fullname") %></th>
-<th><%= GetLabel("company") %></th>
-<th><%= GetLabel("startdate") %></th>
-<th><%= GetLabel("enddate") %></th>
-<th><%= GetLabel("description") %></th>
-
-                    </tr>
-                </thead>
-                <tbody id="tbVisitor"></tbody>
-            </table>
-           <div class="button-group">
-    <asp:Button ID="btnVisitorAddRow" runat="server" Text="➕ Add Row" CssClass="btn-add" OnClick="AddRow_Click" />
-    <asp:Button ID="btnVisitorSubmit" runat="server" Text="Submit Request" CssClass="btn-submit" OnClick="SubmitForm_Click" />
-</div>
-
-        <div id="BizTripDiv" class="tab-content">
-            <h4><%= GetLabel("biztriprequest") %></h4>
-            <table id="BizTripTable" class="table table-bordered" runat="server">
-                <thead>
-                    <tr>
-                       <th><%= GetLabel("no") %></th>
-<th><%= GetLabel("fullname") %></th>
-<th><%= GetLabel("empid") %></th>
-<th><%= GetLabel("department") %></th>
-<th><%= GetLabel("devicetype") %></th>
-<th><%= GetLabel("mac") %></th>
-<th><%= GetLabel("startdate") %></th>
-<th><%= GetLabel("enddate") %></th>
-
-                    </tr>
-                </thead>
-                <tbody id="tbBizTrip"></tbody>
-            </table>
-            <asp:Button ID="btnBizTripAddRow" runat="server" Text="Add Row" CssClass="btn btn-primary" OnClick="btnBizTripAddRow_Click" />
-            <asp:Button ID="btnBizTripSubmit" runat="server" Text="Submit" CssClass="btn btn-success" OnClick="btnBizTripSubmit_Click" />
+    <!-- BizTrip Tab -->
+    <div id="BizTripDiv" class="tab-content">
+        <h4><%= GetLabel("biztriprequest") %></h4>
+        <table id="BizTripTable" class="table table-bordered" runat="server">
+            <thead>
+                <tr>
+                    <th><%= GetLabel("no") %></th>
+                    <th><%= GetLabel("fullname") %></th>
+                    <th><%= GetLabel("empid") %></th>
+                    <th><%= GetLabel("department") %></th>
+                    <th><%= GetLabel("devicetype") %></th>
+                    <th><%= GetLabel("mac") %></th>
+                    <th><%= GetLabel("startdate") %></th>
+                    <th><%= GetLabel("enddate") %></th>
+                </tr>
+            </thead>
+        </table>
+        <div class="button-group">
+            <asp:Button ID="btnBizTripAddRow" runat="server" Text="➕ Add Row" CssClass="btn-add" OnClick="btnBizTripAddRow_Click" />
+            <asp:Button ID="btnBizTripSubmit" runat="server" Text="Submit Request" CssClass="btn-submit" OnClick="btnBizTripSubmit_Click" />
         </div>
+    </div>
 
-        <div id="OnboardDiv" class="tab-content">
-            <h4><%= GetLabel("onboardrequest") %></h4>
-            <table id="OnboardTable" class="table table-bordered" runat="server">
-                <thead>
-                    <tr>
-                        <th><%= GetLabel("no") %></th>
-<th><%= GetLabel("fullname") %></th>
-<th><%= GetLabel("empid") %></th>
-<th><%= GetLabel("department") %></th>
-<th><%= GetLabel("email") %></th>
-<th><%= GetLabel("devicetype") %></th>
-<th><%= GetLabel("mac") %></th>
-<th><%= GetLabel("description") %></th>
-                    </tr>
-                </thead>
-                <tbody id="tbOnboard"></tbody>
-            </table>
-            <asp:Button ID="btnOnboardAddRow" runat="server" Text='<%# "➕" + GetLabel("addrow") %>' CssClass="btn btn-primary" OnClick="btnOnboardAddRow_Click" />
-<asp:Button ID="btnOnboardSubmit" runat="server" Text='<%# GetLabel("submit") %>' CssClass="btn btn-success" OnClick="btnOnboardSubmit_Click" />
-            </div>
+    <!-- Onboard Tab -->
+    <div id="OnboardDiv" class="tab-content">
+        <h4><%= GetLabel("onboardrequest") %></h4>
+        <table id="OnboardTable" class="table table-bordered" runat="server">
+            <thead>
+                <tr>
+                    <th><%= GetLabel("no") %></th>
+                    <th><%= GetLabel("fullname") %></th>
+                    <th><%= GetLabel("empid") %></th>
+                    <th><%= GetLabel("department") %></th>
+                    <th><%= GetLabel("email") %></th>
+                    <th><%= GetLabel("devicetype") %></th>
+                    <th><%= GetLabel("mac") %></th>
+                    <th><%= GetLabel("description") %></th>
+                </tr>
+            </thead>
+        </table>
+        <div class="button-group">
+            <asp:Button ID="btnOnboardAddRow" runat="server" Text="➕ Add Row" CssClass="btn-add" OnClick="btnOnboardAddRow_Click" />
+            <asp:Button ID="btnOnboardSubmit" runat="server" Text="Submit Request" CssClass="btn-submit" OnClick="btnOnboardSubmit_Click" />
         </div>
+    </div>
+
+
+            <script type="text/javascript">
+                document.addEventListener("DOMContentLoaded", function () {
+                    var activeTab = document.getElementById('<%= hfActiveTab.ClientID %>').value;
+        if (activeTab) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(activeTab).classList.add('active');
+
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            if (activeTab === "VisitorDiv") document.querySelector('.tab:nth-child(1)').classList.add('active');
+            if (activeTab === "BizTripDiv") document.querySelector('.tab:nth-child(2)').classList.add('active');
+            if (activeTab === "OnboardDiv") document.querySelector('.tab:nth-child(3)').classList.add('active');
+        }
+    });
+            </script>
+    
             </div>
 </asp:Content>

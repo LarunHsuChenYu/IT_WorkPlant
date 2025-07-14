@@ -11,7 +11,8 @@ namespace IT_WorkPlant.Pages
     public partial class IT_Stuff_Purchase : Page
     {
         private readonly MssqlDatabaseHelper _db = new MssqlDatabaseHelper();
-        private readonly UserInfo _ui = new UserInfo(); 
+        private readonly UserInfo _ui = new UserInfo();
+
         private DataTable PurchaseItemsTable
         {
             get
@@ -34,7 +35,6 @@ namespace IT_WorkPlant.Pages
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // เช็กว่ามี session login หรือไม่
             if (Session["UserEmpID"] == null)
             {
                 Response.Redirect("../Login.aspx");
@@ -43,12 +43,10 @@ namespace IT_WorkPlant.Pages
 
             if (!IsPostBack)
             {
-                // ดึงข้อมูลจาก Session มาใส่ textbox ทุกครั้ง
                 txtEmpName.Text = Session["UserName"]?.ToString();
                 txtDept.Text = Session["DeptName"]?.ToString();
                 txtDate.Text = DateTime.Now.ToString("yyyy/MM/dd");
 
-                // เติมให้ครบ 5 แถว
                 var dt = PurchaseItemsTable;
                 for (int i = dt.Rows.Count; i < 5; i++)
                 {
@@ -57,7 +55,6 @@ namespace IT_WorkPlant.Pages
                 BindGrid();
             }
         }
-
 
         private void BindGrid()
         {
@@ -86,7 +83,6 @@ namespace IT_WorkPlant.Pages
                     ddlCategory.Items.Insert(0, new ListItem("-- Select --", ""));
                 }
 
-                
                 DropDownList ddlItem = (DropDownList)e.Row.FindControl("ddlItem");
                 if (ddlItem != null)
                 {
@@ -101,8 +97,9 @@ namespace IT_WorkPlant.Pages
                     ddlItem.DataValueField = "ItemID";
                     ddlItem.DataBind();
                     ddlItem.Items.Insert(0, new ListItem("-- Select --", ""));
-                }   
-      TextBox txtQty = (TextBox)e.Row.FindControl("txtQty");
+                }
+
+                TextBox txtQty = (TextBox)e.Row.FindControl("txtQty");
                 if (txtQty != null)
                 {
                     txtQty.AutoPostBack = true;
@@ -110,11 +107,11 @@ namespace IT_WorkPlant.Pages
                 }
             }
         }
+
         protected void ddlCategory_SelectedIndexChanged(object sender, EventArgs e)
         {
             DropDownList ddlCategory = (DropDownList)sender;
             GridViewRow row = (GridViewRow)ddlCategory.NamingContainer;
-
             DropDownList ddlItem = (DropDownList)row.FindControl("ddlItem");
             if (ddlItem == null) return;
 
@@ -123,8 +120,8 @@ namespace IT_WorkPlant.Pages
 
             string query = "SELECT ItemID, ItemName FROM IT_PurchaseItems WHERE Category = @Category AND Status = 1 ORDER BY ItemName";
             var param = new[] {
-        new System.Data.SqlClient.SqlParameter("@Category", selectedCategory)
-    };
+                new System.Data.SqlClient.SqlParameter("@Category", selectedCategory)
+            };
 
             DataTable items = _db.ExecuteQuery(query, param);
             ddlItem.DataSource = items;
@@ -282,7 +279,7 @@ namespace IT_WorkPlant.Pages
                     + $"Dept: {Session["DeptName"]} \r\n"
                     + $"User: {Session["UserName"]} \r\n"
                     + $"Reason: {reason} \r\n"
-                    + $"Total: {total: N0} ฿ \r\n"
+                    + $"Total: {total:N0}฿/unit \r\n"
                     + $"Items: {summary}";
 
                 await notifier.SendLineGroupMessageAsync(lineGroupId, lineMessage);
@@ -292,55 +289,7 @@ namespace IT_WorkPlant.Pages
                 ShowAlert("LINE notification failed: " + ex.Message);
             }
 
-
             ShowAlertAndRedirect("Request submitted successfully.", ResolveUrl("~/Default.aspx"));
-
-        }
-        protected void btnShowMemo_Click(object sender, EventArgs e)
-        {
-            pnlMemo.Visible = true;
-
-            lblMemoDate.Text = DateTime.Now.ToString("yyyy/MM/dd");
-            lblMemoSubject.Text = "ขออนุมัติจัดซื้ออุปกรณ์ไอทีเพิ่มเติม";
-            lblMemoDetail.Text = "มีความจำเป็นต้องใช้อุปกรณ์ไอทีเพิ่มในฝ่าย " + txtDept.Text;
-            lblPreparedBy.Text = txtEmpName.Text;
-
-            DataTable dt = new DataTable();
-            dt.Columns.Add("ItemName");
-            dt.Columns.Add("DeptCode");
-            dt.Columns.Add("ExpenseCode");
-            dt.Columns.Add("Reason");
-            dt.Columns.Add("Currency");
-            dt.Columns.Add("Qty");
-            dt.Columns.Add("Amount");
-
-            foreach (GridViewRow row in gvPurchaseItems.Rows)
-            {
-                DropDownList ddlItem = row.FindControl("ddlItem") as DropDownList;
-                TextBox txtUsage = row.FindControl("txtUsage") as TextBox;
-                TextBox txtQty = row.FindControl("txtQty") as TextBox;
-                Label lblPrice = row.FindControl("lblPrice") as Label;
-
-                if (ddlItem == null || txtUsage == null || txtQty == null || lblPrice == null)
-                    continue;
-
-                if (ddlItem.SelectedIndex <= 0 || string.IsNullOrWhiteSpace(txtUsage.Text))
-                    continue;
-
-                string itemName = ddlItem.SelectedItem.Text;
-                string deptCode = txtDept.Text;
-                string expenseCode = "/"; // แก้ตามระบบได้
-                string reason = txtUsage.Text;
-                string currency = "THB";
-                int qty = int.TryParse(txtQty.Text, out int q) ? q : 0;
-                decimal price = decimal.TryParse(lblPrice.Text, out decimal p) ? p : 0;
-                decimal amount = qty * price;
-
-                dt.Rows.Add(itemName, deptCode, expenseCode, reason, currency, qty.ToString(), amount.ToString("N2"));
-            }
-
-            gvMemo.DataSource = dt;
-            gvMemo.DataBind();
         }
 
         private void ShowAlert(string msg)
@@ -349,89 +298,12 @@ namespace IT_WorkPlant.Pages
             string script = "alert('" + safeMsg + "');";
             ClientScript.RegisterStartupScript(this.GetType(), "alert", script, true);
         }
+
         private void ShowAlertAndRedirect(string message, string redirectUrl)
         {
             string safeMessage = System.Web.HttpUtility.JavaScriptStringEncode(message);
             string script = $"alert('{safeMessage}'); window.location='{redirectUrl}';";
             ClientScript.RegisterStartupScript(this.GetType(), "alertRedirect", script, true);
         }
-        protected void btnGenerateMemo_Click(object sender, EventArgs e)
-        {
-            pnlMemo.Visible = true;
-
-            // แสดงข้อมูลหัว MEMO
-            lblMemoNo.Text = txtMemoNo.Text;
-            lblMemoTo.Text = txtMemoTo.Text;
-            lblMemoDate.Text = DateTime.Now.ToString("yyyy/MM/dd");
-            lblMemoSubject.Text = txtMemoSubject.Text;
-            lblMemoDetail.Text = txtMemoDetail.Text;
-            lblApprovedBy.Text = txtApprovedBy.Text;
-            lblReviewedBy.Text = txtReviewedBy.Text;
-            lblPreparedBy.Text = txtEmpName.Text;
-
-            // เตรียมตารางรายการ
-            DataTable dt = new DataTable();
-            dt.Columns.Add("ItemName");
-            dt.Columns.Add("DeptCode");
-            dt.Columns.Add("ExpenseCode");
-            dt.Columns.Add("Reason");
-            dt.Columns.Add("Currency");
-            dt.Columns.Add("Qty");
-            dt.Columns.Add("Amount");
-
-            foreach (GridViewRow row in gvPurchaseItems.Rows)
-            {
-                DropDownList ddlItem = row.FindControl("ddlItem") as DropDownList;
-                TextBox txtUsage = row.FindControl("txtUsage") as TextBox;
-                TextBox txtQty = row.FindControl("txtQty") as TextBox;
-                Label lblPrice = row.FindControl("lblPrice") as Label;
-
-                if (ddlItem == null || txtUsage == null || txtQty == null || lblPrice == null)
-                    continue;
-
-                if (ddlItem.SelectedIndex <= 0 || string.IsNullOrWhiteSpace(txtUsage.Text))
-                    continue;
-
-                string itemName = ddlItem.SelectedItem.Text;
-                string deptCode = txtDept.Text;
-                string expenseCode = "/"; // ปรับได้
-                string reason = txtUsage.Text;
-                string currency = "THB";
-                int qty = int.TryParse(txtQty.Text, out int q) ? q : 0;
-                decimal price = decimal.TryParse(lblPrice.Text, out decimal p) ? p : 0;
-                decimal amount = qty * price;
-
-                dt.Rows.Add(itemName, deptCode, expenseCode, reason, currency, qty.ToString(), amount.ToString("N2"));
-            }
-
-            gvMemo.DataSource = dt;
-            gvMemo.DataBind();
-
-            // ✅ Requester Department
-            string deptList = "";
-            if (chkDeptHardware.Checked) deptList += "• Hardware<br/>";
-            if (chkDeptSoftware.Checked) deptList += "• Software<br/>";
-
-            lblMemoDept.Text = deptList;
-
-            // ✅ Requester Type
-            string requesterTypeList = "";
-            if (chkUseERPComputer.Checked) requesterTypeList += "• ERP, use computer<br/>";
-            if (chkMonitorNo.Checked) requesterTypeList += "• Monitor not included<br/>";
-            if (chkERPLaptop.Checked) requesterTypeList += "• ERP, use a laptop<br/>";
-            if (chkOtherHW.Checked) requesterTypeList += "• Other (Hardware)<br/>";
-            if (chkProdLine.Checked) requesterTypeList += "• Computer production line<br/>";
-            if (chkMonitorYes.Checked) requesterTypeList += "• Monitor included (Size: " + txtMonitorSize.Text + ")<br/>";
-            if (chkLaptopProd.Checked) requesterTypeList += "• Laptop for production line<br/>";
-            if (chkDocWorkPC.Checked) requesterTypeList += "• Computer document work<br/>";
-            if (chkDocWorkLaptop.Checked) requesterTypeList += "• Laptop document work<br/>";
-            if (chkAppSys.Checked) requesterTypeList += "• Application System<br/>";
-            if (chkSoftwareSuite.Checked) requesterTypeList += "• Software Suite<br/>";
-            if (chkLicensedSW.Checked) requesterTypeList += "• Licensed software<br/>";
-            if (chkOtherSW.Checked) requesterTypeList += "• Other software<br/>";
-
-            lblMemoType.Text = requesterTypeList;
-        }
-
     }
 }

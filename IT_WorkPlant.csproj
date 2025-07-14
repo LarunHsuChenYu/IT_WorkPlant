@@ -98,6 +98,12 @@
       <HintPath>packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\lib\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=8.0.0.2, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Extensions.DependencyInjection.Abstractions.8.0.2\lib\net462\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=8.0.0.3, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Extensions.Logging.Abstractions.8.0.3\lib\net462\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.IO.RecyclableMemoryStream, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.IO.RecyclableMemoryStream.3.0.1\lib\netstandard2.0\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
     </Reference>
@@ -117,8 +123,14 @@
       <HintPath>packages\Oracle.ManagedDataAccess.23.8.0\lib\net472\Oracle.ManagedDataAccess.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
+    <Reference Include="Renci.SshNet, Version=2025.0.0.1, Culture=neutral, PublicKeyToken=1cee9f8bde3db106, processorArchitecture=MSIL">
+      <HintPath>packages\SSH.NET.2025.0.0\lib\net462\Renci.SshNet.dll</HintPath>
+    </Reference>
     <Reference Include="SixLabors.Fonts, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
       <HintPath>packages\SixLabors.Fonts.1.0.1\lib\netstandard2.0\SixLabors.Fonts.dll</HintPath>
+    </Reference>
+    <Reference Include="SshNet.Security.Cryptography, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\SshNet.Security.Cryptography.1.3.0\lib\net45\SshNet.Security.Cryptography.dll</HintPath>
     </Reference>
     <Reference Include="System.Buffers, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Buffers.4.6.1\lib\net462\System.Buffers.dll</HintPath>
@@ -244,6 +256,7 @@
     <Content Include="Content\bootstrap.rtl.min.css" />
     <Content Include="Content\Site.css" />
     <Content Include="Default.aspx" />
+    <Content Include="Error.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="ILLink\ILLink.Descriptors.LibraryBuild.xml" />
@@ -264,7 +277,12 @@
     <Content Include="Image\repair-tools.gif" />
     <Content Include="Image\shopping-cart.gif" />
     <Content Include="Login.aspx" />
+    <Content Include="Pages\IT_BorrowApproval.aspx" />
+    <Content Include="Pages\IT_BorrowItem.aspx" />
+    <Content Include="Pages\IT_BorrowStatus.aspx" />
     <Content Include="Pages\ChangeLang.aspx" />
+    <Content Include="Pages\IT_ComputerAdd.aspx" />
+    <Content Include="Pages\IT_ComputerListView.aspx" />
     <Content Include="Pages\IT_DailyCheckReport.aspx" />
     <Content Include="Pages\IT_EmailRequest.aspx" />
     <Content Include="Pages\IT_PurchaseItemsList.aspx" />
@@ -281,6 +299,8 @@
     <Content Include="Pages\IT_WifiRequest.aspx" />
     <Content Include="Pages\Logout.aspx" />
     <Content Include="Pages\MeetingRoomBooking.aspx" />
+    <Content Include="Pages\OPD_SalesOrderAnalysis.aspx" />
+    <Content Include="Pages\OPD_TLF_Statics.aspx" />
     <Content Include="Pages\PMC_CUS_InvoiceCreate.aspx" />
     <Content Include="Pages\PMC_CUS_ProductCBMMaintain.aspx" />
     <Content Include="Pages\PMC_CUS_ShippingPriceMaintain.aspx" />
@@ -307,6 +327,10 @@
     </None>
     <Content Include="Pages\PUR_InvoicePriceUpdate.aspx" />
     <Content Include="Pages\PUR_Vanguard_Price_Update.aspx" />
+    <Content Include="Pages\WarRoom.aspx" />
+    <Content Include="Pages\WF_Approve.aspx" />
+    <Content Include="Pages\WF_FlowMaintain.aspx" />
+    <Content Include="Pages\WF_FormStatus.aspx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.esm.js" />
@@ -377,6 +401,13 @@
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Error.aspx.cs">
+      <DependentUpon>Error.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Error.aspx.designer.cs">
+      <DependentUpon>Error.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -393,18 +424,59 @@
     <Compile Include="Models\ExcelHelper.cs" />
     <Compile Include="Models\IT_RequestModel.cs" />
     <Compile Include="Models\LineNotificationModel.cs" />
+    <Compile Include="Models\LinuxUserService.cs" />
     <Compile Include="Models\MssqlDatabaseHelper.cs" />
+    <Compile Include="Models\OPD_vwModelOrderSale.cs" />
+    <Compile Include="Models\OPD_vwModelShipmentSale.cs" />
     <Compile Include="Models\OracleDatabaseHelper.cs" />
     <Compile Include="Models\PDFGenerator.cs" />
     <Compile Include="Models\UserInfo.cs" />
+    <Compile Include="Models\WF_EmailModel.cs" />
+    <Compile Include="Models\WF_Repository.cs" />
     <Compile Include="Models\WordHelper.cs" />
+    <Compile Include="Models\WordHelper_NPOI.cs" />
     <Compile Include="Models\WO_Update.cs" />
+    <Compile Include="Pages\IT_BorrowApproval.aspx.cs">
+      <DependentUpon>IT_BorrowApproval.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\IT_BorrowApproval.aspx.designer.cs">
+      <DependentUpon>IT_BorrowApproval.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\IT_BorrowItem.aspx.cs">
+      <DependentUpon>IT_BorrowItem.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\IT_BorrowItem.aspx.designer.cs">
+      <DependentUpon>IT_BorrowItem.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\IT_BorrowStatus.aspx.cs">
+      <DependentUpon>IT_BorrowStatus.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\IT_BorrowStatus.aspx.designer.cs">
+      <DependentUpon>IT_BorrowStatus.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Pages\ChangeLang.aspx.cs">
       <DependentUpon>ChangeLang.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Pages\ChangeLang.aspx.designer.cs">
       <DependentUpon>ChangeLang.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\IT_ComputerAdd.aspx.cs">
+      <DependentUpon>IT_ComputerAdd.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\IT_ComputerAdd.aspx.designer.cs">
+      <DependentUpon>IT_ComputerAdd.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\IT_ComputerListView.aspx.cs">
+      <DependentUpon>IT_ComputerListView.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\IT_ComputerListView.aspx.designer.cs">
+      <DependentUpon>IT_ComputerListView.aspx</DependentUpon>
     </Compile>
     <Compile Include="Pages\IT_DailyCheckReport.aspx.cs">
       <DependentUpon>IT_DailyCheckReport.aspx</DependentUpon>
@@ -518,6 +590,20 @@
     <Compile Include="Pages\MeetingRoomBooking.aspx.designer.cs">
       <DependentUpon>MeetingRoomBooking.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Pages\OPD_SalesOrderAnalysis.aspx.cs">
+      <DependentUpon>OPD_SalesOrderAnalysis.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\OPD_SalesOrderAnalysis.aspx.designer.cs">
+      <DependentUpon>OPD_SalesOrderAnalysis.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\OPD_TLF_Statics.aspx.cs">
+      <DependentUpon>OPD_TLF_Statics.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\OPD_TLF_Statics.aspx.designer.cs">
+      <DependentUpon>OPD_TLF_Statics.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Pages\PMC_CUS_InvoiceCreate.aspx.cs">
       <DependentUpon>PMC_CUS_InvoiceCreate.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -559,6 +645,34 @@
     </Compile>
     <Compile Include="Pages\PUR_Vanguard_Price_Update.aspx.designer.cs">
       <DependentUpon>PUR_Vanguard_Price_Update.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\WarRoom.aspx.cs">
+      <DependentUpon>WarRoom.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\WarRoom.aspx.designer.cs">
+      <DependentUpon>WarRoom.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\WF_Approve.aspx.cs">
+      <DependentUpon>WF_Approve.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\WF_Approve.aspx.designer.cs">
+      <DependentUpon>WF_Approve.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\WF_FlowMaintain.aspx.cs">
+      <DependentUpon>WF_FlowMaintain.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\WF_FlowMaintain.aspx.designer.cs">
+      <DependentUpon>WF_FlowMaintain.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\WF_FormStatus.aspx.cs">
+      <DependentUpon>WF_FormStatus.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\WF_FormStatus.aspx.designer.cs">
+      <DependentUpon>WF_FormStatus.aspx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Site.Master.cs">

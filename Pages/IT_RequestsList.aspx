@@ -86,11 +86,11 @@
 
     <!-- GridView Section -->
     <asp:GridView ID="gvRequests" runat="server" AutoGenerateColumns="False" CssClass="myGridView"
-        DataKeyNames="ReportID,Department,IssueTypeID"
-        OnRowEditing="gvRequests_RowEditing"
-        OnRowCancelingEdit="gvRequests_RowCancelingEdit"
-        OnRowUpdating="gvRequests_RowUpdating"
-        OnSelectedIndexChanged="gvRequests_SelectedIndexChanged">
+    DataKeyNames="ReportID,Department,IssueTypeID,DeptNameID"
+    OnRowEditing="gvRequests_RowEditing"
+    OnRowCancelingEdit="gvRequests_RowCancelingEdit"
+    OnRowUpdating="gvRequests_RowUpdating"
+    OnSelectedIndexChanged="gvRequests_SelectedIndexChanged">
 
         <HeaderStyle BackColor="LightBlue" ForeColor="Black" Font-Bold="True" />
         <FooterStyle BackColor="LightBlue" ForeColor="Black" />
@@ -110,19 +110,21 @@
             </asp:TemplateField>
 
             <asp:TemplateField HeaderText="Department">
-                <ItemTemplate>
-                    <%# Eval("Department") %>
-                </ItemTemplate>
-                <EditItemTemplate>
-                    <asp:DropDownList ID="ddlDepartment" runat="server">
-                        <asp:ListItem Text="Production Control Dept." Value="Production Control Dept." />
-                        <asp:ListItem Text="EHS Dept." Value="EHS Dept." />
-                        <asp:ListItem Text="Quality Control Dept." Value="Quality Control Dept." />
-                        <asp:ListItem Text="Purchase Dept." Value="Purchase Dept." />
-                        <asp:ListItem Text="Manufacturing Division" Value="Manufacturing Division" />
-                    </asp:DropDownList>
-                </EditItemTemplate>
-            </asp:TemplateField>
+    <ItemTemplate>
+        <%# Eval("Department") %>
+    </ItemTemplate>
+    <EditItemTemplate>
+        <asp:DropDownList ID="ddlDepartment" runat="server" Enabled="false">
+            <asp:ListItem Text="Production Control Dept." Value="Production Control Dept." />
+            <asp:ListItem Text="EHS Dept." Value="EHS Dept." />
+            <asp:ListItem Text="Quality Control Dept." Value="Quality Control Dept." />
+            <asp:ListItem Text="Purchase Dept." Value="Purchase Dept." />
+            <asp:ListItem Text="Manufacturing Division" Value="Manufacturing Division" />
+        </asp:DropDownList>
+        <asp:HiddenField ID="hfDeptNameID" runat="server" Value='<%# Eval("DeptNameID") %>' />
+    </EditItemTemplate>
+</asp:TemplateField>
+
 
             <asp:BoundField DataField="RequestUser" HeaderText="Request User" ReadOnly="true" />
             <asp:TemplateField HeaderText="Issue Details"><ItemTemplate> <%# HttpUtility.HtmlDecode(Eval("IssueDetails").ToString()) %></ItemTemplate></asp:TemplateField>

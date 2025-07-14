@@ -5,12 +5,13 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
 using IT_WorkPlant.Models;
-using Org.BouncyCastle.Asn1.Cmp;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using System.Xml.Linq;
 using System.Configuration;
+using System.Data;
+using System.Threading.Tasks;
 
 namespace IT_WorkPlant.Pages
 {
@@ -18,6 +19,15 @@ namespace IT_WorkPlant.Pages
     {
         private readonly MssqlDatabaseHelper _dbHelper = new MssqlDatabaseHelper();
         private readonly UserInfo _ui = new UserInfo();
+        private readonly IT_RequestModel _model = new IT_RequestModel();
+
+        #region ── Constants ────────────────────────────────────────
+        // Flow IDs for Wi-Fi Access Requests
+        private const int FLOW_ID_NEW_EMP_WIFI = 4;    // NewEmp. WIFI Acc. Request
+        private const int FLOW_ID_VISITOR_WIFI = 5;    // Visitor WIFI Acc. Request
+        private const int FLOW_ID_BIZ_TRIP_WIFI = 6;   // BizTrip WIFI Acc. Request
+        #endregion
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["lang"] == null)
@@ -27,13 +37,18 @@ namespace IT_WorkPlant.Pages
 
             if (!IsPostBack)
             {
-                // 檢查是否已登入
+#if !DEBUG
                 if (Session["UserEmpID"] == null)
                 {
-                    // 未登入，重定向至登入頁面
                     Response.Redirect("../Login.aspx");
                 }
-
+                
+                
+#else
+                Session["UserEmpID"] = "061230010";
+                Session["UserName"] = "Kanyarat.t";
+                Session["DeptName"] = "AD";
+#endif
                 if (!string.IsNullOrEmpty(hfActiveTab.Value))
                 {
                     ShowTab(hfActiveTab.Value);
@@ -247,13 +262,34 @@ namespace IT_WorkPlant.Pages
         {
             HtmlTableCell cell = new HtmlTableCell();
 
-            TextBox inputBox = new TextBox
+            if (columnName == "Department")
             {
-                ID = $"{tableType}_{columnName}_{rowNumber}", // 使用表格類型和列名作為前綴
-                CssClass = "form-control"
-            };
+                DropDownList ddl = new DropDownList
+                {
+                    ID = $"{tableType}_{columnName}_{rowNumber}",
+                    CssClass = "form-control"
+                };
 
-            cell.Controls.Add(inputBox);
+                // Get departments from database
+                DataTable dtDepartments = _model.GetDepartments();
+                ddl.DataSource = dtDepartments;
+                ddl.DataTextField = "DeptName_en";
+                ddl.DataValueField = "DeptNameID";
+                ddl.DataBind();
+
+                cell.Controls.Add(ddl);
+            }
+            else
+            {
+                TextBox inputBox = new TextBox
+                {
+                    ID = $"{tableType}_{columnName}_{rowNumber}",
+                    CssClass = "form-control"
+                };
+
+                cell.Controls.Add(inputBox);
+            }
+
             return cell;
         }
 
@@ -281,7 +317,14 @@ namespace IT_WorkPlant.Pages
 
         private string GetTextBoxValueFromHtmlCell(HtmlTableCell cell)
         {
-            // 假設每個 Cell 中只有一個 TextBox 控制項
+            // Check for DropDownList first
+            var dropDown = cell.Controls.OfType<DropDownList>().FirstOrDefault();
+            if (dropDown != null)
+            {
+                return dropDown.SelectedValue;
+            }
+
+            // Then check for TextBox
             var textBox = cell.Controls.OfType<TextBox>().FirstOrDefault();
             return textBox != null ? textBox.Text.Trim() : string.Empty;
         }
@@ -369,6 +412,7 @@ namespace IT_WorkPlant.Pages
                 return;
             }
 
+            var transaction = _dbHelper.BeginTransaction();
             try
             {
                 StringBuilder lineNotifyMessageBuilder = new StringBuilder();
@@ -377,6 +421,9 @@ namespace IT_WorkPlant.Pages
                 lineNotifyMessageBuilder.AppendLine($"Request Date: {DateTime.Now:yyyy/MM/dd}");
                 lineNotifyMessageBuilder.AppendLine("Wi-Fi Requests:");
 
+                // Build detailed information
+                StringBuilder detailsBuilder = new StringBuilder();
+                detailsBuilder.AppendLine("Visitor Wi-Fi Requests:");
                 for (int i = 1; i <= (int)ViewState["VisitorTable_RowCount"]; i++)
                 {
                     HtmlTableRow row = VisitorTable.Rows[i] as HtmlTableRow;
@@ -389,27 +436,21 @@ namespace IT_WorkPlant.Pages
 
                     if (string.IsNullOrEmpty(fullName) || string.IsNullOrEmpty(company) || string.IsNullOrEmpty(startDate))
                     {
+                        _dbHelper.RollbackTransaction();
                         ShowAlert($"Row {i}: Full Name, Company, and Start Date are required!");
                         return;
                     }
 
-                    var columnValues = new Dictionary<string, object>
-            {
-                { "IssueDate", DateTime.Now },
-                { "DeptNameID", Session["DeptName"].ToString() },
-                { "CompanyID", "ENR" },
-                { "RequestUserID", requestUserID },
-                { "IssueDetails", "Visitor asked WIFI:" + description },
-                { "IssueTypeID", 5 },
-                { "Status", false },
-                { "LastUpdateDate", DateTime.Now },
-                { "DRI_UserID", DBNull.Value },
-                { "Solution", DBNull.Value },
-                { "FinishedDate", DBNull.Value },
-                { "Remark", DBNull.Value }
-            };
-
-                    _dbHelper.InsertData("IT_RequestList", columnValues);
+                    detailsBuilder.AppendLine($"Request {i}:");
+                    detailsBuilder.AppendLine($"- Full Name: {fullName}");
+                    detailsBuilder.AppendLine($"- Company: {company}");
+                    detailsBuilder.AppendLine($"- Start Date: {startDate}");
+                    detailsBuilder.AppendLine($"- End Date: {endDate}");
+                    if (!string.IsNullOrEmpty(description))
+                    {
+                        detailsBuilder.AppendLine($"- Description: {description}");
+                    }
+                    detailsBuilder.AppendLine();
 
                     lineNotifyMessageBuilder.AppendLine($"- Row {i}:");
                     lineNotifyMessageBuilder.AppendLine($"  Full Name: {fullName}");
@@ -422,15 +463,48 @@ namespace IT_WorkPlant.Pages
                     }
                 }
 
+                // Create single request with all details
+                var requestValues = new Dictionary<string, object>
+                {
+                    { "IssueDate", DateTime.Now },
+                    { "DeptNameID", Session["DeptName"].ToString() },
+                    { "CompanyID", "ENR" },
+                    { "RequestUserID", requestUserID },
+                    { "IssueDetails", detailsBuilder.ToString() },
+                    { "IssueTypeID", 5 },
+                    { "Status", false },
+                    { "LastUpdateDate", DateTime.Now },
+                    { "DRI_UserID", DBNull.Value },
+                    { "Solution", DBNull.Value },
+                    { "FinishedDate", DBNull.Value },
+                    { "Remark", DBNull.Value }
+                };
+
+                int reportID = _dbHelper.InsertDataReturnId("IT_RequestList", requestValues, transaction);
+
+                if (reportID <= 0)
+                {
+                    throw new Exception("Insert IT_RequestList failed, no ID returned.");
+                }
+
+                // Submit workflow
+                var wfRepo = new WF_Repository(_dbHelper);
+                wfRepo.SubmitWorkflow(reportID, FLOW_ID_VISITOR_WIFI, "Visitor Wi-Fi request submitted", transaction);
+
+                _dbHelper.CommitTransaction();
+#if !DEBUG
                 string lineGroupId = ConfigurationManager.AppSettings["LineGroupID"];
                 var notifier = new LineNotificationModel();
                 await notifier.SendLineGroupMessageAsync(lineGroupId, lineNotifyMessageBuilder.ToString());
-
+#else
+                await Task.CompletedTask; // Suppress CS1998 warning in DEBUG
+#endif  
                 ShowAlert("Wi-Fi Usage Request submitted successfully!");
                 Response.Redirect("~/Default.aspx");
             }
             catch (Exception ex)
             {
+                _dbHelper.RollbackTransaction();
                 ShowAlert($"Error: {ex.Message}");
             }
         }
@@ -448,6 +522,7 @@ namespace IT_WorkPlant.Pages
                 return;
             }
 
+            var transaction = _dbHelper.BeginTransaction();
             try
             {
                 StringBuilder lineNotifyMessageBuilder = new StringBuilder();
@@ -456,6 +531,9 @@ namespace IT_WorkPlant.Pages
                 lineNotifyMessageBuilder.AppendLine($"Request Date: {DateTime.Now:yyyy/MM/dd}");
                 lineNotifyMessageBuilder.AppendLine("Onboard Wi-Fi Requests:");
 
+                // Build detailed information
+                StringBuilder detailsBuilder = new StringBuilder();
+                detailsBuilder.AppendLine("New Employee Wi-Fi Requests:");
                 for (int i = 1; i <= (int)ViewState["OnboardTable_RowCount"]; i++)
                 {
                     HtmlTableRow row = OnboardTable.Rows[i] as HtmlTableRow;
@@ -470,27 +548,23 @@ namespace IT_WorkPlant.Pages
 
                     if (string.IsNullOrEmpty(fullName) || string.IsNullOrEmpty(employeeID) || string.IsNullOrEmpty(macAddress))
                     {
+                        _dbHelper.RollbackTransaction();
                         ShowAlert($"Row {i}: Full Name, Employee ID, and MAC Address are required!");
                         return;
                     }
 
-                    var columnValues = new Dictionary<string, object>
-            {
-                { "IssueDate", DateTime.Now },
-                { "DeptNameID", Session["DeptName"].ToString() },
-                { "CompanyID", "ENR" },
-                { "RequestUserID", requestUserID },
-                { "IssueDetails", department + " has " + fullName + " onboard apply WIFI." },
-                { "IssueTypeID", 5 }, // Wi-Fi Request
-                { "Status", false },
-                { "LastUpdateDate", DateTime.Now },
-                { "DRI_UserID", DBNull.Value },
-                { "Solution", DBNull.Value },
-                { "FinishedDate", DBNull.Value },
-                { "Remark", DBNull.Value }
-            };
-
-                    _dbHelper.InsertData("IT_RequestList", columnValues);
+                    detailsBuilder.AppendLine($"Request {i}:");
+                    detailsBuilder.AppendLine($"- Full Name: {fullName}");
+                    detailsBuilder.AppendLine($"- Employee ID: {employeeID}");
+                    detailsBuilder.AppendLine($"- Department: {department}");
+                    detailsBuilder.AppendLine($"- Email: {email}");
+                    detailsBuilder.AppendLine($"- Device Type: {deviceType}");
+                    detailsBuilder.AppendLine($"- MAC Address: {macAddress}");
+                    if (!string.IsNullOrEmpty(description))
+                    {
+                        detailsBuilder.AppendLine($"- Description: {description}");
+                    }
+                    detailsBuilder.AppendLine();
 
                     lineNotifyMessageBuilder.AppendLine($"- Row {i}:");
                     lineNotifyMessageBuilder.AppendLine($"  Full Name: {fullName}");
@@ -505,21 +579,49 @@ namespace IT_WorkPlant.Pages
                     }
                 }
 
-                // ✅ เปลี่ยนจากส่งให้ User → ส่งให้ Group แทน
-                string lineNotifyMessage = lineNotifyMessageBuilder.ToString();
-                var notifier = new LineNotificationModel();
+                // Create single request with all details
+                var requestValues = new Dictionary<string, object>
+                {
+                    { "IssueDate", DateTime.Now },
+                    { "DeptNameID", Session["DeptName"].ToString() },
+                    { "CompanyID", "ENR" },
+                    { "RequestUserID", requestUserID },
+                    { "IssueDetails", detailsBuilder.ToString() },
+                    { "IssueTypeID", FLOW_ID_NEW_EMP_WIFI },
+                    { "Status", false },
+                    { "LastUpdateDate", DateTime.Now },
+                    { "DRI_UserID", DBNull.Value },
+                    { "Solution", DBNull.Value },
+                    { "FinishedDate", DBNull.Value },
+                    { "Remark", DBNull.Value }
+                };
+
+                int reportID = _dbHelper.InsertDataReturnId("IT_RequestList", requestValues, transaction);
+
+                if (reportID <= 0)
+                {
+                    throw new Exception("Insert IT_RequestList failed, no ID returned.");
+                }
+
+                // Submit workflow
+                var wfRepo = new WF_Repository(_dbHelper);
+                wfRepo.SubmitWorkflow(reportID, FLOW_ID_NEW_EMP_WIFI, "New employee Wi-Fi request submitted", transaction);
+
+                _dbHelper.CommitTransaction();
+
                 string lineGroupId = ConfigurationManager.AppSettings["LineGroupID"];
-                await notifier.SendLineGroupMessageAsync(lineGroupId, lineNotifyMessage);
+                var notifier = new LineNotificationModel();
+                await notifier.SendLineGroupMessageAsync(lineGroupId, lineNotifyMessageBuilder.ToString());
 
                 ShowAlert("Onboard Wi-Fi Usage Request submitted successfully!");
                 Response.Redirect("~/Default.aspx");
             }
             catch (Exception ex)
             {
+                _dbHelper.RollbackTransaction();
                 ShowAlert($"Error: {ex.Message}");
             }
         }
-
 
         protected async void btnBizTripSubmit_Click(object sender, EventArgs e)
         {
@@ -534,6 +636,7 @@ namespace IT_WorkPlant.Pages
                 return;
             }
 
+            var transaction = _dbHelper.BeginTransaction();
             try
             {
                 StringBuilder lineNotifyMessageBuilder = new StringBuilder();
@@ -542,6 +645,9 @@ namespace IT_WorkPlant.Pages
                 lineNotifyMessageBuilder.AppendLine($"Request Date: {DateTime.Now:yyyy/MM/dd}");
                 lineNotifyMessageBuilder.AppendLine("Business Trip Wi-Fi Requests:");
 
+                // Build detailed information
+                StringBuilder detailsBuilder = new StringBuilder();
+                detailsBuilder.AppendLine("Business Trip Wi-Fi Requests:");
                 for (int i = 1; i <= (int)ViewState["BizTripTable_RowCount"]; i++)
                 {
                     HtmlTableRow row = BizTripTable.Rows[i] as HtmlTableRow;
@@ -556,27 +662,20 @@ namespace IT_WorkPlant.Pages
 
                     if (string.IsNullOrEmpty(fullName) || string.IsNullOrEmpty(employeeID) || string.IsNullOrEmpty(startDate))
                     {
+                        _dbHelper.RollbackTransaction();
                         ShowAlert($"Row {i}: Full Name, Employee ID, and Start Date are required!");
                         return;
                     }
 
-                    var columnValues = new Dictionary<string, object>
-            {
-                { "IssueDate", DateTime.Now },
-                { "DeptNameID", Session["DeptName"].ToString() },
-                { "CompanyID", "ENR" },
-                { "RequestUserID", requestUserID },
-                { "IssueDetails", $"Business Trip: {startDate} - {endDate}" },
-                { "IssueTypeID", 5 }, // Wi-Fi Request
-                { "Status", false },
-                { "LastUpdateDate", DateTime.Now },
-                { "DRI_UserID", DBNull.Value },
-                { "Solution", DBNull.Value },
-                { "FinishedDate", DBNull.Value },
-                { "Remark", DBNull.Value }
-            };
-
-                    _dbHelper.InsertData("IT_RequestList", columnValues);
+                    detailsBuilder.AppendLine($"Request {i}:");
+                    detailsBuilder.AppendLine($"- Full Name: {fullName}");
+                    detailsBuilder.AppendLine($"- Employee ID: {employeeID}");
+                    detailsBuilder.AppendLine($"- Department: {department}");
+                    detailsBuilder.AppendLine($"- Device Type: {deviceType}");
+                    detailsBuilder.AppendLine($"- MAC Address: {macAddress}");
+                    detailsBuilder.AppendLine($"- Start Date: {startDate}");
+                    detailsBuilder.AppendLine($"- End Date: {endDate}");
+                    detailsBuilder.AppendLine();
 
                     lineNotifyMessageBuilder.AppendLine($"- Row {i}:");
                     lineNotifyMessageBuilder.AppendLine($"  Full Name: {fullName}");
@@ -588,17 +687,46 @@ namespace IT_WorkPlant.Pages
                     lineNotifyMessageBuilder.AppendLine($"  End Date: {endDate}");
                 }
 
-                // ✅ ส่งหากลุ่ม LINE แทน user
-                string lineNotifyMessage = lineNotifyMessageBuilder.ToString();
-                var notifier = new LineNotificationModel();
+                // Create single request with all details
+                var requestValues = new Dictionary<string, object>
+                {
+                    { "IssueDate", DateTime.Now },
+                    { "DeptNameID", Session["DeptName"].ToString() },
+                    { "CompanyID", "ENR" },
+                    { "RequestUserID", requestUserID },
+                    { "IssueDetails", detailsBuilder.ToString() },
+                    { "IssueTypeID", FLOW_ID_BIZ_TRIP_WIFI },
+                    { "Status", false },
+                    { "LastUpdateDate", DateTime.Now },
+                    { "DRI_UserID", DBNull.Value },
+                    { "Solution", DBNull.Value },
+                    { "FinishedDate", DBNull.Value },
+                    { "Remark", DBNull.Value }
+                };
+
+                int reportID = _dbHelper.InsertDataReturnId("IT_RequestList", requestValues, transaction);
+
+                if (reportID <= 0)
+                {
+                    throw new Exception("Insert IT_RequestList failed, no ID returned.");
+                }
+
+                // Submit workflow
+                var wfRepo = new WF_Repository(_dbHelper);
+                wfRepo.SubmitWorkflow(reportID, FLOW_ID_BIZ_TRIP_WIFI, "Business trip Wi-Fi request submitted", transaction);
+
+                _dbHelper.CommitTransaction();
+
                 string lineGroupId = ConfigurationManager.AppSettings["LineGroupID"];
-                await notifier.SendLineGroupMessageAsync(lineGroupId, lineNotifyMessage);
+                var notifier = new LineNotificationModel();
+                await notifier.SendLineGroupMessageAsync(lineGroupId, lineNotifyMessageBuilder.ToString());
 
                 ShowAlert("Business Trip Wi-Fi Usage Request submitted successfully!");
                 Response.Redirect("~/Default.aspx");
             }
             catch (Exception ex)
             {
+                _dbHelper.RollbackTransaction();
                 ShowAlert($"Error: {ex.Message}");
             }
         }

@@ -16,6 +16,7 @@ namespace IT_WorkPlant.Pages
         {
             if (_model == null)
                 _model = new IT_RequestModel();
+
             string uploadFolder = Server.MapPath("~/App_Temp");
             if (!System.IO.Directory.Exists(uploadFolder))
             {
@@ -40,8 +41,21 @@ namespace IT_WorkPlant.Pages
 
                 BindRequestData();
             }
-        }
 
+            // ✅ Scroll ไปยังแถวที่กด Edit ถ้ามีใน ViewState
+            if (ViewState["ScrollToReportID"] != null)
+            {
+                string script = $@"
+            window.onload = function() {{
+                var row = document.getElementById('row_{ViewState["ScrollToReportID"]}');
+                if (row) {{
+                    row.scrollIntoView({{ behavior: 'smooth', block: 'center' }});
+                    row.style.backgroundColor = '#fdfd96';
+                }}
+            }};";
+                ScriptManager.RegisterStartupScript(this, GetType(), "scrollToRow", script, true);
+            }
+        }
 
         private void BindDepartmentsDropdown(string userDept)
         {
@@ -198,6 +212,17 @@ namespace IT_WorkPlant.Pages
             gvRequests.EditIndex = e.NewEditIndex;
             BindRequestData();
 
+            // 👉 Scroll to edited row
+            string script = $@"
+        setTimeout(function() {{
+            var row = document.getElementById('{gvRequests.ClientID}').rows[{e.NewEditIndex + 1}];
+            if (row) {{
+                row.scrollIntoView({{ behavior: 'smooth', block: 'center' }});
+            }}
+        }}, 300);";
+            ScriptManager.RegisterStartupScript(this, this.GetType(), "scrollToRow", script, true);
+
+            // ✅ โหลด DRI User
             DropDownList ddlDRIUser = gvRequests.Rows[e.NewEditIndex].FindControl("ddlDRIUser") as DropDownList;
             if (ddlDRIUser != null)
             {
@@ -208,6 +233,7 @@ namespace IT_WorkPlant.Pages
                 ddlDRIUser.DataBind();
             }
 
+            // ✅ ล็อก Department
             DropDownList ddlDepartment = gvRequests.Rows[e.NewEditIndex].FindControl("ddlDepartment") as DropDownList;
             if (ddlDepartment != null)
             {
@@ -216,6 +242,8 @@ namespace IT_WorkPlant.Pages
                 ddlDepartment.DataTextField = "DeptName_en";
                 ddlDepartment.DataValueField = "DeptNameID";
                 ddlDepartment.DataBind();
+                ddlDepartment.Enabled = false;
+
                 object deptIDObj = gvRequests.DataKeys[e.NewEditIndex].Values["DeptNameID"];
                 string currentDeptID = deptIDObj?.ToString();
 
@@ -223,32 +251,22 @@ namespace IT_WorkPlant.Pages
                 {
                     ddlDepartment.SelectedValue = currentDeptID;
                 }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("⚠️ ไม่พบ DeptNameID ใน DropDown: " + currentDeptID);
-                }
+            }
 
+            // ✅ โหลด Issue Type
+            DropDownList ddlIssueType = gvRequests.Rows[e.NewEditIndex].FindControl("ddlIssueType") as DropDownList;
+            if (ddlIssueType != null)
+            {
+                DataTable dtIssueTypes = _model.GetAllIssueTypes();
+                ddlIssueType.DataSource = dtIssueTypes;
+                ddlIssueType.DataTextField = "IssueTypeCode";
+                ddlIssueType.DataValueField = "IssueTypeID";
+                ddlIssueType.DataBind();
 
-                DropDownList ddlIssueType = gvRequests.Rows[e.NewEditIndex].FindControl("ddlIssueType") as DropDownList;
-                if (ddlIssueType != null)
-                {
-                    DataTable dtIssueTypes = _model.GetAllIssueTypes();
-                    ddlIssueType.DataSource = dtIssueTypes;
-                    ddlIssueType.DataTextField = "IssueTypeCode";
-                    ddlIssueType.DataValueField = "IssueTypeID";
-                    ddlIssueType.DataBind();
-
-                    object issueTypeObj = gvRequests.DataKeys[e.NewEditIndex].Values["IssueTypeID"];
-                    ddlIssueType.SelectedValue = issueTypeObj?.ToString();
-                }
+                object issueTypeObj = gvRequests.DataKeys[e.NewEditIndex].Values["IssueTypeID"];
+                ddlIssueType.SelectedValue = issueTypeObj?.ToString();
             }
         }
-        protected void gvRequests_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
-        {
-            gvRequests.EditIndex = -1;
-            BindRequestData();
-        }
-
         protected void gvRequests_RowUpdating(object sender, GridViewUpdateEventArgs e)
         {
             int reportID = Convert.ToInt32(gvRequests.DataKeys[e.RowIndex].Value);
@@ -331,7 +349,17 @@ namespace IT_WorkPlant.Pages
                         lblFinishedDate.Attributes["style"] = "color: black;";
                     }
                 }
+
+                // ✅ เพิ่ม ID ให้กับ <tr> เพื่อใช้ scroll
+                DataRowView row = (DataRowView)e.Row.DataItem;
+                string reportId = row["ReportID"].ToString();
+                e.Row.Attributes["id"] = $"row_{reportId}";
             }
+        }
+        protected void gvRequests_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
+        {
+            gvRequests.EditIndex = -1;
+            BindRequestData();
         }
 
         protected void btnDelete_Click(object sender, EventArgs e)

@@ -47,7 +47,7 @@ namespace IT_WorkPlant.Pages
             if (!IsPostBack)
             {
                 lblTitle.Text = GetLabel("title");
-                lblDateLabel.Text = GetLabel("date");      
+                lblDateLabel.Text = GetLabel("date");
                 lblRoomLabel.Text = GetLabel("room");
                 submitButton.Text = GetLabel("bookroom");
                 btnEditMode.Text = GetLabel("edit");
@@ -94,6 +94,14 @@ Swal.fire({{
                 ScriptManager.RegisterStartupScript(this, this.GetType(), Guid.NewGuid().ToString(), script, true);
                 Session["SuccessMessage"] = null;
             }
+            Calendar1.VisibleMonthChanged += Calendar1_VisibleMonthChanged;
+
+        }
+        protected void Calendar1_VisibleMonthChanged(object sender, MonthChangedEventArgs e)
+        {
+            txtBookingDate.Text = e.NewDate.ToString("dd/MM/yyyy");
+            Calendar1.SelectedDate = e.NewDate;
+            BindRoomSchedule(e.NewDate);
         }
         protected void Calendar1_SelectionChanged(object sender, EventArgs e)
         {
@@ -289,12 +297,22 @@ Swal.fire({{
         // New Button Click Event: Handle form submission
         protected void submitButton_Click(object sender, EventArgs e)
         {
-            DateTime selectedDate = Calendar1.SelectedDate;
+            DateTime selectedDate;
+            try
+            {
+                selectedDate = DateTime.ParseExact(txtBookingDate.Text.Trim(), "dd/MM/yyyy", null);
+                Calendar1.SelectedDate = selectedDate;
+            }
+            catch
+            {
+                ShowErrorMessage("❌ Please select a valid date");
+                return;
+            }
+
             string selectedRoom = roomList.SelectedValue;
             string selectedStartTime = startTimeList.SelectedValue;
             string selectedEndTime = endTimeList.SelectedValue;
             string reservedBy = lblUser.Text;
-
 
             string selectedDepartment = ViewState["userDept"]?.ToString();
             if (string.IsNullOrEmpty(selectedDepartment))
@@ -308,12 +326,10 @@ Swal.fire({{
                 return;
             }
 
-
             if (string.IsNullOrEmpty(selectedStartTime) || selectedStartTime.Length != 5 ||
                 string.IsNullOrEmpty(selectedEndTime) || selectedEndTime.Length != 5)
             {
                 ShowError(ErrorCode.InvalidTimeFormat);
-
                 return;
             }
 
@@ -326,13 +342,10 @@ Swal.fire({{
                 return;
             }
 
-            double durationMinutes = (dtEnd - dtStart).TotalMinutes;
-            double durationHours = durationMinutes / 60.0;
-            string timeSlot = $"{selectedStartTime}-{selectedEndTime}";
-
             InsertBooking(selectedDate, selectedRoom, selectedStartTime, selectedEndTime,
-            selectedDepartment, reservedBy);
+                selectedDepartment, reservedBy);
         }
+
         private bool IsRoomBooked(DateTime date, string room, string timeSlot)
         {
             // ใช้ฐานข้อมูล SQL ในการดึงข้อมูลจอง
@@ -533,7 +546,7 @@ Swal.fire({{
 
                 string[] rooms = { "101", "102", "103", "201", "202", "203" };
                 string currentUser = Session["username"]?.ToString();
-                string timeSlot = DataBinder.Eval(e.Row.DataItem, "TimeSlot")?.ToString(); 
+                string timeSlot = DataBinder.Eval(e.Row.DataItem, "TimeSlot")?.ToString();
                 string lang = Session["lang"]?.ToString() ?? "en";
                 string freeText = lang == "th" ? "ว่าง" : lang == "zh" ? "閒置" : "Free";
                 string bookedFormat = lang == "th" ? "จองโดย {0}" : lang == "zh" ? "已被 {0} 預約" : "Booked by {0}";
