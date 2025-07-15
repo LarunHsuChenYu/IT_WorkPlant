@@ -2,9 +2,29 @@
     CodeBehind="IT_RequestsList.aspx.cs" Inherits="IT_WorkPlant.Pages.IT_RequestsList" %>
 <%@ Import Namespace="System.Web" %>
 
-
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <title>IT Requests List</title>
+
+    <!-- ✅ เพิ่ม html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        function captureGrid() {
+            const grid = document.getElementById('<%= gvRequests.ClientID %>');
+            if (!grid) {
+                alert("ไม่พบตารางข้อมูล");
+                return;
+            }
+
+            html2canvas(grid).then(canvas => {
+                const image = canvas.toDataURL("image/png");
+                const link = document.createElement("a");
+                link.href = image;
+                link.download = "IT_Requests_Snapshot.png";
+                link.click();
+            });
+        }
+    </script>
+
     <style>
         .filter-container {
             display: flex;
@@ -56,20 +76,27 @@
             margin-bottom: 20px;
             color: #007BFF;
         }
+
+        .btn-capture {
+            margin-bottom: 15px;
+        }
     </style>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
     <h2>IT Requests List</h2>
 
+    <!-- ✅ ปุ่มกดแคปภาพ -->
+    <button type="button" onclick="captureGrid()" class="btn btn-success btn-capture">
+        📸 Capture GridView
+    </button>
+
     <!-- Filters Section -->
     <div class="filter-container">
         <asp:DropDownList ID="ddlIssueMonth" runat="server" AutoPostBack="true" OnSelectedIndexChanged="FilterChanged" />
-
-         <asp:DropDownList ID="ddlIssueDate" runat="server" AutoPostBack="true" OnSelectedIndexChanged="FilterChanged">
-        <asp:ListItem Value="" Text="All Dates" />
-    </asp:DropDownList>
-
+        <asp:DropDownList ID="ddlIssueDate" runat="server" AutoPostBack="true" OnSelectedIndexChanged="FilterChanged">
+            <asp:ListItem Value="" Text="All Dates" />
+        </asp:DropDownList>
         <asp:DropDownList ID="ddlDeptName" runat="server" AutoPostBack="true" OnSelectedIndexChanged="FilterChanged">
             <asp:ListItem Value="" Text="All Departments" />
         </asp:DropDownList>
@@ -86,11 +113,11 @@
 
     <!-- GridView Section -->
     <asp:GridView ID="gvRequests" runat="server" AutoGenerateColumns="False" CssClass="myGridView"
-    DataKeyNames="ReportID,Department,IssueTypeID,DeptNameID"
-    OnRowEditing="gvRequests_RowEditing"
-    OnRowCancelingEdit="gvRequests_RowCancelingEdit"
-    OnRowUpdating="gvRequests_RowUpdating"
-    OnSelectedIndexChanged="gvRequests_SelectedIndexChanged">
+        DataKeyNames="ReportID,Department,IssueTypeID,DeptNameID"
+        OnRowEditing="gvRequests_RowEditing"
+        OnRowCancelingEdit="gvRequests_RowCancelingEdit"
+        OnRowUpdating="gvRequests_RowUpdating"
+        OnSelectedIndexChanged="gvRequests_SelectedIndexChanged">
 
         <HeaderStyle BackColor="LightBlue" ForeColor="Black" Font-Bold="True" />
         <FooterStyle BackColor="LightBlue" ForeColor="Black" />
@@ -99,7 +126,6 @@
 
         <Columns>
             <asp:BoundField DataField="ReportID" HeaderText="Report ID" ReadOnly="true" />
-
             <asp:TemplateField HeaderText="Issue Date">
                 <ItemTemplate>
                     <%# Eval("IssueDate", "{0:yyyy-MM-dd}") %>
@@ -110,25 +136,27 @@
             </asp:TemplateField>
 
             <asp:TemplateField HeaderText="Department">
-    <ItemTemplate>
-        <%# Eval("Department") %>
-    </ItemTemplate>
-    <EditItemTemplate>
-        <asp:DropDownList ID="ddlDepartment" runat="server" Enabled="false">
-            <asp:ListItem Text="Production Control Dept." Value="Production Control Dept." />
-            <asp:ListItem Text="EHS Dept." Value="EHS Dept." />
-            <asp:ListItem Text="Quality Control Dept." Value="Quality Control Dept." />
-            <asp:ListItem Text="Purchase Dept." Value="Purchase Dept." />
-            <asp:ListItem Text="Manufacturing Division" Value="Manufacturing Division" />
-        </asp:DropDownList>
-        <asp:HiddenField ID="hfDeptNameID" runat="server" Value='<%# Eval("DeptNameID") %>' />
-    </EditItemTemplate>
-</asp:TemplateField>
-
+                <ItemTemplate>
+                    <%# Eval("Department") %>
+                </ItemTemplate>
+                <EditItemTemplate>
+                    <asp:DropDownList ID="ddlDepartment" runat="server" Enabled="false">
+                        <asp:ListItem Text="Production Control Dept." Value="Production Control Dept." />
+                        <asp:ListItem Text="EHS Dept." Value="EHS Dept." />
+                        <asp:ListItem Text="Quality Control Dept." Value="Quality Control Dept." />
+                        <asp:ListItem Text="Purchase Dept." Value="Purchase Dept." />
+                        <asp:ListItem Text="Manufacturing Division" Value="Manufacturing Division" />
+                    </asp:DropDownList>
+                    <asp:HiddenField ID="hfDeptNameID" runat="server" Value='<%# Eval("DeptNameID") %>' />
+                </EditItemTemplate>
+            </asp:TemplateField>
 
             <asp:BoundField DataField="RequestUser" HeaderText="Request User" ReadOnly="true" />
-            <asp:TemplateField HeaderText="Issue Details"><ItemTemplate> <%# HttpUtility.HtmlDecode(Eval("IssueDetails").ToString()) %></ItemTemplate></asp:TemplateField>
-
+            <asp:TemplateField HeaderText="Issue Details">
+                <ItemTemplate>
+                    <%# HttpUtility.HtmlDecode(Eval("IssueDetails").ToString()) %>
+                </ItemTemplate>
+            </asp:TemplateField>
 
             <asp:TemplateField HeaderText="Issue Type">
                 <ItemTemplate>
@@ -180,18 +208,17 @@
             <asp:BoundField DataField="Remark" HeaderText="Remark" />
 
             <asp:TemplateField HeaderText="Image">
-    <ItemTemplate>
-        <asp:HyperLink ID="lnkImage" runat="server"
-            NavigateUrl='<%# Eval("ImagePath", "~/App_Temp/{0}") %>'
-            Target="_blank">
-            <asp:Image ID="imgThumb" runat="server"
-                ImageUrl='<%# Eval("ImagePath", "~/App_Temp/{0}") %>'
-                Width="60px" Height="60px"
-                Visible='<%# !string.IsNullOrEmpty(Eval("ImagePath").ToString()) %>' />
-        </asp:HyperLink>
-    </ItemTemplate>
-</asp:TemplateField>
-
+                <ItemTemplate>
+                    <asp:HyperLink ID="lnkImage" runat="server"
+                        NavigateUrl='<%# Eval("ImagePath", "~/App_Temp/{0}") %>'
+                        Target="_blank">
+                        <asp:Image ID="imgThumb" runat="server"
+                            ImageUrl='<%# Eval("ImagePath", "~/App_Temp/{0}") %>'
+                            Width="60px" Height="60px"
+                            Visible='<%# !string.IsNullOrEmpty(Eval("ImagePath").ToString()) %>' />
+                    </asp:HyperLink>
+                </ItemTemplate>
+            </asp:TemplateField>
 
             <asp:TemplateField HeaderText="Action">
                 <ItemTemplate>

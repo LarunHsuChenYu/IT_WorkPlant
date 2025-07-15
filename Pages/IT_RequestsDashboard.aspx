@@ -9,20 +9,92 @@
     <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-<!-- 💡 Flatpickr Initializer -->
-<script type="text/javascript">
-    Sys.Application.add_load(function () {
-        flatpickr(".flatpickr-input", {
-            dateFormat: "Y/m/d",        // ✅ ส่งให้ backend เข้าใจตรงกัน
-            altInput: true,             // ✨ แสดงแบบ user-friendly
-            altFormat: "d M Y",         // 🧠 ตัวอย่าง: 11 Jul 2025
-            allowInput: false,          // 🛑 ห้ามพิมพ์
-            defaultDate: "today",       // 🗓 ตั้งให้โชว์วันนี้เป็นค่า default
-            wrap: false
-        });
-    });
-</script>
+    <!-- ✅ Flatpickr + Screenshot -->
+    <script type="text/javascript">
+        window.onload = function () {          
+            flatpickr("#<%= txtFromDate.ClientID %>", {
+                dateFormat: "Y/m/d",
+                altInput: true,
+                altFormat: "d M Y",
+                allowInput: false,
+                defaultDate: "today"
+            }); <a href="PMC_CUS_ProductCBMMaintain.aspx">PMC_CUS_ProductCBMMaintain.aspx</a>
 
+            flatpickr("#<%= txtToDate.ClientID %>", {
+                dateFormat: "Y/m/d",
+                altInput: true,
+                altFormat: "d M Y",
+                allowInput: false,
+                defaultDate: "today"
+            });
+
+            // ✅ Chart render
+            let raw = document.getElementById('<%= hfChartData.ClientID %>').value || '{}';
+            let chartData = {};
+            try { chartData = JSON.parse(raw); } catch (e) { console.error("Invalid JSON", e); }
+
+            const createChart = (id, type, labels, data, bgColors) => {
+                return new Chart(document.getElementById(id), {
+                    type: type,
+                    data: {
+                        labels: labels || [],
+                        datasets: [{
+                            data: data || [],
+                            backgroundColor: bgColors,
+                            borderColor: '#ffffff',
+                            borderWidth: type === 'line' ? 2 : 1,
+                            fill: type === 'line',
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: type === 'pie',
+                                labels: { color: 'white' }
+                            }
+                        },
+                        scales: (type === 'pie') ? {} : {
+                            x: {
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255,255,255,0.2)' }
+                            },
+                            y: {
+                                ticks: { color: 'white' },
+                                grid: { color: 'rgba(255,255,255,0.2)' }
+                            }
+                        }
+                    },
+                });
+            };
+
+            chartType = createChart('chartType', 'bar', chartData.type?.labels, chartData.type?.data,
+                ['#f1c40f', '#2ecc71', '#e74c3c', '#3498db', '#9b59b6', '#1abc9c']);
+            chartDept = createChart('chartDept', 'bar', chartData.dept?.labels, chartData.dept?.data,
+                ['#e67e22', '#f39c12', '#16a085', '#27ae60', '#8e44ad', '#c0392b', '#2980b9']);
+            chartTrend = createChart('chartTrend', 'line', chartData.trend?.labels, chartData.trend?.data,
+                ['#3498db']);
+            chartDRI = createChart('chartDRI', 'pie', chartData.dri?.labels, chartData.dri?.data,
+                ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6']);
+        };
+
+        function captureDashboard() {
+            const captureTarget = document.querySelector(".container.py-4");
+            if (!captureTarget) {
+                alert("ไม่พบ Dashboard ที่จะ capture");
+                return;
+            }
+
+            html2canvas(captureTarget).then(canvas => {
+                const image = canvas.toDataURL("image/png");
+                const link = document.createElement("a");
+                link.href = image;
+                link.download = "IT_Dashboard_Snapshot.png";
+                link.click();
+            });
+        }
+    </script>
 
     <style>
         body {
@@ -83,6 +155,14 @@
     <div class="container py-4">
         <h1 class="text-center mb-4">IT Requests Dashboard</h1>
 
+        <!-- ✅ ปุ่มแคป -->
+        <div class="text-center mb-3">
+            <button type="button" class="btn btn-success" onclick="captureDashboard()">
+                📸 Capture Dashboard
+            </button>
+        </div>
+
+        <!-- Filter -->
         <div class="text-center mb-3">
             <asp:DropDownList ID="ddlTimeFilter" runat="server" AutoPostBack="true"
                 OnSelectedIndexChanged="ddlTimeFilter_SelectedIndexChanged"
@@ -96,37 +176,23 @@
             </asp:DropDownList>
         </div>
 
-        <!-- 🔥 New Date Range UI [พร้อม Flatpickr] -->
-<div class="row justify-content-center mb-4">
-    <div class="col-md-2 text-center">
-        <label class="d-block">Start Date (Y/m/d)</label>
-        <asp:TextBox ID="txtFromDate" runat="server" CssClass="form-control flatpickr-input" />
-    </div>
-    <div class="col-md-2 text-center">
-        <label class="d-block">End Date (Y/m/d)</label>
-        <asp:TextBox ID="txtToDate" runat="server" CssClass="form-control flatpickr-input" />
-    </div>
-    <div class="col-md-1 text-center d-flex align-items-end">
-        <asp:Button ID="btnSearchRange" runat="server" Text="Query" CssClass="btn btn-primary w-100"
-            OnClick="btnSearchRange_Click" />
-    </div>
-</div>
+        <!-- Date Range -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-2 text-center">
+                <label class="d-block">Start Date (Y/m/d)</label>
+                <asp:TextBox ID="txtFromDate" runat="server" CssClass="form-control flatpickr-input" />
+            </div>
+            <div class="col-md-2 text-center">
+                <label class="d-block">End Date (Y/m/d)</label>
+                <asp:TextBox ID="txtToDate" runat="server" CssClass="form-control flatpickr-input" />
+            </div>
+            <div class="col-md-1 text-center d-flex align-items-end">
+                <asp:Button ID="btnSearchRange" runat="server" Text="Query" CssClass="btn btn-primary w-100"
+                    OnClick="btnSearchRange_Click" />
+            </div>
+        </div>
 
-<!-- 💡 Flatpickr Initializer -->
-<script type="text/javascript">
-    Sys.Application.add_load(function () {
-        flatpickr(".flatpickr-input", {
-            dateFormat: "Y/m/d",        // ✅ ส่งให้ backend เข้าใจตรงกัน
-            altInput: true,             // ✨ แสดงแบบ user-friendly
-            altFormat: "d M Y",         // 🧠 ตัวอย่าง: 11 Jul 2025
-            allowInput: false,          // 🛑 ห้ามพิมพ์
-            defaultDate: "today",       // 🗓 ตั้งให้โชว์วันนี้เป็นค่า default
-            wrap: false
-        });
-    });
-</script>
-
-
+        <!-- Summary -->
         <div class="row mb-4 text-white text-center">
             <div class="col-md-3">
                 <div class="card-summary">
@@ -154,6 +220,7 @@
             </div>
         </div>
 
+        <!-- Charts -->
         <div class="row mb-4">
             <div class="col-md-6">
                 <div class="dark-card p-3">
@@ -190,59 +257,4 @@
     </div>
 
     <asp:HiddenField ID="hfChartData" runat="server" />
-
-    <script type="text/javascript">
-        let chartType, chartDept, chartTrend, chartDRI;
-
-        window.onload = function () {
-            let raw = document.getElementById('<%= hfChartData.ClientID %>').value || '{}';
-            let chartData = {};
-            try { chartData = JSON.parse(raw); } catch (e) { console.error("Invalid JSON", e); }
-
-            const createChart = (id, type, labels, data, bgColors) => {
-                return new Chart(document.getElementById(id), {
-                    type: type,
-                    data: {
-                        labels: labels || [],
-                        datasets: [{
-                            data: data || [],
-                            backgroundColor: bgColors,
-                            borderColor: '#ffffff',
-                            borderWidth: type === 'line' ? 2 : 1,
-                            fill: type === 'line',
-                            tension: 0.3
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                display: type === 'pie',
-                                labels: { color: 'white' }
-                            }
-                        },
-                        scales: (type === 'pie') ? {} : {
-                            x: {
-                                ticks: { color: 'white' },
-                                grid: { color: 'rgba(255,255,255,0.2)' }
-                            },
-                            y: {
-                                ticks: { color: 'white' },
-                                grid: { color: 'rgba(255,255,255,0.2)' }
-                            }
-                        }
-                    },
-                });
-            };
-
-            chartType = createChart('chartType', 'bar', chartData.type?.labels, chartData.type?.data,
-                ['#f1c40f', '#2ecc71', '#e74c3c', '#3498db', '#9b59b6', '#1abc9c']);
-            chartDept = createChart('chartDept', 'bar', chartData.dept?.labels, chartData.dept?.data,
-                ['#e67e22', '#f39c12', '#16a085', '#27ae60', '#8e44ad', '#c0392b', '#2980b9']);
-            chartTrend = createChart('chartTrend', 'line', chartData.trend?.labels, chartData.trend?.data,
-                ['#3498db']);
-            chartDRI = createChart('chartDRI', 'pie', chartData.dri?.labels, chartData.dri?.data,
-                ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6']);
-        };
-    </script>
 </asp:Content>
