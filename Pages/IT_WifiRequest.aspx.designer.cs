@@ -78,6 +78,33 @@ namespace IT_WorkPlant.Pages
         protected global::System.Web.UI.WebControls.TextBox requestDate;
 
         /// <summary>
+        /// litVisitor control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litVisitor;
+
+        /// <summary>
+        /// litBizTrip control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litBizTrip;
+
+        /// <summary>
+        /// litOnboard control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litOnboard;
+
+        /// <summary>
         /// hfActiveTab control.
         /// </summary>
         /// <remarks>

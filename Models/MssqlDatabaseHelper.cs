@@ -51,14 +51,16 @@ namespace IT_WorkPlant.Models
 
             try
             {
-                _currentTransaction.Rollback();
+                if (_currentTransaction.Connection != null)
+                {
+                    _currentTransaction.Rollback();
+                }
             }
             finally
             {
                 CleanupTransaction();
             }
         }
-
         private void CleanupTransaction()
         {
             if (_currentTransaction != null)

@@ -44,7 +44,7 @@
 
 <asp:Content ID="MainContent" ContentPlaceHolderID="MainContent" runat="server">
     <div class="container py-4">
-        <h1 class="text-center mb-4">工單過帳</h1>
+        <h1 class="text-center mb-4">Work Order Posting</h1>
 
         <div class="date-range-container">
             <asp:TextBox ID="txtStartDate" runat="server" TextMode="Date" CssClass="date-input" />

@@ -1,4 +1,4 @@
-<%@ Page Title="WarRoom Dashboard" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" 
+﻿<%@ Page Title="WarRoom Dashboard" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" 
     CodeBehind="WarRoom.aspx.cs" Inherits="IT_WorkPlant.Pages.WarRoom" %>
 <asp:Content ID="HeaderContent" ContentPlaceHolderID="HeadContent" runat="server">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -68,9 +68,12 @@
         <h1 class="text-center" style="flex-shrink: 0; padding: 1rem 0;">War Room Dashboard</h1>
         <div class="d-flex justify-content-center align-items-center mb-3" style="gap: 1rem;">
             <label for="monthSelect" class="form-label mb-0">Select Month</label>
+            <asp:HiddenField ID="hfSelectedMonth" runat="server" />
             <input type="month" id="monthSelect" class="form-control" style="width: 160px;">
-            <asp:TextBox ID="txtStartDate" runat="server" TextMode="Date" CssClass="form-control" style="width: 160px; display:none;"></asp:TextBox>
-            <asp:TextBox ID="txtEndDate" runat="server" TextMode="Date" CssClass="form-control" style="width: 160px; display:none;"></asp:TextBox>
+            <asp:TextBox ID="txtStartDate" runat="server" Text='<%# txtStartDate.Text %>' 
+    TextMode="Date" CssClass="form-control" style="width: 160px; display:none;" EnableViewState="true" />
+<asp:TextBox ID="txtEndDate" runat="server" Text='<%# txtEndDate.Text %>' 
+    TextMode="Date" CssClass="form-control" style="width: 160px; display:none;" EnableViewState="true" />
             <asp:Button ID="btnQuery" runat="server" Text="Query" CssClass="btn btn-primary" OnClick="btnQuery_Click" />
         </div>
         <div class="dashboard-grid" style="flex-grow: 1;">
@@ -320,7 +323,7 @@
                 const today = new Date();
                 const yyyy = today.getFullYear();
                 const mm = (today.getMonth() + 1).toString().padStart(2, '0');
-                monthInput.value = `${yyyy}-${mm}`;
+                //monthInput.value = `${yyyy}-${mm}`;
                 setMonthRange(monthInput.value);
                 monthInput.addEventListener('change', function () {
                     setMonthRange(this.value);
@@ -401,4 +404,13 @@
             }
         });
     </script>
+ <script>
+     document.addEventListener("DOMContentLoaded", function () {
+         const monthInput = document.getElementById("monthSelect");
+         if (monthInput) {
+             monthInput.value = '<%= DateTime.Parse(txtStartDate.Text).ToString("yyyy-MM") %>';
+        }
+    });
+    </script>
+
 </asp:Content> 

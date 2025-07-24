@@ -21,7 +21,7 @@
                         { tableId: "#tbOnboard", dataKey: "onboard", columns: ["No", "FullName", "EmployeeID", "Department", "Email", "DeviceType", "MACAddress", "Description"] }
                     ];
 
-                    // 通用表格更新邏輯
+                    
                     tablesConfig.forEach(config => {
                         const tableBody = $(config.tableId);
                         tableBody.empty();
@@ -43,13 +43,13 @@
         }
 
         function showTab(tabId) {
-            // 隱藏所有 .tab-content
+            
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
-            // 顯示選中的 tab-content
+            
             document.getElementById(tabId).classList.add('active');
-            // 更新 HiddenField 的值
+           
             document.getElementById('<%= hfActiveTab.ClientID %>').value = tabId;
         }
     </script>
@@ -223,7 +223,7 @@
 }
 
 .btn-add {
-    background-color: #adb5bd; /* สีเทา */
+    background-color: #adb5bd; 
     border: none;
     color: white;
     padding: 8px 16px;
@@ -237,7 +237,7 @@
 }
 
 .btn-submit {
-    background-color: #9ec5fe; /* สีฟ้าเทา */
+    background-color: #9ec5fe; 
     border: none;
     color: white;
     padding: 8px 16px;
@@ -283,14 +283,14 @@
         </div>
         <div class="form-box">
     <div class="tabs">
-        <div class="tab" onclick="showTab('VisitorDiv')"><%= GetLabel("visitor") %></div>
-        <div class="tab" onclick="showTab('BizTripDiv')"><%= GetLabel("businesstrip") %></div>
-        <div class="tab" onclick="showTab('OnboardDiv')"><%= GetLabel("newemployee") %></div>
+        <div class="tab" onclick="showTab('VisitorDiv')"><asp:Literal ID="litVisitor" runat="server" /></div>
+<div class="tab" onclick="showTab('BizTripDiv')"><asp:Literal ID="litBizTrip" runat="server" /></div>
+<div class="tab" onclick="showTab('OnboardDiv')"><asp:Literal ID="litOnboard" runat="server" /></div>
     </div>
 
     <asp:HiddenField ID="hfActiveTab" runat="server" />
 
-    <!-- Visitor Tab -->
+    
     <div id="VisitorDiv" class="tab-content active">
         <h4><%= GetLabel("visitorrequest") %></h4>
         <table id="VisitorTable" class="table table-bordered" runat="server">
@@ -311,7 +311,7 @@
         </div>
     </div>
 
-    <!-- BizTrip Tab -->
+    
     <div id="BizTripDiv" class="tab-content">
         <h4><%= GetLabel("biztriprequest") %></h4>
         <table id="BizTripTable" class="table table-bordered" runat="server">
@@ -334,7 +334,7 @@
         </div>
     </div>
 
-    <!-- Onboard Tab -->
+   
     <div id="OnboardDiv" class="tab-content">
         <h4><%= GetLabel("onboardrequest") %></h4>
         <table id="OnboardTable" class="table table-bordered" runat="server">

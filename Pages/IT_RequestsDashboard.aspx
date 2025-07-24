@@ -9,16 +9,17 @@
     <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-    <!-- ✅ Flatpickr + Screenshot -->
+    
     <script type="text/javascript">
-        window.onload = function () {          
+        window.onload = function () {
+            // ✅ Flatpickr init (ใช้กับ ClientID)
             flatpickr("#<%= txtFromDate.ClientID %>", {
                 dateFormat: "Y/m/d",
                 altInput: true,
                 altFormat: "d M Y",
                 allowInput: false,
                 defaultDate: "today"
-            }); <a href="PMC_CUS_ProductCBMMaintain.aspx">PMC_CUS_ProductCBMMaintain.aspx</a>
+            });
 
             flatpickr("#<%= txtToDate.ClientID %>", {
                 dateFormat: "Y/m/d",
@@ -155,14 +156,14 @@
     <div class="container py-4">
         <h1 class="text-center mb-4">IT Requests Dashboard</h1>
 
-        <!-- ✅ ปุ่มแคป -->
+        
         <div class="text-center mb-3">
             <button type="button" class="btn btn-success" onclick="captureDashboard()">
                 📸 Capture Dashboard
             </button>
         </div>
 
-        <!-- Filter -->
+        
         <div class="text-center mb-3">
             <asp:DropDownList ID="ddlTimeFilter" runat="server" AutoPostBack="true"
                 OnSelectedIndexChanged="ddlTimeFilter_SelectedIndexChanged"
@@ -176,7 +177,7 @@
             </asp:DropDownList>
         </div>
 
-        <!-- Date Range -->
+        
         <div class="row justify-content-center mb-4">
             <div class="col-md-2 text-center">
                 <label class="d-block">Start Date (Y/m/d)</label>
@@ -192,7 +193,7 @@
             </div>
         </div>
 
-        <!-- Summary -->
+        
         <div class="row mb-4 text-white text-center">
             <div class="col-md-3">
                 <div class="card-summary">
@@ -220,7 +221,7 @@
             </div>
         </div>
 
-        <!-- Charts -->
+        
         <div class="row mb-4">
             <div class="col-md-6">
                 <div class="dark-card p-3">

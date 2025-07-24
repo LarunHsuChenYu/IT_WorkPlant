@@ -18,21 +18,40 @@ namespace IT_WorkPlant.Pages
 
         protected void Page_Load(object sender, EventArgs e)
         {
-
             if (Session["UserEmpID"] == null)
             {
                 Response.Redirect("~/Login.aspx");
                 return;
             }
+
             _dbHelper = new OracleDatabaseHelper(ConfigurationManager.ConnectionStrings["OracleDB"].ConnectionString);
+
             if (!IsPostBack)
             {
-                DateTime today = DateTime.Today;
-                txtStartDate.Text = new DateTime(today.Year, today.Month, 1).ToString("yyyy-MM-dd");
-                txtEndDate.Text = new DateTime(today.Year, today.Month, DateTime.DaysInMonth(today.Year, today.Month)).ToString("yyyy-MM-dd");
+                if (string.IsNullOrEmpty(txtStartDate.Text) || string.IsNullOrEmpty(txtEndDate.Text))
+                {
+                    DateTime today = DateTime.Today;
+                    txtStartDate.Text = new DateTime(today.Year, today.Month, 1).ToString("yyyy-MM-dd");
+                    txtEndDate.Text = new DateTime(today.Year, today.Month, DateTime.DaysInMonth(today.Year, today.Month)).ToString("yyyy-MM-dd");
+                }
+
+                this.DataBind();
                 LoadDashboardData(txtStartDate.Text, txtEndDate.Text);
+
+                
+                DateTime startDate = DateTime.Parse(txtStartDate.Text);
+                string jsMonthSetter = $@"
+            document.addEventListener('DOMContentLoaded', function () {{
+                var monthInput = document.getElementById('monthSelect');
+                if (monthInput) {{
+                    monthInput.value = '{startDate:yyyy-MM}';
+                }}
+            }});";
+
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "SetMonthInput", jsMonthSetter, true);
             }
         }
+
 
         protected void btnQuery_Click(object sender, EventArgs e)
         {
@@ -206,8 +225,9 @@ SELECT
 FROM DS5.sfb_file sfb
 LEFT JOIN DS5.gem_file gem ON sfb.sfb82 = gem.gem01
 LEFT JOIN DS5.smy_file smy ON SUBSTR(sfb.sfb01,1,3) = smy.smyslip
-WHERE sfb87='Y' AND sfb.sfb81 BETWEEN TO_DATE('250601', 'YYMMDD') AND TO_DATE('250630', 'YYMMDD')
-GROUP BY smymemo3,sfb82, gem.gem02
+WHERE sfb87 = 'Y' 
+  AND sfb.sfb81 BETWEEN TO_DATE('{defaultStart}', 'yyyy-mm-dd') AND TO_DATE('{defaultEnd}', 'yyyy-mm-dd')
+GROUP BY smymemo3, sfb82, gem.gem02
 ORDER BY sfb82";
             DataTable dt4 = dbHelper.ExecuteQuery(sql4);
             var deptCapacity = new

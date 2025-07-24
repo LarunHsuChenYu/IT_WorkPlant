@@ -187,7 +187,7 @@ Swal.fire({{
         {
             // 模擬從資料庫中查詢的結果，實際應用中替換成查詢邏輯
             return new List<string> {
-        "08:00-08:30", "08:30-09:00", "09:00-09:30", "09:30-10:00",
+        "08:30-09:00", "09:00-09:30", "09:30-10:00",
         "10:00-10:30", "10:30-11:00", "11:00-11:30", "11:30-12:00",
         "13:00-13:30", "13:30-14:00", "14:00-14:30", "14:30-15:00",
         "15:00-15:30", "15:30-16:00", "16:00-16:30", "16:30-17:00"
@@ -251,7 +251,7 @@ Swal.fire({{
         {
             endTimeList.Items.Clear();
 
-            DateTime startTime = DateTime.Today.AddHours(8); // 08:00
+            DateTime startTime = DateTime.Today.AddHours(9); // 08:00
             DateTime endTime = DateTime.Today.AddHours(17);  // 17:00
 
             while (startTime <= endTime)
