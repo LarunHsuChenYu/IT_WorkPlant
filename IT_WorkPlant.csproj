@@ -285,6 +285,7 @@
     <Content Include="Pages\IT_ComputerListView.aspx" />
     <Content Include="Pages\IT_DailyCheckReport.aspx" />
     <Content Include="Pages\IT_EmailRequest.aspx" />
+    <Content Include="Pages\IT_PingDashboard.aspx" />
     <Content Include="Pages\IT_PurchaseItemsList.aspx" />
     <Content Include="Pages\IT_RequestsDashboard.aspx" />
     <Content Include="Pages\IT_RequestsList.aspx" />
@@ -301,6 +302,7 @@
     <Content Include="Pages\MeetingRoomBooking.aspx" />
     <Content Include="Pages\OPD_SalesOrderAnalysis.aspx" />
     <Content Include="Pages\OPD_TLF_Statics.aspx" />
+    <Content Include="Pages\OPD_WorkOrderAnalysis.aspx" />
     <Content Include="Pages\PMC_CUS_InvoiceCreate.aspx" />
     <Content Include="Pages\PMC_CUS_ProductCBMMaintain.aspx" />
     <Content Include="Pages\PMC_CUS_ShippingPriceMaintain.aspx" />
@@ -428,8 +430,10 @@
     <Compile Include="Models\MssqlDatabaseHelper.cs" />
     <Compile Include="Models\OPD_vwModelOrderSale.cs" />
     <Compile Include="Models\OPD_vwModelShipmentSale.cs" />
+    <Compile Include="Models\OPD_vwModelWorkOrder.cs" />
     <Compile Include="Models\OracleDatabaseHelper.cs" />
     <Compile Include="Models\PDFGenerator.cs" />
+    <Compile Include="Models\ServerList.cs" />
     <Compile Include="Models\UserInfo.cs" />
     <Compile Include="Models\WF_EmailModel.cs" />
     <Compile Include="Models\WF_Repository.cs" />
@@ -491,6 +495,13 @@
     </Compile>
     <Compile Include="Pages\IT_EmailRequest.aspx.designer.cs">
       <DependentUpon>IT_EmailRequest.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\IT_PingDashboard.aspx.cs">
+      <DependentUpon>IT_PingDashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\IT_PingDashboard.aspx.designer.cs">
+      <DependentUpon>IT_PingDashboard.aspx</DependentUpon>
     </Compile>
     <Compile Include="Pages\IT_PurchaseItemsList.aspx.cs">
       <DependentUpon>IT_PurchaseItemsList.aspx</DependentUpon>
@@ -603,6 +614,13 @@
     </Compile>
     <Compile Include="Pages\OPD_TLF_Statics.aspx.designer.cs">
       <DependentUpon>OPD_TLF_Statics.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\OPD_WorkOrderAnalysis.aspx.cs">
+      <DependentUpon>OPD_WorkOrderAnalysis.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\OPD_WorkOrderAnalysis.aspx.designer.cs">
+      <DependentUpon>OPD_WorkOrderAnalysis.aspx</DependentUpon>
     </Compile>
     <Compile Include="Pages\PMC_CUS_InvoiceCreate.aspx.cs">
       <DependentUpon>PMC_CUS_InvoiceCreate.aspx</DependentUpon>
@@ -751,8 +769,8 @@
     <Error Condition="!Exists('packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets'))" />
     <Error Condition="!Exists('packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.21.2\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.21.2\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.props'))" />
     <Error Condition="!Exists('packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.21.2\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.21.2\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.targets'))" />
-    <Error Condition="!Exists('packages\SixLabors.ImageSharp.3.1.7\build\SixLabors.ImageSharp.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\SixLabors.ImageSharp.3.1.7\build\SixLabors.ImageSharp.props'))" />
     <Error Condition="!Exists('packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets'))" />
+    <Error Condition="!Exists('packages\SixLabors.ImageSharp.3.1.7\build\SixLabors.ImageSharp.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\SixLabors.ImageSharp.3.1.7\build\SixLabors.ImageSharp.props'))" />
   </Target>
   <Import Project="packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.21.2\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.targets" Condition="Exists('packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.21.2\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.targets')" />
   <Import Project="packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets" Condition="Exists('packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets')" />

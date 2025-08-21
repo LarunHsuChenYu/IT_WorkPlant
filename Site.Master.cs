@@ -15,52 +15,47 @@ namespace IT_WorkPlant
         {
             // ✅ ตั้งค่าภาษาเริ่มต้น
             if (Session["lang"] == null)
-            {
-                Session["lang"] = "en"; // Default เป็น English
-            }
+                Session["lang"] = "en";
 
-            // ✅ ล้าง Login status ทุกครั้ง
+            // เคลียร์ที่วางปุ่มมุมขวา
             phLoginStatus.Controls.Clear();
 
             if (Session["UserEmpID"] != null)
             {
-                // ✅ แสดงปุ่ม Logout
-                HyperLink logoutLink = new HyperLink
+                // 🔓 Logout link (ไปหน้า Logout.aspx ให้จัดการล้าง session)
+                var li = new HtmlGenericControl("li");
+                li.Attributes["class"] = "nav-item";
+
+                var logoutLink = new HyperLink
                 {
-                    NavigateUrl = "~/Pages/Logout.aspx",
+                    NavigateUrl = ResolveUrl("~/Pages/Logout.aspx"),
                     CssClass = "nav-link",
                     Text = "Log-out"
                 };
+                li.Controls.Add(logoutLink);
+                phLoginStatus.Controls.Add(li);
 
-                phLoginStatus.Controls.Add(new HtmlGenericControl("li")
-                {
-                    Attributes = { ["class"] = "nav-item" },
-                    Controls = { logoutLink }
-                });
-
-                // ✅ แสดง Navbar ทุกครั้ง ไม่จำกัดเฉพาะ IsPostBack
-                string deptName = Session["DeptName"]?.ToString();
+                // เมนูหลัก
+                string deptName = Session["DeptName"] as string;
                 AddNavItem("Home", "~/Default.aspx");
                 BuildNavbar(deptName);
             }
             else
             {
-                // ✅ ยังไม่ login → แสดงปุ่ม login
-                HyperLink loginLink = new HyperLink
+                // 🔐 Login link
+                var li = new HtmlGenericControl("li");
+                li.Attributes["class"] = "nav-item";
+
+                var loginLink = new HyperLink
                 {
-                    NavigateUrl = "Login.aspx",
+                    NavigateUrl = ResolveUrl("~/Login.aspx"),
                     CssClass = "nav-link",
                     Text = "Log-In"
                 };
-
-                phLoginStatus.Controls.Add(new HtmlGenericControl("li")
-                {
-                    Attributes = { ["class"] = "nav-item" },
-                    Controls = { loginLink }
-                });
+                li.Controls.Add(loginLink);
+                phLoginStatus.Controls.Add(li);
             }
 
-            // ✅ ปีปัจจุบันแค่ตอนโหลดครั้งแรก
             if (!IsPostBack)
             {
                 litYear.Text = DateTime.Now.Year.ToString();
@@ -82,6 +77,8 @@ namespace IT_WorkPlant
 
         private void BuildNavbar(string deptName)
         {
+            int positionID = Session["Position"] != null ? Convert.ToInt32(Session["Position"]) : 0;
+
             // 基本導航項目
             //AddNavItem("Meeting Room Booking", "~/Pages/MeetingRoomBooking");
 
@@ -90,43 +87,46 @@ namespace IT_WorkPlant
             {
                 AddDropdownItem("IT", "IT",
                     new[] {
-                        new KeyValuePair<string, string>("ERP Account", "~/Pages/IT_erpNewUserCreate.aspx"),
-                        new KeyValuePair<string, string>("User Account", "~/Pages/IT_UserManagement"),
-                        new KeyValuePair<string, string>("Daily Check", "~/Pages/IT_DailyCheckList"),
-                        new KeyValuePair<string, string>("Web Portal", "~/Pages/IT_WebPortalList"),
-                        new KeyValuePair<string, string>("IT Purchase Items Maintain", "~/Pages/IT_PurchaseItemsList"),
-                        new KeyValuePair<string, string>("IT Stock", "~/Pages/IT_StockItems.aspx"),
-                        new KeyValuePair<string, string>("IT Borrow Approval", "~/Pages/IT_BorrowApproval.aspx"),
-                        new KeyValuePair<string, string>("IT ComputerList", "~/Pages/IT_ComputerAdd.aspx"),                       
-                        new KeyValuePair<string, string>("Working Flow", "~/Pages/WF_FlowMaintain.aspx"),
+                new KeyValuePair<string, string>("ERP Account", "~/Pages/IT_erpNewUserCreate.aspx"),
+                new KeyValuePair<string, string>("User Account", "~/Pages/IT_UserManagement"),
+                new KeyValuePair<string, string>("Daily Check", "~/Pages/IT_DailyCheckList"),
+                new KeyValuePair<string, string>("Web Portal", "~/Pages/IT_WebPortalList"),
+                new KeyValuePair<string, string>("IT Purchase Items Maintain", "~/Pages/IT_PurchaseItemsList"),
+                new KeyValuePair<string, string>("IT Stock", "~/Pages/IT_StockItems.aspx"),
+                new KeyValuePair<string, string>("IT Borrow Approval", "~/Pages/IT_BorrowApproval.aspx"),
+                new KeyValuePair<string, string>("IT ComputerList", "~/Pages/IT_ComputerAdd.aspx"),
+                new KeyValuePair<string, string>("Working Flow", "~/Pages/WF_FlowMaintain.aspx"),
+                new KeyValuePair<string, string>("IT PingDashboard", "~/Pages/IT_PingDashboard.aspx"),
                     });
                 AddDropdownItem("PMC", "PMC",
                     new[] {
-                        new KeyValuePair<string, string>("WO Update", "~/Pages/PMC_WO_HeadUpdate"),
-                        new KeyValuePair<string, string>("CUS Invoice Create", "~/Pages/PMC_CUS_InvoiceCreate"),
-                        new KeyValuePair<string, string>("CUS Maintain Shipping Price", "~/Pages/PMC_CUS_ShippingPriceMaintain"),
-                        new KeyValuePair<string, string>("CUS Maintain Product CBM", "~/Pages/PMC_CUS_ProductCBMMaintain")
+                new KeyValuePair<string, string>("WO Update", "~/Pages/PMC_WO_HeadUpdate"),
+                new KeyValuePair<string, string>("CUS Invoice Create", "~/Pages/PMC_CUS_InvoiceCreate"),
+                new KeyValuePair<string, string>("CUS Maintain Shipping Price", "~/Pages/PMC_CUS_ShippingPriceMaintain"),
+                new KeyValuePair<string, string>("CUS Maintain Product CBM", "~/Pages/PMC_CUS_ProductCBMMaintain")
                     });
                 AddDropdownItem("MFG", "MFG",
                     new[] {
-                        new KeyValuePair<string, string>("EQ Daily Check", "~/Pages/EQ_Daily_Check")
+                new KeyValuePair<string, string>("EQ Daily Check", "~/Pages/EQ_Daily_Check")
                     });
                 AddDropdownItem("PUR", "PUR",
                     new[] {
-                        new KeyValuePair<string, string>("Vanguard Price Update", "~/Pages/PUR_Vanguard_Price_Update"),
-                        new KeyValuePair<string, string>("InvoicePriceUpdate", "~/Pages/PUR_InvoicePriceUpdate")
+                new KeyValuePair<string, string>("Vanguard Price Update", "~/Pages/PUR_Vanguard_Price_Update"),
+                new KeyValuePair<string, string>("InvoicePriceUpdate", "~/Pages/PUR_InvoicePriceUpdate")
                     });
                 AddDropdownItem("ADM", "ADM",
-                            new[] {
-                                new KeyValuePair<string, string>("G3", "http://192.168.32.129:8015/hrp/login.do"),
-                                new KeyValuePair<string, string>("N8", "http://192.168.30.238:8012/#/login"),
-                            });
-                AddDropdownItem("Dashboard", "OPD",
-                            new[] {
-                                new KeyValuePair<string, string>("WO Entry Posting", "~/Pages/OPD_TLF_Statics"),
-                                new KeyValuePair<string, string>("Sale Order Entry", "~/Pages/OPD_SalesOrderAnalysis")
-                            });
+                    new[] {
+                new KeyValuePair<string, string>("G3", "http://192.168.32.129:8015/hrp/login.do"),
+                new KeyValuePair<string, string>("N8", "http://192.168.32.129:8012/#/login"),
+                    });
 
+                // ✅ เพิ่มเมนู Dashboard สำหรับ IT ที่นี่
+                AddDropdownItem("Dashboard", "OPD",
+                    new[] {
+                new KeyValuePair<string, string>("WO Entry Posting", "~/Pages/OPD_TLF_Statics"),
+                new KeyValuePair<string, string>("Sale Order Entry", "~/Pages/OPD_SalesOrderAnalysis"),
+                new KeyValuePair<string, string>("Work Order Analysis", "~/Pages/OPD_WorkOrderAnalysis")
+                    });
             }
             else
             {
@@ -136,53 +136,51 @@ namespace IT_WorkPlant
                     case "PC":
                         AddDropdownItem("PMC", "PMC",
                             new[] {
-                                new KeyValuePair<string, string>("WO Update", "~/Pages/PMC_WO_HeadUpdate"),
-                                new KeyValuePair<string, string>("CUS Invoice Create", "~/Pages/PMC_CUS_InvoiceCreate"),
-                                new KeyValuePair<string, string>("CUS Maintain Shipping Price", "~/Pages/PMC_CUS_ShippingPriceMaintain"),
-                                new KeyValuePair<string, string>("CUS Maintain Product CBM", "~/Pages/PMC_CUS_ProductCBMMaintain")
+                new KeyValuePair<string, string>("WO Update", "~/Pages/PMC_WO_HeadUpdate"),
+                new KeyValuePair<string, string>("CUS Invoice Create", "~/Pages/PMC_CUS_InvoiceCreate"),
+                new KeyValuePair<string, string>("CUS Maintain Shipping Price", "~/Pages/PMC_CUS_ShippingPriceMaintain"),
+                new KeyValuePair<string, string>("CUS Maintain Product CBM", "~/Pages/PMC_CUS_ProductCBMMaintain")
                             });
                         break;
 
                     case "MF":
                         AddDropdownItem("MFG", "MFG",
                             new[] {
-                                new KeyValuePair<string, string>("EQ Daily Check", "~/Pages/EQ_Daily_Check")
+                new KeyValuePair<string, string>("EQ Daily Check", "~/Pages/EQ_Daily_Check")
                             });
                         break;
 
                     case "PU":
                         AddDropdownItem("PUR", "PUR",
                             new[] {
-                                new KeyValuePair<string, string>("Vanguard Price Update", "~/Pages/PUR_Vanguard_Price_Update"),
-                                new KeyValuePair<string, string>("InvoicePriceUpdate", "~/Pages/PUR_InvoicePriceUpdate")
+                new KeyValuePair<string, string>("Vanguard Price Update", "~/Pages/PUR_Vanguard_Price_Update"),
+                new KeyValuePair<string, string>("InvoicePriceUpdate", "~/Pages/PUR_InvoicePriceUpdate")
                             });
                         break;
+
                     case "AD":
                         AddDropdownItem("ADM", "ADM",
                             new[] {
-                                new KeyValuePair<string, string>("G3", "http://192.168.32.129:8015/hrp/login.do"),
-                                new KeyValuePair<string, string>("N8", "http://192.168.30.238:8012/#/login"),
+                new KeyValuePair<string, string>("G3", "http://192.168.32.129:8015/hrp/login.do"),
+                new KeyValuePair<string, string>("N8", "http://192.168.30.238:8012/#/login"),
+                            });
+                        break;
+
+                    case "GO": // ✅ เพิ่มเคสสำหรับ GM หรือแผนกที่ต้องการให้เห็น Dashboard
+                        AddDropdownItem("Dashboard", "OPD",
+                            new[] {
+                new KeyValuePair<string, string>("WO Entry Posting", "~/Pages/OPD_TLF_Statics"),
+                new KeyValuePair<string, string>("Sale Order Entry", "~/Pages/OPD_SalesOrderAnalysis"),
+                new KeyValuePair<string, string>("Work Order Analysis", "~/Pages/OPD_WorkOrderAnalysis")
                             });
                         break;
 
                     default:
-                        // 可以加入默認或無權限顯示的處理
                         break;
                 }
-                // 階級特定導航
-                int positionID = Session["Position"] != null ? Convert.ToInt32(Session["Position"]) : 0;
-                if (positionID > 3)
-                {
-                    AddDropdownItem("Dashboard", "OPD",
-                            new[] {
-                                new KeyValuePair<string, string>("War Room", "~/Pages/WarRoom"),
-                                new KeyValuePair<string, string>("WO Entry Posting", "~/Pages/OPD_TLF_Statics"),
-                                new KeyValuePair<string, string>("Sale Order Entry", "~/Pages/OPD_SaleOrderAnalysis")
-                            });
-                }
-
             }
         }
+
 
 
         private void AddNavItem(string text, string href)

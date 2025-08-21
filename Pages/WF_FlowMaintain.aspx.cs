@@ -10,14 +10,14 @@ using System.Data;
 
 namespace IT_WorkPlant.Pages
 {
-    using IT_WorkPlant.Models; 
+    using IT_WorkPlant.Models;
 
     public partial class WF_FlowMaintain : System.Web.UI.Page
     {
         private const string SUCCESS_MESSAGE = "Done.";
         private WF_Repository _repo;
-        private MssqlDatabaseHelper _db;    
-        
+        private MssqlDatabaseHelper _db;
+
         private int CurrentFlowID
         {
             get => ViewState["FlowID"] == null ? 0 : (int)ViewState["FlowID"];
@@ -38,24 +38,23 @@ namespace IT_WorkPlant.Pages
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (Session["UserEmpID"] == null)
+            {
+                Response.Redirect("~/Login.aspx");
+                return;
+            }
+
+            _db = new MssqlDatabaseHelper();
+            _repo = new WF_Repository(_db);
+
             if (!IsPostBack)
             {
-
-                if (Session["UserEmpID"] == null)
-                {
-                    Response.Redirect("~/Login.aspx");
-                    return;
-                }
-
-                _db = new MssqlDatabaseHelper();             
-                _repo = new WF_Repository(_db);              
                 DeptList = _repo.GetDepartments().ToList();
                 BindFlows();
                 BindDepartmentDropdowns();
                 BindPositionDropDowns();
             }
         }
-
         private void BindDepartmentDropdowns()
         {
             ddlNewDept.DataSource = DeptList;
@@ -93,7 +92,6 @@ namespace IT_WorkPlant.Pages
             return db.ExecuteQuery(query, null);
         }
 
-        
         private void BindFlows()
         {
             var data = _repo.GetAllFlows().ToList();
@@ -120,7 +118,6 @@ namespace IT_WorkPlant.Pages
             BindSteps();
         }
 
-        
         protected void btnAddFlow_Click(object sender, EventArgs e)
         {
             var name = txtNewFlowName.Text?.Trim() ?? string.Empty;
@@ -134,11 +131,10 @@ namespace IT_WorkPlant.Pages
 
             var newFlow = new Workflow { FlowName = name, DeptID = dept };
             _repo.InsertFlow(newFlow);
-            
-            
+
             txtNewFlowName.Text = string.Empty;
             ddlNewDept.SelectedIndex = 0;
-            
+
             BindFlows();
             ShowMsg(SUCCESS_MESSAGE, true);
         }
@@ -153,8 +149,8 @@ namespace IT_WorkPlant.Pages
                 hdnEditFlowID.Value = flow.FlowID.ToString();
                 txtEditFlowName.Text = flow.FlowName;
                 ddlEditDept.SelectedValue = flow.DeptID;
-                
-                ScriptManager.RegisterStartupScript(this, GetType(), "ShowModal", 
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "ShowModal",
                     "var modal = new bootstrap.Modal(document.getElementById('editFlowModal')); modal.show();", true);
             }
         }
@@ -180,29 +176,25 @@ namespace IT_WorkPlant.Pages
         {
             if (CurrentFlowID == 0) return;
 
-            
             var steps = _repo.GetSteps(CurrentFlowID);
             foreach (var step in steps)
             {
                 _repo.DeleteStep(CurrentFlowID, step.StepOrder);
             }
 
-            
             _repo.DeleteFlow(CurrentFlowID);
-            
-            
+
             CurrentFlowID = 0;
             lblCurrentFlow.Text = "";
             btnAddStep.Enabled = false;
             btnEditFlow.Enabled = false;
             btnDeleteFlow.Enabled = false;
-            
+
             BindFlows();
             ClearStepArea();
             ShowMsg(SUCCESS_MESSAGE, true);
         }
 
-        
         private void BindSteps()
         {
             var data = _repo.GetSteps(CurrentFlowID).ToList();
@@ -259,7 +251,6 @@ namespace IT_WorkPlant.Pages
             BindSteps();
         }
 
-        
         protected void btnAddStep_Click(object sender, EventArgs e)
         {
             if (CurrentFlowID == 0) return;
@@ -272,6 +263,7 @@ namespace IT_WorkPlant.Pages
                 ShowMsg("Please select a position.", false);
                 return;
             }
+
             int roleId = int.Parse(roleIdStr);
             string roleName = ddlNewRole.SelectedItem.Text;
 
@@ -285,7 +277,6 @@ namespace IT_WorkPlant.Pages
                 StepDesc = desc
             });
 
-           
             ddlNewRole.SelectedIndex = 0;
             txtNewDesc.Text = string.Empty;
 
@@ -297,16 +288,14 @@ namespace IT_WorkPlant.Pages
         {
             if (CurrentFlowID == 0 || CurrentStepOrder == 0) return;
 
-            var step = _repo.GetSteps(CurrentFlowID)
-                          .FirstOrDefault(s => s.StepOrder == CurrentStepOrder);
+            var step = _repo.GetSteps(CurrentFlowID).FirstOrDefault(s => s.StepOrder == CurrentStepOrder);
             if (step != null)
             {
                 hdnEditStepOrder.Value = step.StepOrder.ToString();
                 ddlEditRole.SelectedValue = step.RoleID.ToString();
                 txtEditDesc.Text = step.StepDesc;
 
-                
-                ScriptManager.RegisterStartupScript(this, GetType(), "ShowStepModal", 
+                ScriptManager.RegisterStartupScript(this, GetType(), "ShowStepModal",
                     "var modal = new bootstrap.Modal(document.getElementById('editStepModal')); modal.show();", true);
             }
         }
@@ -323,6 +312,7 @@ namespace IT_WorkPlant.Pages
                 ShowMsg("Please select a position.", false);
                 return;
             }
+
             int roleId = int.Parse(roleIdStr);
             string roleName = ddlEditRole.SelectedItem.Text;
 
@@ -338,13 +328,13 @@ namespace IT_WorkPlant.Pages
             BindSteps();
             ShowMsg(SUCCESS_MESSAGE, true);
         }
+
         protected void btnDeleteStep_Click(object sender, EventArgs e)
         {
             if (CurrentFlowID == 0 || CurrentStepOrder == 0) return;
 
             _repo.DeleteStep(CurrentFlowID, CurrentStepOrder);
-            
-            
+
             CurrentStepOrder = 0;
             btnEditStep.Enabled = false;
             btnDeleteStep.Enabled = false;
@@ -352,7 +342,7 @@ namespace IT_WorkPlant.Pages
             BindSteps();
             ShowMsg(SUCCESS_MESSAGE, true);
         }
-  
+
         private void ShowMsg(string msg, bool success)
         {
             lblMessage.Text = msg;

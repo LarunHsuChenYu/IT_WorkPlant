@@ -52,7 +52,35 @@ namespace IT_WorkPlant.Pages
                 RenderDashboard(result);
             }
         }
-        private void RenderDashboard(DataTable allRequests)
+        private object GetAvgResolutionDays(DataTable table, string groupFormat)
+        {
+            var result = table.AsEnumerable()
+                .Where(r => r["IssueDate"] != DBNull.Value && r["FinishedDate"] != DBNull.Value)
+                .Select(r =>
+                {
+                    DateTime issueDate = Convert.ToDateTime(r["IssueDate"]);
+                    DateTime finishDate = Convert.ToDateTime(r["FinishedDate"]);
+                    double days = (finishDate - issueDate).TotalDays;
+
+                    string groupKey = groupFormat == "yyyy-ww" ? GetWeekLabel(issueDate)
+                                    : !string.IsNullOrEmpty(groupFormat) ? issueDate.ToString(groupFormat)
+                                    : "Unknown";
+
+                    return new { Group = groupKey, Days = days };
+                })
+                .GroupBy(x => x.Group)
+                .Select(g => new { Label = g.Key, AvgDays = Math.Round(g.Average(x => x.Days), 1) })
+                .OrderBy(g => g.Label)
+                .ToList();
+
+            return new
+            {
+                labels = result.Select(r => r.Label).ToList(),
+                data = result.Select(r => r.AvgDays).ToList()
+            };
+        }
+
+        private void RenderDashboard(DataTable allRequests, string trendFormat = "yyyy-MM-dd")
         {
             lblTotal.Text = allRequests.Rows.Count.ToString();
             lblWIP.Text = allRequests.AsEnumerable().Count(r => r["Status"].ToString() == "WIP").ToString();
@@ -67,8 +95,9 @@ namespace IT_WorkPlant.Pages
             {
                 type = GetChartData(allRequests, "IssueType"),
                 dept = GetChartData(allRequests, "Department"),
-                trend = GetChartData(allRequests, "IssueDate", "yyyy-MM-dd"),
-                dri = GetChartData(allRequests, "DRI_UserName", replaceEmpty: "Unassigned")
+                trend = GetChartData(allRequests, "IssueDate", trendFormat),
+                dri = GetChartData(allRequests, "DRI_UserName", replaceEmpty: "Unassigned"),
+                avgdays = GetAvgResolutionDays(allRequests, trendFormat)
             };
 
             hfChartData.Value = new JavaScriptSerializer().Serialize(chartData);

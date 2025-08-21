@@ -4,15 +4,16 @@
 
 <asp:Content ID="HeaderContent" ContentPlaceHolderID="HeadContent" runat="server">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.1.0"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-    
-    <script type="text/javascript">
+<script type="text/javascript">
+
         window.onload = function () {
-            // ✅ Flatpickr init (ใช้กับ ClientID)
             flatpickr("#<%= txtFromDate.ClientID %>", {
                 dateFormat: "Y/m/d",
                 altInput: true,
@@ -29,17 +30,17 @@
                 defaultDate: "today"
             });
 
-            // ✅ Chart render
             let raw = document.getElementById('<%= hfChartData.ClientID %>').value || '{}';
             let chartData = {};
             try { chartData = JSON.parse(raw); } catch (e) { console.error("Invalid JSON", e); }
 
             const createChart = (id, type, labels, data, bgColors) => {
-                return new Chart(document.getElementById(id), {
+                const config = {
                     type: type,
                     data: {
                         labels: labels || [],
                         datasets: [{
+                            label: id === 'chartAvgDays' ? "Avg Days" : "",
                             data: data || [],
                             backgroundColor: bgColors,
                             borderColor: '#ffffff',
@@ -52,9 +53,36 @@
                         responsive: true,
                         plugins: {
                             legend: {
-                                display: type === 'pie',
+                                display: type === 'pie' || id === 'chartAvgDays',
                                 labels: { color: 'white' }
-                            }
+                            },
+                            datalabels: {
+                                color: 'white',
+                                anchor: 'end',
+                                align: 'top',
+                                font: { weight: 'bold' },
+                                formatter: function (value) {
+                                    return value + ' d';
+                                }
+                            },
+                            annotation: (id === 'chartAvgDays') ? {
+                                annotations: {
+                                    targetLine: {
+                                        type: 'line',
+                                        yMin: 3,
+                                        yMax: 3,
+                                        borderColor: 'red',
+                                        borderWidth: 2,
+                                        label: {
+                                            content: 'Target: 3 Days',
+                                            enabled: true,
+                                            position: 'end',
+                                            color: 'white',
+                                            backgroundColor: 'red'
+                                        }
+                                    }
+                                }
+                            } : {}
                         },
                         scales: (type === 'pie') ? {} : {
                             x: {
@@ -62,12 +90,16 @@
                                 grid: { color: 'rgba(255,255,255,0.2)' }
                             },
                             y: {
+                                beginAtZero: true,
                                 ticks: { color: 'white' },
                                 grid: { color: 'rgba(255,255,255,0.2)' }
                             }
                         }
                     },
-                });
+                    plugins: [ChartDataLabels]
+                };
+
+                return new Chart(document.getElementById(id), config);
             };
 
             chartType = createChart('chartType', 'bar', chartData.type?.labels, chartData.type?.data,
@@ -78,6 +110,8 @@
                 ['#3498db']);
             chartDRI = createChart('chartDRI', 'pie', chartData.dri?.labels, chartData.dri?.data,
                 ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6']);
+            chartAvgDays = createChart('chartAvgDays', 'bar', chartData.avgdays?.labels, chartData.avgdays?.data,
+                '#ff9f40');
         };
 
         function captureDashboard() {
@@ -95,7 +129,7 @@
                 link.click();
             });
         }
-    </script>
+</script>
 
     <style>
         body {
@@ -131,7 +165,8 @@
         }
 
         .chart-box {
-            height: 300px;
+            min-height: 300px;
+            height: 100%;
         }
 
         .summary-table {
@@ -156,14 +191,12 @@
     <div class="container py-4">
         <h1 class="text-center mb-4">IT Requests Dashboard</h1>
 
-        
         <div class="text-center mb-3">
             <button type="button" class="btn btn-success" onclick="captureDashboard()">
                 📸 Capture Dashboard
             </button>
         </div>
 
-        
         <div class="text-center mb-3">
             <asp:DropDownList ID="ddlTimeFilter" runat="server" AutoPostBack="true"
                 OnSelectedIndexChanged="ddlTimeFilter_SelectedIndexChanged"
@@ -177,7 +210,6 @@
             </asp:DropDownList>
         </div>
 
-        
         <div class="row justify-content-center mb-4">
             <div class="col-md-2 text-center">
                 <label class="d-block">Start Date (Y/m/d)</label>
@@ -193,7 +225,6 @@
             </div>
         </div>
 
-        
         <div class="row mb-4 text-white text-center">
             <div class="col-md-3">
                 <div class="card-summary">
@@ -221,40 +252,51 @@
             </div>
         </div>
 
-        
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="dark-card p-3">
-                    <h6 class="text-center">Requests by Type</h6>
-                    <canvas id="chartType" class="chart-box"></canvas>
-                    <asp:Literal ID="ltTableType" runat="server" />
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="dark-card p-3">
-                    <h6 class="text-center">Requests by Department</h6>
-                    <canvas id="chartDept" class="chart-box"></canvas>
-                    <asp:Literal ID="ltTableDept" runat="server" />
-                </div>
-            </div>
+       <!-- 🔥 DASHBOARD GRAPHS (เรียงใหม่) -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="dark-card p-3 h-100 d-flex flex-column">
+            <h6 class="text-center">Requests by Type</h6>
+            <canvas id="chartType" class="chart-box flex-fill"></canvas>
+            <asp:Literal ID="ltTableType" runat="server" />
         </div>
+    </div>
+    <div class="col-md-6">
+        <div class="dark-card p-3 h-100 d-flex flex-column">
+            <h6 class="text-center">Requests by Department</h6>
+            <canvas id="chartDept" class="chart-box flex-fill"></canvas>
+            <asp:Literal ID="ltTableDept" runat="server" />
+        </div>
+    </div>
+</div>
 
-        <div class="row">
-            <div class="col-md-6">
-                <div class="dark-card p-3">
-                    <h6 class="text-center">Requests Trend</h6>
-                    <canvas id="chartTrend" class="chart-box"></canvas>
-                    <asp:Literal ID="ltTableTrend" runat="server" />
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="dark-card p-3">
-                    <h6 class="text-center">Requests by Responsible Person</h6>
-                    <canvas id="chartDRI" class="chart-box"></canvas>
-                    <asp:Literal ID="ltTableDRI" runat="server" />
-                </div>
-            </div>
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="dark-card p-3 h-100 d-flex flex-column">
+            <h6 class="text-center">Requests Trend</h6>
+            <canvas id="chartTrend" class="chart-box flex-fill"></canvas>
+            <asp:Literal ID="ltTableTrend" runat="server" />
         </div>
+    </div>
+    <div class="col-md-6">
+        <div class="dark-card p-3 h-100 d-flex flex-column">
+            <h6 class="text-center">Requests by Responsible Person</h6>
+            <canvas id="chartDRI" class="chart-box flex-fill"></canvas>
+            <asp:Literal ID="ltTableDRI" runat="server" />
+        </div>
+    </div>
+</div>
+
+<!-- 👇 ย้าย Average Days to Close Request มาไว้ล่างสุด -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="dark-card p-3 h-100 d-flex flex-column">
+            <h6 class="text-center">Average Days to Close Request</h6>
+            <canvas id="chartAvgDays" class="chart-box flex-fill"></canvas>
+        </div>
+    </div>
+</div>
+
     </div>
 
     <asp:HiddenField ID="hfChartData" runat="server" />
