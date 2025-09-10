@@ -11,142 +11,133 @@ namespace IT_WorkPlant.Pages
 {
 
 
-    public partial class IT_ComputerListView
+    public partial class QMS_Dashboard
     {
 
         /// <summary>
-        /// btnCardTotal control.
+        /// btnExport control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnCardTotal;
+        protected global::System.Web.UI.WebControls.Button btnExport;
 
         /// <summary>
-        /// lblTotalComputers control.
+        /// btnRefresh control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblTotalComputers;
+        protected global::System.Web.UI.WebControls.Button btnRefresh;
 
         /// <summary>
-        /// btnCardPC control.
+        /// txtFrom control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnCardPC;
+        protected global::System.Web.UI.WebControls.TextBox txtFrom;
 
         /// <summary>
-        /// lblTotalPC control.
+        /// txtTo control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblTotalPC;
+        protected global::System.Web.UI.WebControls.TextBox txtTo;
 
         /// <summary>
-        /// btnCardNB control.
+        /// ddlUnit control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnCardNB;
+        protected global::System.Web.UI.WebControls.DropDownList ddlUnit;
 
         /// <summary>
-        /// lblTotalNB control.
+        /// ddlDefect control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblTotalNB;
+        protected global::System.Web.UI.WebControls.DropDownList ddlDefect;
 
         /// <summary>
-        /// btnCardWarranty control.
+        /// btnApply control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnCardWarranty;
+        protected global::System.Web.UI.WebControls.Button btnApply;
 
         /// <summary>
-        /// lblWarrantyCount control.
+        /// btnReset control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblWarrantyCount;
+        protected global::System.Web.UI.WebControls.Button btnReset;
 
         /// <summary>
-        /// btnAddDevice control.
+        /// litTotalIssues control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink btnAddDevice;
+        protected global::System.Web.UI.WebControls.Literal litTotalIssues;
 
         /// <summary>
-        /// txtSearch control.
+        /// litOpenIssues control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtSearch;
+        protected global::System.Web.UI.WebControls.Literal litOpenIssues;
 
         /// <summary>
-        /// btnClear control.
+        /// litCompleted control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnClear;
+        protected global::System.Web.UI.WebControls.Literal litCompleted;
 
         /// <summary>
-        /// lblActiveFilter control.
+        /// litAvgDowntime control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblActiveFilter;
+        protected global::System.Web.UI.WebControls.Literal litAvgDowntime;
 
         /// <summary>
-        /// lblCount control.
+        /// gvDeptPerf control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblCount;
+        protected global::System.Web.UI.WebControls.GridView gvDeptPerf;
 
         /// <summary>
-        /// phDeptButtons control.
+        /// litDashboardJson control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.PlaceHolder phDeptButtons;
-
-        /// <summary>
-        /// gvDevices control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvDevices;
+        protected global::System.Web.UI.WebControls.Literal litDashboardJson;
     }
 }

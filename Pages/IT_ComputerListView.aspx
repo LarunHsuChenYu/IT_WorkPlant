@@ -1,105 +1,245 @@
-﻿<%@ Page Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="IT_ComputerListView.aspx.cs" Inherits="IT_WorkPlant.Pages.IT_ComputerListView" %>
-<asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
+﻿<%@ Page Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true"
+    CodeBehind="IT_ComputerListView.aspx.cs"
+    Inherits="IT_WorkPlant.Pages.IT_ComputerListView" %>
 
+<asp:Content ID="Head" ContentPlaceHolderID="HeadContent" runat="server">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <style>
-        .card-box {
-            border: 1px solid #ccc;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        .filter-btn {
+        .pill { border-radius: 999px; margin-right:6px }
+        .dept-btn.active { color:#fff !important; background:#0d6efd !important }
+        .table > :not(caption) > * > * { vertical-align: middle }
 
+        /* toolbar = แถวเดียว */
+        .toolbar{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:nowrap}
+        .search-wrap{display:flex; gap:8px; flex:0 0 auto}
+        .dept-wrap{display:flex; align-items:center; gap:8px; white-space:nowrap; overflow-x:auto; padding-bottom:4px; flex:1 1 auto}
+        .dept-wrap .muted{color:#6c757d}
+        .dept-wrap .count-badge{margin-left:4px}
 
-
-            margin: 3px;
-        }
+        .w-90{width:90px}
+        .w-110{width:110px}
+        .w-140{width:140px}
     </style>
+</asp:Content>
 
-    <div class="container my-4">
-        <h2>🖥️ Computer & Notebook List</h2>
+<asp:Content ID="Body" ContentPlaceHolderID="MainContent" runat="server">
+    <div class="container-fluid py-3">
+        <h3 class="mb-3">Computer &amp; Notebook List</h3>
 
-        <!-- Filter Bar -->
-        <div class="row my-3">
-            <div class="col-md-6">
-                <input type="text" id="searchBox" class="form-control" placeholder="🔍 Search anything..." />
+        <!-- SUMMARY CARDS (CLICKABLE) -->
+<div class="row mb-3 align-items-stretch">
+    <div class="col-md-3 col-sm-6 mb-2">
+        <asp:LinkButton ID="btnCardTotal" runat="server" OnClick="btnCardTotal_Click" CssClass="text-decoration-none">
+            <div class="card text-bg-primary shadow-sm h-100" style="cursor:pointer;">
+                <div class="card-body text-center">
+                    <h6 class="card-title mb-1 text-white">🗂️Total</h6>
+                    <h3 class="mb-0 text-white"><asp:Label ID="lblTotalComputers" runat="server" Text="0" /></h3>
+                </div>
             </div>
-            <div class="col-md-6 text-end">
-                <button type="button" class="btn btn-secondary filter-btn" onclick="filterDept('All')">All Dept</button>
-                <button type="button" class="btn btn-outline-primary filter-btn" onclick="filterDept('IT')">IT</button>
-                <button type="button" class="btn btn-outline-primary filter-btn" onclick="filterDept('HR')">HR</button>
-                <button type="button" class="btn btn-outline-primary filter-btn" onclick="filterDept('MFG')">MFG</button>
-                <button type="button" class="btn btn-outline-primary filter-btn" onclick="filterDept('PU')">PU</button>
-            </div>
-        </div>
-
-        <!-- Type Toggle -->
-        <div class="mb-3">
-            <button type="button" class="btn btn-warning filter-btn" onclick="filterType('All')">All Types</button>
-            <button type="button" class="btn btn-outline-dark filter-btn" onclick="filterType('PC')">PC</button>
-            <button type="button" class="btn btn-outline-dark filter-btn" onclick="filterType('NB')">NB</button>
-        </div>
-
-        <!-- Cards Display -->
-        <div class="row" id="cardContainer">
-            <!-- JavaScript will inject cards here -->
-        </div>
+        </asp:LinkButton>
     </div>
 
-    <asp:HiddenField ID="hiddenJson" runat="server" />
+    <div class="col-md-3 col-sm-6 mb-2">
+        <asp:LinkButton ID="btnCardPC" runat="server" OnClick="btnCardPC_Click" CssClass="text-decoration-none">
+            <div class="card text-bg-success shadow-sm h-100" style="cursor:pointer;">
+                <div class="card-body text-center">
+                    <h6 class="card-title mb-1 text-white">🖥️PC</h6>
+                    <h3 class="mb-0 text-white"><asp:Label ID="lblTotalPC" runat="server" Text="0" /></h3>
+                </div>
+            </div>
+        </asp:LinkButton>
+    </div>
 
-    <script>
-        let allData = [];
-        let currentDept = 'All';
-        let currentType = 'All';
+    <div class="col-md-3 col-sm-6 mb-2">
+        <asp:LinkButton ID="btnCardNB" runat="server" OnClick="btnCardNB_Click" CssClass="text-decoration-none">
+            <div class="card text-bg-info shadow-sm h-100" style="cursor:pointer;">
+                <div class="card-body text-center">
+                    <h6 class="card-title mb-1 text-white">💻Notebook</h6>
+                    <h3 class="mb-0 text-white"><asp:Label ID="lblTotalNB" runat="server" Text="0" /></h3>
+                </div>
+            </div>
+        </asp:LinkButton>
+    </div>
 
-        window.onload = function () {
-            allData = JSON.parse(document.getElementById('<%= hiddenJson.ClientID %>').value || "[]");
-            renderCards(allData);
+    <div class="col-md-3 col-sm-6 mb-2">
+        <asp:LinkButton ID="btnCardWarranty" runat="server" OnClick="btnCardWarranty_Click" CssClass="text-decoration-none">
+            <div class="card text-bg-warning shadow-sm h-100" style="cursor:pointer;">
+                <div class="card-body text-center">
+                    <h6 class="card-title mb-1">💼Warranty</h6>
+                    <h3 class="mb-0"><asp:Label ID="lblWarrantyCount" runat="server" Text="0" /></h3>
+                </div>
+            </div>
+        </asp:LinkButton>
+    </div>
+</div>
 
-            document.getElementById("searchBox").addEventListener("input", function () {
-                renderCards(allData);
-            });
-        };
+<!-- ปุ่ม Add Device -->
+<div class="mb-3 text-end">
+    <asp:HyperLink ID="btnAddDevice" runat="server"
+        NavigateUrl="~/Pages/IT_ComputerAdd.aspx"
+        CssClass="btn btn-success btn-lg shadow-sm">
+        <i class="bi bi-plus-circle"></i> ➕Add New Device
+    </asp:HyperLink>
+</div>
 
-        function renderCards(data) {
-            const keyword = document.getElementById("searchBox").value.toLowerCase();
-            const container = document.getElementById("cardContainer");
-            container.innerHTML = "";
 
-            data.filter(d => {
-                const matchDept = currentDept === "All" || d.DeptName === currentDept;
-                const matchType = currentType === "All" || d.Tyb === currentType;
-                const matchSearch = Object.values(d).some(v => (v + '').toLowerCase().includes(keyword));
-                return matchDept && matchType && matchSearch;
-            }).forEach(item => {
-                const card = `
-                    <div class="col-md-4">
-                        <div class="card-box">
-                            <h5>${item.NamePC}</h5>
-                            <p><b>User:</b> ${item.UserName || '-'} (${item.UserID || '-'})</p>
-                            <p><b>Dept:</b> ${item.DeptName}</p>
-                            <p><b>Brand:</b> ${item.Brand} | <b>Model:</b> ${item.Model}</p>
-                            <p><b>Serial:</b> ${item.SerialNumber} | <b>Type:</b> ${item.Tyb}</p>
-                            <p><b>Warranty:</b> ${item.Warranty} | <b>System:</b> ${item.System}</p>
-                            <p><b>Status:</b> ${item.Status} | <b>Price:</b> ${item.Price}</p>
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += card;
-            });
-        }
+        <!-- SINGLE ROW TOOLBAR -->
+        <div class="toolbar mb-2">
+            <div class="search-wrap">
+                <asp:TextBox ID="txtSearch" runat="server" CssClass="form-control" Width="280"
+                    placeholder="Search anything..." AutoPostBack="true"
+                    OnTextChanged="txtSearch_TextChanged" />
+                <asp:Button ID="btnClear" runat="server" Text="Clear" CssClass="btn btn-outline-secondary"
+                    OnClick="btnClear_Click" />
+            </div>
 
-        function filterDept(dept) {
-            currentDept = dept;
-            renderCards(allData);
-        }
+            <div class="dept-wrap">
+                <!-- ตัวกรองปัจจุบัน + Total -->
+                <span class="muted">
+                    <asp:Label ID="lblActiveFilter" runat="server" />
+                    <span class="count-badge">
+                        • Total:
+                        <span class="badge bg-secondary"><asp:Label ID="lblCount" runat="server" /></span>
+                    </span>
+                </span>
 
-        function filterType(type) {
-            currentType = type;
-            renderCards(allData);
-        }
-    </script>
+                <!-- ปุ่มแผนก -->
+                <asp:PlaceHolder ID="phDeptButtons" runat="server" />
+            </div>
+        </div>
 
+        <!-- GRIDVIEW -->
+        <asp:GridView ID="gvDevices" runat="server" CssClass="table table-striped table-bordered"
+            AllowPaging="true" PageSize="20"
+            AllowSorting="true"
+            AutoGenerateColumns="False"
+            DataKeyNames="ComputerID"
+            OnPageIndexChanging="gvDevices_PageIndexChanging"
+            OnSorting="gvDevices_Sorting"
+            OnRowDataBound="gvDevices_RowDataBound"
+            OnRowEditing="gvDevices_RowEditing"
+            OnRowCancelingEdit="gvDevices_RowCancelingEdit"
+            OnRowUpdating="gvDevices_RowUpdating"
+            OnRowCommand="gvDevices_RowCommand">
+
+            <Columns>
+                <%-- No. --%>
+                <asp:TemplateField HeaderText="No." ItemStyle-Width="60">
+                    <ItemTemplate><asp:Label ID="lblNo" runat="server" /></ItemTemplate>
+                </asp:TemplateField>
+
+                <%-- Computer --%>
+                <asp:TemplateField HeaderText="Computer" SortExpression="ComputerName">
+                    <ItemTemplate><%# Eval("ComputerName") %></ItemTemplate>
+                    <EditItemTemplate>
+                        <asp:TextBox ID="txtComputerName" runat="server" CssClass="form-control"
+                            Text='<%# Bind("ComputerName") %>' />
+                    </EditItemTemplate>
+                </asp:TemplateField>
+
+                <%-- User (แก้ได้เฉพาะรหัส) --%>
+                <asp:TemplateField HeaderText="User">
+                    <ItemTemplate><%# Eval("EmpId") %></ItemTemplate>
+                    <EditItemTemplate>
+                        <asp:TextBox ID="txtUserID" runat="server" CssClass="form-control w-110"
+                            Text='<%# Bind("EmpId") %>' />
+                    </EditItemTemplate>
+                </asp:TemplateField>
+
+                <%-- User Name (ReadOnly) --%>
+                <asp:TemplateField HeaderText="User Name" SortExpression="UserName">
+                    <ItemTemplate><%# Eval("UserName") %></ItemTemplate>
+                    <EditItemTemplate>
+                        <asp:Label ID="lblUserNameRO" runat="server" CssClass="form-control-plaintext"
+                            Text='<%# Eval("UserName") %>' />
+                    </EditItemTemplate>
+                </asp:TemplateField>
+
+                <%-- Dept (ReadOnly) --%>
+                <asp:TemplateField HeaderText="Dept" SortExpression="Dept">
+                    <ItemTemplate><%# Eval("Dept") %></ItemTemplate>
+                    <EditItemTemplate>
+                        <asp:Label ID="lblDeptRO" runat="server" CssClass="form-control-plaintext"
+                            Text='<%# Eval("Dept") %>' />
+                    </EditItemTemplate>
+                </asp:TemplateField>
+
+                <%-- Type --%>
+                <asp:TemplateField HeaderText="Type" SortExpression="Type">
+                    <ItemTemplate><%# Eval("Type") %></ItemTemplate>
+                    <EditItemTemplate>
+                        <asp:DropDownList ID="ddlType" runat="server" CssClass="form-select w-90"
+                            SelectedValue='<%# Bind("Type") %>'>
+                            <asp:ListItem Text="PC" Value="PC" />
+                            <asp:ListItem Text="NB" Value="NB" />
+                        </asp:DropDownList>
+                    </EditItemTemplate>
+                </asp:TemplateField>
+
+                <%-- Brand --%>
+                <asp:TemplateField HeaderText="Brand" SortExpression="Brand">
+                    <ItemTemplate><%# Eval("Brand") %></ItemTemplate>
+                    <EditItemTemplate>
+                        <asp:TextBox ID="txtBrand" runat="server" CssClass="form-control"
+                            Text='<%# Bind("Brand") %>' />
+                    </EditItemTemplate>
+                </asp:TemplateField>
+
+                <%-- Model --%>
+                <asp:TemplateField HeaderText="Model" SortExpression="Model">
+                    <ItemTemplate><%# Eval("Model") %></ItemTemplate>
+                    <EditItemTemplate>
+                        <asp:TextBox ID="txtModel" runat="server" CssClass="form-control"
+                            Text='<%# Bind("Model") %>' />
+                    </EditItemTemplate>
+                </asp:TemplateField>
+
+                <%-- Serial --%>
+                <asp:TemplateField HeaderText="Serial" SortExpression="Serial">
+                    <ItemTemplate><%# Eval("Serial") %></ItemTemplate>
+                    <EditItemTemplate>
+                        <asp:TextBox ID="txtSerial" runat="server" CssClass="form-control"
+                            Text='<%# Bind("Serial") %>' />
+                    </EditItemTemplate>
+                </asp:TemplateField>
+
+                <%-- Warranty --%>
+                <asp:TemplateField HeaderText="Warranty" SortExpression="Warranty">
+                    <ItemTemplate><%# Eval("Warranty") %></ItemTemplate>
+                    <EditItemTemplate>
+                        <asp:TextBox ID="txtWarranty" runat="server" CssClass="form-control"
+                            Text='<%# Bind("Warranty") %>' />
+                    </EditItemTemplate>
+                </asp:TemplateField>
+
+                <%-- Status (DropDown) --%>
+                <asp:TemplateField HeaderText="Status" SortExpression="Status">
+                    <ItemTemplate><%# Eval("Status") %></ItemTemplate>
+                    <EditItemTemplate>
+                        <asp:DropDownList ID="ddlStatus" runat="server" CssClass="form-select">
+                            <asp:ListItem Text="-- Select Status --" Value="" />
+                            <asp:ListItem Text="Active" Value="Active" />
+                            <asp:ListItem Text="Inactive" Value="Inactive" />
+                        </asp:DropDownList>
+                    </EditItemTemplate>
+                </asp:TemplateField>
+
+                <%-- Action (ย้ายไปท้าย) --%>
+                <asp:TemplateField HeaderText="Action" ItemStyle-CssClass="w-140">
+                    <ItemTemplate>
+                        <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-sm btn-outline-primary me-1"
+                            CommandName="Edit" Text="Edit" />
+                        <asp:LinkButton ID="btnDelete" runat="server" CssClass="btn btn-sm btn-outline-danger"
+                            CommandName="DeleteRow" CommandArgument='<%# Eval("ComputerID") %>' Text="Delete" />
+                    </ItemTemplate>
+                    <EditItemTemplate>
+                        <asp:LinkButton ID="btnUpdate" runat="server" CssClass="btn btn-sm btn-success me-1"
+                            CommandName="Update" Text="Save" />
+                        <asp:LinkButton ID="btnCancel" runat="server" CssClass="btn btn-sm btn-secondary"
+                            CommandName="Cancel" Text="Cancel" />
+                    </EditItemTemplate>
+                </asp:TemplateField>
+            </Columns>
+        </asp:GridView>
+    </div>
 </asp:Content>

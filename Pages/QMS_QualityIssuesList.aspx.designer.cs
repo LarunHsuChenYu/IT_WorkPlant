@@ -11,98 +11,89 @@ namespace IT_WorkPlant.Pages
 {
 
 
-    public partial class IT_ComputerListView
+    public partial class QMS_QualityIssuesList
     {
 
         /// <summary>
-        /// btnCardTotal control.
+        /// ddlFWeek control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnCardTotal;
+        protected global::System.Web.UI.WebControls.DropDownList ddlFWeek;
 
         /// <summary>
-        /// lblTotalComputers control.
+        /// txtFDateFrom control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblTotalComputers;
+        protected global::System.Web.UI.WebControls.TextBox txtFDateFrom;
 
         /// <summary>
-        /// btnCardPC control.
+        /// txtFDateTo control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnCardPC;
+        protected global::System.Web.UI.WebControls.TextBox txtFDateTo;
 
         /// <summary>
-        /// lblTotalPC control.
+        /// ddlFDefect control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblTotalPC;
+        protected global::System.Web.UI.WebControls.DropDownList ddlFDefect;
 
         /// <summary>
-        /// btnCardNB control.
+        /// ddlFProduct control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnCardNB;
+        protected global::System.Web.UI.WebControls.DropDownList ddlFProduct;
 
         /// <summary>
-        /// lblTotalNB control.
+        /// ddlFUnit control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblTotalNB;
+        protected global::System.Web.UI.WebControls.DropDownList ddlFUnit;
 
         /// <summary>
-        /// btnCardWarranty control.
+        /// ddlFRespUnit control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnCardWarranty;
+        protected global::System.Web.UI.WebControls.DropDownList ddlFRespUnit;
 
         /// <summary>
-        /// lblWarrantyCount control.
+        /// ddlFStatus control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblWarrantyCount;
+        protected global::System.Web.UI.WebControls.DropDownList ddlFStatus;
 
         /// <summary>
-        /// btnAddDevice control.
+        /// btnSearch control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink btnAddDevice;
-
-        /// <summary>
-        /// txtSearch control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtSearch;
+        protected global::System.Web.UI.WebControls.Button btnSearch;
 
         /// <summary>
         /// btnClear control.
@@ -114,39 +105,12 @@ namespace IT_WorkPlant.Pages
         protected global::System.Web.UI.WebControls.Button btnClear;
 
         /// <summary>
-        /// lblActiveFilter control.
+        /// gvIssues control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblActiveFilter;
-
-        /// <summary>
-        /// lblCount control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblCount;
-
-        /// <summary>
-        /// phDeptButtons control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.PlaceHolder phDeptButtons;
-
-        /// <summary>
-        /// gvDevices control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvDevices;
+        protected global::System.Web.UI.WebControls.GridView gvIssues;
     }
 }

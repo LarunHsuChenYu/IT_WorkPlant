@@ -7,25 +7,21 @@
             box-shadow: 0 0 25px rgba(0, 0, 0, 0.07);
             border-radius: 16px;
         }
-
         .form-title {
             font-size: 24px;
             font-weight: 600;
             margin-bottom: 20px;
             color: #dc3545;
         }
-
         .form-label {
             font-weight: 500;
             margin-bottom: 5px;
             display: block;
         }
-
         .section-divider {
             border-top: 2px solid #eee;
             margin: 30px 0 20px;
         }
-
         .btn-lg {
             padding: 12px 30px;
             font-size: 16px;
@@ -58,11 +54,7 @@
             <div class="col-md-6">
                 <asp:TextBox ID="txtColumnCode" runat="server" CssClass="form-control mb-3" placeholder="ERP Column Code" />
 
-                <asp:DropDownList ID="ddlSystem" runat="server" CssClass="form-control mb-3">
-                    <asp:ListItem Text="-- เลือก System --" Value="" />
-                    <asp:ListItem Text="Windows 10 Pro" />
-                    <asp:ListItem Text="Windows 11 Pro" />
-                </asp:DropDownList>
+                <!-- ลบ ddlSystem ออก -->
 
                 <asp:DropDownList ID="ddlWarranty" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlWarranty_SelectedIndexChanged" CssClass="form-control mb-3">
                     <asp:ListItem Text="-- เลือก Warranty --" Value="" />
@@ -74,17 +66,19 @@
                     <asp:TextBox ID="txtWarrantyYears" runat="server" CssClass="form-control" placeholder="Warranty Period (Years)" />
                 </asp:Panel>
 
-                <asp:TextBox ID="txtLocation" runat="server" CssClass="form-control mb-3" placeholder="Location" />
+                <!-- ลบ txtLocation ออก -->
+
                 <asp:TextBox ID="txtAssetCode" runat="server" CssClass="form-control mb-3" placeholder="Asset Code" />
-                <asp:TextBox ID="txtPrice" runat="server" CssClass="form-control mb-3" placeholder="Price" />
+
+                <!-- ลบ txtPrice ออก -->
 
                 <asp:DropDownList ID="ddlStatus" runat="server" CssClass="form-control mb-3">
                     <asp:ListItem Text="-- Select Status --" Value="" />
-                    <asp:ListItem Text="ใช้งาน" />
-                    <asp:ListItem Text="ไม่ได้ใช้งาน" />
+                    <asp:ListItem Text="Active" />
+                    <asp:ListItem Text="Inactive" />
                 </asp:DropDownList>
 
-                <asp:TextBox ID="txtPurchaseDate" runat="server" CssClass="form-control mb-3" placeholder="Purchase Date (yyyy-MM-dd)" />
+                <!-- ลบ txtPurchaseDate ออก -->
             </div>
         </div>
 

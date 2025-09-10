@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace IT_WorkPlant.Pages
 {
@@ -13,80 +10,84 @@ namespace IT_WorkPlant.Pages
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-
         }
 
         protected void btnSubmit_Click(object sender, EventArgs e)
         {
             string connStr = ConfigurationManager.ConnectionStrings["EnrichDB"].ConnectionString;
-
-
             string type = rdbPC.Checked ? "PC" : "NB";
 
             using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = conn.CreateCommand())
             {
-                string sql = @"INSERT INTO IT_ComputerList
-               (NamePC, UserID, UserName, DeptName, Tyb, Brand, Model, SerialNumber, Warranty, System, ColumnCode, Location, Status, AssetCode, PurchaseDate, Price)
-               VALUES
-               (@NamePC, @UserID, @UserName, @DeptName, @Tyb, @Brand, @Model, @SerialNumber, @Warranty, @System, @ColumnCode, @Location, @Status, @AssetCode, @PurchaseDate, @Price)";
+                // *** ตัด System, Location, PurchaseDate, Price ออก ***
+                cmd.CommandText = @"
+INSERT INTO IT_ComputerList
+    (NamePC, UserID, UserName, DeptName, Tyb, Brand, Model, SerialNumber, Warranty, ColumnCode, Status, AssetCode)
+VALUES
+    (@NamePC, @UserID, @UserName, @DeptName, @Tyb, @Brand, @Model, @SerialNumber, @Warranty, @ColumnCode, @Status, @AssetCode);";
 
-                SqlCommand cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@NamePC", txtNamePC.Text.Trim());
-                cmd.Parameters.AddWithValue("@UserID", string.IsNullOrWhiteSpace(txtUserID.Text) ? DBNull.Value : (object)txtUserID.Text.Trim());
-                cmd.Parameters.AddWithValue("@UserName", txtUserName.Text.Trim());
-                cmd.Parameters.AddWithValue("@DeptName", txtDeptName.Text.Trim());
-                cmd.Parameters.AddWithValue("@Tyb", type);
-                cmd.Parameters.AddWithValue("@Brand", txtBrand.Text.Trim());
-                cmd.Parameters.AddWithValue("@Model", txtModel.Text.Trim());
-                cmd.Parameters.AddWithValue("@SerialNumber", txtSerialNumber.Text.Trim());
+                // NamePC
+                cmd.Parameters.Add(new SqlParameter("@NamePC", SqlDbType.NVarChar, 100)
+                { Value = (object)txtNamePC.Text.Trim() ?? DBNull.Value });
+
+                // UserID ใน DB เป็น int → แปลง, ถ้าไม่ใช่ตัวเลขให้ NULL
+                var pUserId = new SqlParameter("@UserID", SqlDbType.Int);
+                if (int.TryParse(txtUserID.Text.Trim(), out int uid))
+                    pUserId.Value = uid;
+                else
+                    pUserId.Value = DBNull.Value;
+                cmd.Parameters.Add(pUserId);
+
+                cmd.Parameters.Add(new SqlParameter("@UserName", SqlDbType.NVarChar, 100)
+                { Value = (object)txtUserName.Text.Trim() ?? DBNull.Value });
+
+                cmd.Parameters.Add(new SqlParameter("@DeptName", SqlDbType.NVarChar, 100)
+                { Value = (object)txtDeptName.Text.Trim() ?? DBNull.Value });
+
+                cmd.Parameters.Add(new SqlParameter("@Tyb", SqlDbType.NVarChar, 10) { Value = type });
+
+                cmd.Parameters.Add(new SqlParameter("@Brand", SqlDbType.NVarChar, 100)
+                { Value = (object)txtBrand.Text.Trim() ?? DBNull.Value });
+
+                cmd.Parameters.Add(new SqlParameter("@Model", SqlDbType.NVarChar, 100)
+                { Value = (object)txtModel.Text.Trim() ?? DBNull.Value });
+
+                cmd.Parameters.Add(new SqlParameter("@SerialNumber", SqlDbType.NVarChar, 100)
+                { Value = (object)txtSerialNumber.Text.Trim() ?? DBNull.Value });
+
+                // Warranty: ถ้าเลือก Yes เก็บจำนวนปี, ไม่ใช่ → "No"
                 string warranty = ddlWarranty.SelectedValue == "Yes" ? txtWarrantyYears.Text.Trim() : "No";
-                cmd.Parameters.AddWithValue("@Warranty", warranty);
-                cmd.Parameters.AddWithValue("@System", ddlSystem.SelectedValue);
-                cmd.Parameters.AddWithValue("@Status", ddlStatus.SelectedValue);
-                cmd.Parameters.AddWithValue("@ColumnCode", txtColumnCode.Text.Trim());
-                cmd.Parameters.AddWithValue("@Location", txtLocation.Text.Trim());   
-                cmd.Parameters.AddWithValue("@AssetCode", txtAssetCode.Text.Trim()); 
+                cmd.Parameters.Add(new SqlParameter("@Warranty", SqlDbType.NVarChar, 50) { Value = warranty });
 
-                DateTime purchaseDate;
-                if (DateTime.TryParse(txtPurchaseDate.Text.Trim(), out purchaseDate))
-                {
-                    cmd.Parameters.AddWithValue("@PurchaseDate", purchaseDate);
-                }
-                else
-                {
-                    cmd.Parameters.AddWithValue("@PurchaseDate", DBNull.Value);
-                }
+                cmd.Parameters.Add(new SqlParameter("@ColumnCode", SqlDbType.NVarChar, 50)
+                { Value = (object)txtColumnCode.Text.Trim() ?? DBNull.Value });
 
-                decimal price;
-                if (decimal.TryParse(txtPrice.Text.Trim(), out price))
-                {
-                    cmd.Parameters.AddWithValue("@Price", price);
-                }
-                else
-                {
-                    cmd.Parameters.AddWithValue("@Price", DBNull.Value);
-                }
+                cmd.Parameters.Add(new SqlParameter("@Status", SqlDbType.NVarChar, 50)
+                { Value = (object)ddlStatus.SelectedValue ?? DBNull.Value });
+
+                cmd.Parameters.Add(new SqlParameter("@AssetCode", SqlDbType.NVarChar, 100)
+                { Value = (object)txtAssetCode.Text.Trim() ?? DBNull.Value });
 
                 try
                 {
                     conn.Open();
                     cmd.ExecuteNonQuery();
-
-                    // แจ้งเตือนสำเร็จ
-                    string script = "Swal.fire('สำเร็จ!','บันทึกข้อมูลเรียบร้อยแล้ว','success')";
-                    ScriptManager.RegisterStartupScript(this, GetType(), "SuccessAlert", script, true);
+                    ScriptManager.RegisterStartupScript(this, GetType(), "SuccessAlert",
+                        "Swal.fire('สำเร็จ!','บันทึกข้อมูลเรียบร้อยแล้ว','success');", true);
                 }
                 catch (Exception ex)
                 {
-                    string script = $"Swal.fire('Error','{ex.Message}','error')";
-                    ScriptManager.RegisterStartupScript(this, GetType(), "ErrorAlert", script, true);
+                    string msg = ex.Message.Replace("'", "\\'");
+                    ScriptManager.RegisterStartupScript(this, GetType(), "ErrorAlert",
+                        $"Swal.fire('Error','{msg}','error');", true);
                 }
             }
         }
+
         protected void txtUserID_TextChanged(object sender, EventArgs e)
         {
             string userId = txtUserID.Text.Trim();
-
             if (string.IsNullOrEmpty(userId))
             {
                 txtUserName.Text = "";
@@ -95,52 +96,45 @@ namespace IT_WorkPlant.Pages
             }
 
             string connStr = ConfigurationManager.ConnectionStrings["EnrichDB"].ConnectionString;
-
             using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = conn.CreateCommand())
             {
-                string sql = "SELECT UserName, DeptName FROM Users WHERE UserEmpID = @UserID";
-
-                SqlCommand cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@UserID", userId);
+                cmd.CommandText = "SELECT UserName, DeptName FROM Users WHERE UserEmpID = @UserID";
+                cmd.Parameters.Add(new SqlParameter("@UserID", SqlDbType.NVarChar, 50) { Value = userId });
 
                 try
                 {
                     conn.Open();
-                    SqlDataReader reader = cmd.ExecuteReader();
-
-                    if (reader.Read())
+                    using (var reader = cmd.ExecuteReader())
                     {
-                        txtUserName.Text = reader["UserName"].ToString();
-                        txtDeptName.Text = reader["DeptName"].ToString();
-                    }
-                    else
-                    {
-                        txtUserName.Text = "";
-                        txtDeptName.Text = "";
-
-                        string script = "Swal.fire('ไม่พบข้อมูล','ไม่พบรหัสพนักงานนี้ในระบบ','warning')";
-                        ScriptManager.RegisterStartupScript(this, GetType(), "NotFound", script, true);
+                        if (reader.Read())
+                        {
+                            txtUserName.Text = reader["UserName"].ToString();
+                            txtDeptName.Text = reader["DeptName"].ToString();
+                        }
+                        else
+                        {
+                            txtUserName.Text = "";
+                            txtDeptName.Text = "";
+                            ScriptManager.RegisterStartupScript(this, GetType(), "NotFound",
+                                "Swal.fire('ไม่พบข้อมูล','ไม่พบรหัสพนักงานนี้ในระบบ','warning');", true);
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    string script = $"Swal.fire('Error','{ex.Message}','error')";
-                    ScriptManager.RegisterStartupScript(this, GetType(), "ErrorLookup", script, true);
+                    string msg = ex.Message.Replace("'", "\\'");
+                    ScriptManager.RegisterStartupScript(this, GetType(), "ErrorLookup",
+                        $"Swal.fire('Error','{msg}','error');", true);
                 }
             }
         }
+
         protected void ddlWarranty_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (ddlWarranty.SelectedValue == "Yes")
-            {
-                pnlWarrantyPeriod.Visible = true;
-            }
-            else
-            {
-                pnlWarrantyPeriod.Visible = false;
-                txtWarrantyYears.Text = ""; // เคลียร์ข้อมูล
-            }
+            bool visible = ddlWarranty.SelectedValue == "Yes";
+            pnlWarrantyPeriod.Visible = visible;
+            if (!visible) txtWarrantyYears.Text = "";
         }
-
     }
 }

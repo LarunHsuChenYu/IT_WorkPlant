@@ -105,15 +105,6 @@ namespace IT_WorkPlant.Pages
         protected global::System.Web.UI.WebControls.TextBox txtColumnCode;
 
         /// <summary>
-        /// ddlSystem control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlSystem;
-
-        /// <summary>
         /// ddlWarranty control.
         /// </summary>
         /// <remarks>
@@ -141,15 +132,6 @@ namespace IT_WorkPlant.Pages
         protected global::System.Web.UI.WebControls.TextBox txtWarrantyYears;
 
         /// <summary>
-        /// txtLocation control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtLocation;
-
-        /// <summary>
         /// txtAssetCode control.
         /// </summary>
         /// <remarks>
@@ -159,15 +141,6 @@ namespace IT_WorkPlant.Pages
         protected global::System.Web.UI.WebControls.TextBox txtAssetCode;
 
         /// <summary>
-        /// txtPrice control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtPrice;
-
-        /// <summary>
         /// ddlStatus control.
         /// </summary>
         /// <remarks>
@@ -175,15 +148,6 @@ namespace IT_WorkPlant.Pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlStatus;
-
-        /// <summary>
-        /// txtPurchaseDate control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtPurchaseDate;
 
         /// <summary>
         /// btnSubmit control.

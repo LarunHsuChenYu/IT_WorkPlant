@@ -254,6 +254,8 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
+    <Content Include="Content\qms-theme.js" />
+    <Content Include="Content\QMS.theme.css" />
     <Content Include="Content\Site.css" />
     <Content Include="Default.aspx" />
     <Content Include="Error.aspx" />
@@ -329,6 +331,12 @@
     </None>
     <Content Include="Pages\PUR_InvoicePriceUpdate.aspx" />
     <Content Include="Pages\PUR_Vanguard_Price_Update.aspx" />
+    <Content Include="Pages\QMS_AddException.aspx" />
+    <Content Include="Pages\QMS_Dashboard.aspx" />
+    <Content Include="Pages\QMS_QualityIssueAdd.aspx" />
+    <Content Include="Pages\QMS_QualityIssueDetail.aspx" />
+    <Content Include="Pages\QMS_QualityIssuesList.aspx" />
+    <Content Include="Pages\QMS_QualityIssueSummary.aspx" />
     <Content Include="Pages\WarRoom.aspx" />
     <Content Include="Pages\WF_Approve.aspx" />
     <Content Include="Pages\WF_FlowMaintain.aspx" />
@@ -346,6 +354,7 @@
     <None Include="Oracle.ManagedDataAccess.Client.Configuration.Section.xsd">
       <SubType>Designer</SubType>
     </None>
+    <Content Include="Pages\QMS.Master" />
     <None Include="Scripts\jquery-3.7.1.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.1.js" />
     <Content Include="Scripts\jquery-3.7.1.min.js" />
@@ -663,6 +672,55 @@
     </Compile>
     <Compile Include="Pages\PUR_Vanguard_Price_Update.aspx.designer.cs">
       <DependentUpon>PUR_Vanguard_Price_Update.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\QMS.Master.cs">
+      <DependentUpon>QMS.Master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\QMS.Master.designer.cs">
+      <DependentUpon>QMS.Master</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\QMS_AddException.aspx.cs">
+      <DependentUpon>QMS_AddException.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\QMS_AddException.aspx.designer.cs">
+      <DependentUpon>QMS_AddException.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\QMS_Dashboard.aspx.cs">
+      <DependentUpon>QMS_Dashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\QMS_Dashboard.aspx.designer.cs">
+      <DependentUpon>QMS_Dashboard.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\QMS_QualityIssueAdd.aspx.cs">
+      <DependentUpon>QMS_QualityIssueAdd.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\QMS_QualityIssueAdd.aspx.designer.cs">
+      <DependentUpon>QMS_QualityIssueAdd.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\QMS_QualityIssueDetail.aspx.cs">
+      <DependentUpon>QMS_QualityIssueDetail.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\QMS_QualityIssueDetail.aspx.designer.cs">
+      <DependentUpon>QMS_QualityIssueDetail.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\QMS_QualityIssuesList.aspx.cs">
+      <DependentUpon>QMS_QualityIssuesList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\QMS_QualityIssuesList.aspx.designer.cs">
+      <DependentUpon>QMS_QualityIssuesList.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\QMS_QualityIssueSummary.aspx.cs">
+      <DependentUpon>QMS_QualityIssueSummary.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\QMS_QualityIssueSummary.aspx.designer.cs">
+      <DependentUpon>QMS_QualityIssueSummary.aspx</DependentUpon>
     </Compile>
     <Compile Include="Pages\WarRoom.aspx.cs">
       <DependentUpon>WarRoom.aspx</DependentUpon>

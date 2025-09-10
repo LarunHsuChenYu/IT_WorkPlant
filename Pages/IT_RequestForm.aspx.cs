@@ -87,6 +87,9 @@ namespace IT_WorkPlant.Pages
 
             var validItems = new List<(string issueTypeText, string issueTypeID, string description, string imagePath)>();
 
+            // ✅ เพิ่มตัวแปรลำดับไฟล์ (เปลี่ยนแค่ชื่อไฟล์เท่านั้น ส่วนอื่นคงเดิม)
+            int seq = 1;
+
             foreach (RepeaterItem item in rptRequestItems.Items)
             {
                 var ddl = item.FindControl("ddlIssueType") as DropDownList;
@@ -98,19 +101,37 @@ namespace IT_WorkPlant.Pages
 
                 if (string.IsNullOrWhiteSpace(txt.Text) && string.IsNullOrEmpty(ddl.SelectedValue))
                     continue;
-
                 string imagePath = null;
                 if (fileUpload != null && fileUpload.HasFile)
                 {
                     string ext = Path.GetExtension(fileUpload.FileName).ToLower();
                     if (ext == ".jpg" || ext == ".jpeg" || ext == ".png")
                     {
-                        string fileName = Guid.NewGuid().ToString() + ext;
-                        string savePath = Server.MapPath("~/App_Temp/" + fileName);
+                        // ตั้งชื่อแบบ ชม.นาที + ลำดับ
+                        string baseName = $"{DateTime.Now:yyyyMMdd_HHmm}-S{seq:D2}";
+                        string fileName = baseName + ext;
+
+                        // โฟลเดอร์เดิม App_Temp (ต้องมีตัวแปร folder + เช็กสร้าง)
+                        string folder = Server.MapPath("~/App_Temp/");
+                        if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+
+                        // กันชื่อชน: ถ้ามีอยู่แล้ว เติม -x2, -x3 ...
+                        string savePath = Path.Combine(folder, fileName);
+                        int i = 2;
+                        while (File.Exists(savePath))
+                        {
+                            fileName = $"{baseName}-x{i}{ext}";
+                            savePath = Path.Combine(folder, fileName);
+                            i++;
+                        }
+
                         fileUpload.SaveAs(savePath);
-                        imagePath = fileName;
+                        imagePath = fileName;  // เก็บเฉพาะชื่อไฟล์เหมือนเดิม
+
+                        seq++; // ไฟล์ถัดไปเพิ่มลำดับ
                     }
                 }
+
 
                 validItems.Add((ddl.SelectedItem.Text, ddl.SelectedValue, txt.Text, imagePath));
             }
@@ -124,21 +145,21 @@ namespace IT_WorkPlant.Pages
             foreach (var item in validItems)
             {
                 var columnValues = new Dictionary<string, object>
-        {
-            { "IssueDate", DateTime.Parse(txtDate.Text) },
-            { "DeptNameID", DeptName },
-            { "CompanyID", "ENR" },
-            { "RequestUserID", requestUserID },
-            { "IssueDetails", HttpUtility.HtmlEncode(item.description) },
-            { "IssueTypeID", item.issueTypeID },
-            { "Status", false },
-            { "LastUpdateDate", DateTime.Now },
-            { "DRI_UserID", DBNull.Value },
-            { "Solution", DBNull.Value },
-            { "FinishedDate", DBNull.Value },
-            { "Remark", DBNull.Value },
-            { "ImagePath", item.imagePath ?? (object)DBNull.Value }
-        };
+                {
+                    { "IssueDate", DateTime.Parse(txtDate.Text) },
+                    { "DeptNameID", DeptName },
+                    { "CompanyID", "ENR" },
+                    { "RequestUserID", requestUserID },
+                    { "IssueDetails", HttpUtility.HtmlEncode(item.description) },
+                    { "IssueTypeID", item.issueTypeID },
+                    { "Status", false },
+                    { "LastUpdateDate", DateTime.Now },
+                    { "DRI_UserID", DBNull.Value },
+                    { "Solution", DBNull.Value },
+                    { "FinishedDate", DBNull.Value },
+                    { "Remark", DBNull.Value },
+                    { "ImagePath", item.imagePath ?? (object)DBNull.Value }
+                };
 
                 try
                 {
